@@ -1,0 +1,638 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO Meta Tags -->
+    <title>Automatizar Informes de Google Ads, Meta Ads y GA4 con IA | ReportAI</title>
+    <meta name="description" content="Genera informes automáticos de Google Ads, Meta Ads y Google Analytics para tus clientes en minutos. ReportAI automatiza informes con IA para agencias de marketing digital.">
+    <meta name="keywords" content="automatizar informes google ads, informe google ads automático, automatizar informes con ia, informe semanal clientes agencia, plantilla informe google ads, informe meta ads, informe ga4">
+    <meta name="robots" content="index, follow">
+    <meta name="author" content="ReportAI">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://reportai.io/">
+    <meta property="og:title" content="Automatizar Informes de Google Ads, Meta Ads y GA4 con IA | ReportAI">
+    <meta property="og:description" content="Genera informes automáticos de Google Ads, Meta Ads y Google Analytics para tus clientes en minutos. Deja de perder horas copiando datos manualmente.">
+    <meta property="og:image" content="{% static 'img/og-image.png' %}">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://reportai.io/">
+    <meta property="twitter:title" content="Automatizar Informes de Google Ads, Meta Ads y GA4 con IA | ReportAI">
+    <meta property="twitter:description" content="Genera informes automáticos de Google Ads, Meta Ads y Google Analytics para tus clientes en minutos. Deja de perder horas copiando datos manualmente.">
+    
+    <!-- Canonical -->
+    <link rel="canonical" href="https://reportai.io/">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <!-- Schema.org Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "ReportAI",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "description": "Plataforma de automatización de informes de Google Ads, Meta Ads y Google Analytics con inteligencia artificial para agencias de marketing digital",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR",
+            "availability": "https://schema.org/PreOrder"
+        },
+        "aggregateRating": {
+            "@type": "AggregateRating",
+            "ratingValue": "4.9",
+            "ratingCount": "97"
+        }
+    }
+    </script>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav__container">
+            <a href="/" class="nav__logo">
+                <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+            </a>
+            <a href="#waitlist" class="nav__cta btn btn--small">Acceso Anticipado</a>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero__bg">
+                <div class="hero__gradient"></div>
+                <div class="hero__grid"></div>
+            </div>
+            <div class="container hero__container">
+                <div class="hero__content">
+                    <div class="hero__badge">
+                        <span class="hero__badge-dot"></span>
+                        <span>Beta privada — Plazas limitadas</span>
+                    </div>
+                    
+                    <h1 class="hero__title">
+                        <span class="hero__title-line">Deja de perder horas en</span>
+                        <span class="hero__title-line hero__title-line--highlight">informes de <span id="typewriter" class="typewriter"></span><span class="typewriter-cursor">|</span></span>
+                    </h1>
+                    
+                    <!-- H2 con palabra-chave: informe google ads automático -->
+                    <h2 class="hero__subtitle">
+                        Genera tu <strong>informe automático</strong> de Meta Ads, Google Ads y GA4 en minutos, no horas. ReportAI usa IA para crear reportes que tus clientes realmente entienden.
+                    </h2>
+                    
+                    <!-- Hero CTA + Progress Bar -->
+                    <div class="hero__cta-box">
+                        <div class="hero__cta-offer-badge">
+                            <span>💸</span>
+                            <span>50% descuento de por vida al lanzar</span>
+                        </div>
+                        <a href="#waitlist" class="btn btn--primary btn--large btn--glow">
+                            <span>Reservar Acceso Anticipado</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                        <div class="hero__cta-progress">
+                            <div class="hero__cta-progress-bar">
+                                <div class="hero__cta-progress-fill"></div>
+                            </div>
+                            <p class="hero__cta-progress-text">
+                                <span class="hero__cta-progress-number"><span id="hero-counter">97</span>/{{ spots_total }}</span>
+                                <span class="hero__cta-progress-label">plazas reservadas — <strong class="text-warning">Solo quedan {{ spots_total|add:"-97" }}</strong></span>
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Plataformas soportadas -->
+                    <div class="hero__platforms">
+                        <span class="hero__platforms-label">Integraciones disponibles:</span>
+                        <div class="hero__platforms-icons">
+                            <span class="hero__platform" title="Meta Ads">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/>
+                                </svg>
+                                <span>Meta Ads</span>
+                            </span>
+                            <span class="hero__platform" title="Google Ads">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                </svg>
+                                <span>Google Ads</span>
+                            </span>
+                            <span class="hero__platform" title="Google Analytics 4">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                    <path d="M22 12h-4v10h4V12z" fill="#F9AB00"/>
+                                    <path d="M14 2h-4v20h4V2z" fill="#E37400"/>
+                                    <path d="M6 12H2v10h4V12z" fill="#F9AB00"/>
+                                </svg>
+                                <span>GA4</span>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="hero__visual">
+                    <div class="hero__mockup">
+                        <div class="hero__mockup-header">
+                            <div class="hero__mockup-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <span class="hero__mockup-title">Informe Semanal: Cliente ABC</span>
+                        </div>
+                        <div class="hero__mockup-body">
+                            <div class="hero__mockup-metrics">
+                                <div class="hero__mockup-metric hero__mockup-metric--up">
+                                    <span class="hero__mockup-metric-label">Conversiones</span>
+                                    <span class="hero__mockup-metric-value">+24.5%</span>
+                                </div>
+                                <div class="hero__mockup-metric hero__mockup-metric--up">
+                                    <span class="hero__mockup-metric-label">ROAS</span>
+                                    <span class="hero__mockup-metric-value">4.2x</span>
+                                </div>
+                                <div class="hero__mockup-metric hero__mockup-metric--down">
+                                    <span class="hero__mockup-metric-label">CPA</span>
+                                    <span class="hero__mockup-metric-value">-18%</span>
+                                </div>
+                            </div>
+                            <div class="hero__mockup-chart">
+                                <svg viewBox="0 0 300 100" preserveAspectRatio="none">
+                                    <defs>
+                                        <linearGradient id="chart-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                                            <stop offset="0%" stop-color="#1A6BFF" stop-opacity="0.3"/>
+                                            <stop offset="100%" stop-color="#1A6BFF" stop-opacity="0"/>
+                                        </linearGradient>
+                                    </defs>
+                                    <path class="hero__chart-area" d="M0,80 L30,70 L60,75 L90,50 L120,55 L150,40 L180,45 L210,25 L240,30 L270,15 L300,20 L300,100 L0,100 Z" fill="url(#chart-gradient)"/>
+                                    <path class="hero__chart-line" d="M0,80 L30,70 L60,75 L90,50 L120,55 L150,40 L180,45 L210,25 L240,30 L270,15 L300,20" fill="none" stroke="#1A6BFF" stroke-width="2"/>
+                                </svg>
+                            </div>
+                            <div class="hero__mockup-ai">
+                                <div class="hero__mockup-ai-icon">
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M10 1.667v2.5M10 15.833v2.5M3.517 3.517l1.766 1.766M14.717 14.717l1.766 1.766M1.667 10h2.5M15.833 10h2.5M3.517 16.483l1.766-1.766M14.717 5.283l1.766-1.766" stroke="#00C2FF" stroke-width="1.5" stroke-linecap="round"/>
+                                    </svg>
+                                </div>
+                                <p class="hero__mockup-ai-text">
+                                    <strong>Resumen IA:</strong> Las conversiones aumentaron 24.5% esta semana gracias a las nuevas creatividades. El CPA bajó porque...
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Pain Points Section -->
+        <section class="pain" id="problema">
+            <div class="container">
+                <div class="pain__header" data-animate="fade-up">
+                    <span class="section-tag">El problema</span>
+                    <h2 class="section-title">¿Te suena familiar?</h2>
+                </div>
+                
+                <div class="pain__grid">
+                    <div class="pain__card" data-animate="fade-up" data-delay="100">
+                        <div class="pain__card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 6v6l4 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="pain__card-title">4-6 horas por cliente</h3>
+                        <p class="pain__card-text">Cada mes pasas horas entrando a Google Ads, Meta, Analytics... copiando datos manualmente a un Slides o PDF.</p>
+                    </div>
+                    
+                    <div class="pain__card" data-animate="fade-up" data-delay="200">
+                        <div class="pain__card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.9-3.9a7.5 7.5 0 0 1-9.9 9.9l-6.3 6.3a2.1 2.1 0 1 1-3-3l6.3-6.3a7.5 7.5 0 0 1 9.9-9.9l-3.9 3.9z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="pain__card-title">Informes que nadie lee</h3>
+                        <p class="pain__card-text">Tus clientes reciben 20 páginas de métricas que no entienden. Impresiones, CTR, CPC... ¿y qué significa eso para su negocio?</p>
+                    </div>
+                    
+                    <div class="pain__card" data-animate="fade-up" data-delay="300">
+                        <div class="pain__card-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z" stroke="currentColor" stroke-width="2"/>
+                                <path d="M12 8v4M12 16h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="pain__card-title">Personalización imposible</h3>
+                        <p class="pain__card-text">Cada cliente tiene un nivel de conocimiento diferente. Hacer informes personalizados multiplicaría tu tiempo aún más.</p>
+                    </div>
+                </div>
+                
+                <div class="pain__quote" data-animate="fade-up">
+                    <blockquote>
+                        <p>"Pasamos años viendo a nuestros partners de agencia gastar días enteros en informes que los clientes apenas leen."</p>
+                        <footer>
+                            <cite>— Community feedback.</cite>
+                        </footer>
+                    </blockquote>
+                </div>
+            </div>
+        </section>
+
+        <!-- Solution Section — "Cómo funciona" con palabra-chave: automatizar informes con IA -->
+        <section class="solution" id="como-funciona">
+            <div class="container">
+                <div class="solution__header" data-animate="fade-up">
+                    <span class="section-tag">Cómo funciona</span>
+                    <h2 class="section-title">Automatizar informes con IA nunca fue tan fácil</h2>
+                    <p class="section-subtitle">
+                        ReportAI conecta tus cuentas, extrae los datos relevantes y genera informes que tus clientes realmente entienden, en minutos.
+                    </p>
+                </div>
+                
+                <div class="solution__steps">
+                    <div class="solution__step" data-animate="fade-up" data-delay="100">
+                        <div class="solution__step-number">1</div>
+                        <div class="solution__step-content">
+                            <h3 class="solution__step-title">Conecta tus cuentas</h3>
+                            <p class="solution__step-text">Meta Ads, Google Ads y Google Analytics 4. Conecta con un clic. Sin código, sin configuraciones complejas.</p>
+                        </div>
+                        <div class="solution__step-visual">
+                            <div class="solution__step-icons">
+                                <span class="solution__icon solution__icon--google">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                    </svg>
+                                </span>
+                                <span class="solution__icon solution__icon--meta">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/>
+                                    </svg>
+                                </span>
+                                <span class="solution__icon solution__icon--analytics">
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path d="M22 12h-4v10h4V12z" fill="#F9AB00"/>
+                                        <path d="M14 2h-4v20h4V2z" fill="#E37400"/>
+                                        <path d="M6 12H2v10h4V12z" fill="#F9AB00"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="solution__step" data-animate="fade-up" data-delay="200">
+                        <div class="solution__step-number">2</div>
+                        <div class="solution__step-content">
+                            <h3 class="solution__step-title">La IA analiza todo</h3>
+                            <p class="solution__step-text">Nuestra IA extrae insights relevantes, identifica tendencias y traduce métricas a lenguaje de negocio.</p>
+                        </div>
+                        <div class="solution__step-visual">
+                            <div class="solution__step-ai">
+                                <div class="solution__ai-pulse"></div>
+                                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                                    <path d="M16 2v4M16 26v4M6.34 6.34l2.83 2.83M22.83 22.83l2.83 2.83M2 16h4M26 16h4M6.34 25.66l2.83-2.83M22.83 9.17l2.83-2.83" stroke="url(#ai-gradient)" stroke-width="2.5" stroke-linecap="round"/>
+                                    <defs>
+                                        <linearGradient id="ai-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                            <stop offset="0%" stop-color="#1A6BFF"/>
+                                            <stop offset="100%" stop-color="#00C2FF"/>
+                                        </linearGradient>
+                                    </defs>
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="solution__step" data-animate="fade-up" data-delay="300">
+                        <div class="solution__step-number">3</div>
+                        <div class="solution__step-content">
+                            <h3 class="solution__step-title">Recibe tu informe</h3>
+                            <p class="solution__step-text">Cada cliente recibirá un mensaje profesional y personalizado el día que usted elija, ya sea por WhatsApp, correo electrónico o ambos. Su cliente verá resultados concretos, no decenas de archivos PDF ni imágenes confusas.</p>
+                        </div>
+                        <div class="solution__step-visual">
+                            <div class="solution__step-pdf">
+                                <svg width="40" height="48" viewBox="0 0 40 48" fill="none">
+                                    <path d="M4 4a4 4 0 0 1 4-4h16l12 12v32a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4V4z" fill="#fff" stroke="#E5E7EB" stroke-width="2"/>
+                                    <path d="M24 0v8a4 4 0 0 0 4 4h8" fill="#F3F4F6" stroke="#E5E7EB" stroke-width="2"/>
+                                    <rect x="8" y="20" width="20" height="2" rx="1" fill="#1A6BFF"/>
+                                    <rect x="8" y="26" width="16" height="2" rx="1" fill="#E5E7EB"/>
+                                    <rect x="8" y="32" width="18" height="2" rx="1" fill="#E5E7EB"/>
+                                    <rect x="8" y="38" width="12" height="2" rx="1" fill="#E5E7EB"/>
+                                </svg>
+                                <span class="solution__step-pdf-check">
+                                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                        <circle cx="8" cy="8" r="8" fill="#00C48C"/>
+                                        <path d="M5 8l2 2 4-4" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Benefits Section — palabra-chave: informe semanal clientes agencia -->
+        <section class="benefits" id="beneficios">
+            <div class="container">
+                <div class="benefits__header" data-animate="fade-up">
+                    <span class="section-tag">Beneficios</span>
+                    <h2 class="section-title">Tu informe semanal para clientes de agencia, resuelto</h2>
+                </div>
+                
+                <div class="benefits__grid">
+                    <div class="benefits__card" data-animate="fade-up" data-delay="100">
+                        <div class="benefits__card-icon benefits__card-icon--time">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                <circle cx="14" cy="14" r="12" stroke="currentColor" stroke-width="2"/>
+                                <path d="M14 7v7l4.5 4.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="benefits__card-title">De 6 horas a 6 minutos</h3>
+                        <p class="benefits__card-text">Recupera un día entero por cliente cada mes. Dedica ese tiempo a optimizar campañas, no a formatear datos.</p>
+                    </div>
+                    
+                    <div class="benefits__card" data-animate="fade-up" data-delay="200">
+                        <div class="benefits__card-icon benefits__card-icon--happy">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                <circle cx="14" cy="14" r="12" stroke="currentColor" stroke-width="2"/>
+                                <path d="M9 17s1.5 2 5 2 5-2 5-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="10" cy="11" r="1.5" fill="currentColor"/>
+                                <circle cx="18" cy="11" r="1.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <h3 class="benefits__card-title">Clientes que entienden</h3>
+                        <p class="benefits__card-text">Informes en lenguaje de negocio: "Generaste 12 leads a €18 cada uno" en vez de "40k impresiones, 2.3% CTR".</p>
+                    </div>
+                    
+                    <div class="benefits__card" data-animate="fade-up" data-delay="300">
+                        <div class="benefits__card-icon benefits__card-icon--scale">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                <path d="M4 24l8-16 4 8 8-12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="benefits__card-title">Escala sin contratar</h3>
+                        <p class="benefits__card-text">Gestiona más clientes sin añadir personal. El reporting ya no es el cuello de botella de tu agencia.</p>
+                    </div>
+                    
+                    <div class="benefits__card" data-animate="fade-up" data-delay="400">
+                        <div class="benefits__card-icon benefits__card-icon--brand">
+                            <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                                <rect x="3" y="3" width="22" height="22" rx="4" stroke="currentColor" stroke-width="2"/>
+                                <circle cx="14" cy="14" r="4" stroke="currentColor" stroke-width="2"/>
+                                <path d="M14 6v3M14 19v3M6 14h3M19 14h3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <h3 class="benefits__card-title">Tu marca, siempre</h3>
+                        <p class="benefits__card-text">White label completo. Tus colores, tu logo, tu dominio. Tu cliente nunca sabrá que usas ReportAI.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Waitlist Section -->
+        <section class="waitlist" id="waitlist">
+            <div class="container">
+                <div class="waitlist__card" data-animate="fade-up">
+                    <div class="waitlist__content">
+                        <span class="section-tag section-tag--light">Acceso anticipado</span>
+                        <h2 class="waitlist__title">Reserva tu plaza en la beta privada</h2>
+                        <p class="waitlist__text">
+                            Sé de los primeros en usar ReportAI. Acceso gratuito durante toda la beta, precio especial de por vida cuando lancemos, y influencia directa en el producto.
+                        </p>
+                        
+                        <form class="waitlist__form" id="waitlist-form" method="POST" action="{% url 'home' %}"> 
+                            {% csrf_token %}
+                            <div class="waitlist__form-group">
+                                <input 
+                                    type="email" 
+                                    name="email" 
+                                    placeholder="tu@email.com" 
+                                    required 
+                                    class="waitlist__input"
+                                    autocomplete="email"
+                                >
+                                <button type="submit" class="btn btn--primary">
+                                    <span>Reservar plaza</span>
+                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                        <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+
+                            
+                            {% for message in messages %}
+                                {% if message.tags == 'success' %}
+                                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-2" role="alert">
+                                        <strong class="font-bold">Gracias!</strong>
+                                        <span class="block sm:inline">su acceso ha sido reservado. Hasta el lanzamiento!</span>
+                                        <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove()" style="cursor:pointer;">
+                                            <svg class="fill-current h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                                        </span>
+                                    </div>
+                                {% elif message.tags == 'error' %}
+                                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-2" role="alert">
+                                        <strong class="font-bold">Lo sentimos,</strong>
+                                        <span class="block sm:inline">esta dirección de correo electrónico ya existe.</span>
+                                        <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove()" style="cursor:pointer;">
+                                            <svg class="fill-current h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+                                        </span>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+
+                            
+                                
+                            <p class="waitlist__form-note">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M8 5.333v2.334M8 10h.007" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Sin spam. Solo actualizaciones importantes sobre ReportAI.
+                            </p>
+                        </form>
+                        
+                        <div class="waitlist__social-proof">
+                            <div class="waitlist__avatars">
+                                <span class="waitlist__avatar" style="--i: 1;"></span>
+                                <span class="waitlist__avatar" style="--i: 2;"></span>
+                                <span class="waitlist__avatar" style="--i: 3;"></span>
+                                <span class="waitlist__avatar" style="--i: 4;"></span>
+                                <span class="waitlist__avatar waitlist__avatar--count">+93</span>
+                            </div>
+                            <p class="waitlist__social-text">
+                                <strong>97 profesionales</strong> ya reservaron su acceso
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="waitlist__features">
+                        <h3 class="waitlist__features-title">Lo que incluye la beta:</h3>
+                        <ul class="waitlist__features-list">
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <circle cx="10" cy="10" r="10" fill="#00C48C" fill-opacity="0.15"/>
+                                    <path d="M6 10l3 3 5-5" stroke="#00C48C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Acceso completo y <strong>gratuito</strong></span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <circle cx="10" cy="10" r="10" fill="#00C48C" fill-opacity="0.15"/>
+                                    <path d="M6 10l3 3 5-5" stroke="#00C48C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span><strong>50% descuento</strong> de por vida al lanzar</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <circle cx="10" cy="10" r="10" fill="#00C48C" fill-opacity="0.15"/>
+                                    <path d="M6 10l3 3 5-5" stroke="#00C48C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Soporte directo con el fundador</span>
+                            </li>
+                            <li>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <circle cx="10" cy="10" r="10" fill="#00C48C" fill-opacity="0.15"/>
+                                    <path d="M6 10l3 3 5-5" stroke="#00C48C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                <span>Voz y voto en el roadmap</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- FAQ Section -->
+        <section class="faq" id="faq">
+            <div class="container">
+                <div class="faq__header" data-animate="fade-up">
+                    <span class="section-tag">Preguntas frecuentes</span>
+                    <h2 class="section-title">¿Tienes dudas?</h2>
+                </div>
+                
+                <div class="faq__list">
+                    <details class="faq__item" data-animate="fade-up" data-delay="100">
+                        <summary class="faq__question">
+                            <span>¿Cuándo estará disponible la beta?</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </summary>
+                        <div class="faq__answer">
+                            <p>Estamos en las últimas fases de desarrollo. Los primeros usuarios de la lista de espera recibirán acceso en las próximas semanas. Cuanto antes te apuntes, antes tendrás acceso.</p>
+                        </div>
+                    </details>
+                    
+                    <details class="faq__item" data-animate="fade-up" data-delay="200">
+                        <summary class="faq__question">
+                            <span>¿Es realmente gratis durante la beta?</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </summary>
+                        <div class="faq__answer">
+                            <p>Sí, 100% gratis. No pedimos tarjeta de crédito ni datos de pago. Solo tu email para enviarte el acceso cuando esté listo.</p>
+                        </div>
+                    </details>
+                    
+                    <details class="faq__item" data-animate="fade-up" data-delay="300">
+                        <summary class="faq__question">
+                            <span>¿Qué plataformas de ads soportáis?</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </summary>
+                        <div class="faq__answer">
+                            <p>Empezamos con Google Ads y Google Analytics 4. Meta Ads (Facebook/Instagram) será la siguiente integración, seguida de TikTok Ads y LinkedIn Ads.</p>
+                        </div>
+                    </details>
+                    
+                    <details class="faq__item" data-animate="fade-up" data-delay="400">
+                        <summary class="faq__question">
+                            <span>¿Puedo personalizar los informes con mi marca?</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </summary>
+                        <div class="faq__answer">
+                            <p>Sí, ofrecemos white label completo: tu logo, tus colores, tu tipografía. Tus clientes verán un informe 100% con tu marca, sin ninguna mención a ReportAI.</p>
+                        </div>
+                    </details>
+                    
+                    <details class="faq__item" data-animate="fade-up" data-delay="500">
+                        <summary class="faq__question">
+                            <span>¿Qué pasa con mis datos y los de mis clientes?</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M5 7.5L10 12.5L15 7.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </summary>
+                        <div class="faq__answer">
+                            <p>La seguridad es prioridad. Usamos conexiones encriptadas, nunca almacenamos credenciales de acceso (usamos OAuth), y cumplimos con GDPR. Tus datos solo se usan para generar tus informes.</p>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__brand">
+                    <a href="/" class="footer__logo">
+                        <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+                    </a>
+                    <p class="footer__tagline">Informes de Google Ads automáticos con IA.</p>
+                </div>
+                
+                <div class="footer__links">
+                    <a href="#problema">Problema</a>
+                    <a href="#como-funciona">Cómo funciona</a>
+                    <a href="#beneficios">Beneficios</a>
+                    <a href="#faq">FAQ</a>
+                </div>
+            </div>
+            
+            <div class="footer__bottom">
+                <p class="footer__copy">&copy; 2026 ReportAI. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <link href="https://unpkg.com/tailwindcss@^1.0/dist/tailwind.min.css" rel="stylesheet">
+    <script src="{% static 'js/main.js' %}"></script>
+    <script>
+        if (window.location.hash) {
+            var target = document.querySelector(window.location.hash);
+            if (target) {
+                setTimeout(function () {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>

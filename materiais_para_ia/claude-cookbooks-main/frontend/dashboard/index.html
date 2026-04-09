@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuralForge — Command Center</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="dashboard.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>◆</text></svg>">
+</head>
+<body>
+    <!-- Command Palette (Cmd+K) -->
+    <div class="cmd-overlay" id="cmdOverlay">
+        <div class="cmd-palette" id="cmdPalette">
+            <div class="cmd-input-wrap">
+                <span class="cmd-icon">◆</span>
+                <input type="text" class="cmd-input" id="cmdInput" placeholder="O que você quer fazer?" autocomplete="off" spellcheck="false">
+                <kbd class="cmd-esc">ESC</kbd>
+            </div>
+            <div class="cmd-results" id="cmdResults">
+                <div class="cmd-group">
+                    <span class="cmd-group-label">Ações Rápidas</span>
+                    <div class="cmd-item active" data-action="new-agent">
+                        <span class="cmd-item-icon">⚡</span>
+                        <div>
+                            <span class="cmd-item-title">Criar novo agente</span>
+                            <span class="cmd-item-desc">Iniciar wizard de configuração</span>
+                        </div>
+                        <kbd>↵</kbd>
+                    </div>
+                    <div class="cmd-item" data-action="deploy">
+                        <span class="cmd-item-icon">🚀</span>
+                        <div>
+                            <span class="cmd-item-title">Deploy para produção</span>
+                            <span class="cmd-item-desc">Publicar alterações pendentes</span>
+                        </div>
+                    </div>
+                    <div class="cmd-item" data-action="logs">
+                        <span class="cmd-item-icon">📋</span>
+                        <div>
+                            <span class="cmd-item-title">Ver logs em tempo real</span>
+                            <span class="cmd-item-desc">Stream de logs do sistema</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="cmd-group">
+                    <span class="cmd-group-label">Navegação</span>
+                    <div class="cmd-item" data-action="analytics">
+                        <span class="cmd-item-icon">◈</span>
+                        <div>
+                            <span class="cmd-item-title">Analytics</span>
+                            <span class="cmd-item-desc">Métricas e dashboards</span>
+                        </div>
+                    </div>
+                    <div class="cmd-item" data-action="settings">
+                        <span class="cmd-item-icon">⚙</span>
+                        <div>
+                            <span class="cmd-item-title">Configurações</span>
+                            <span class="cmd-item-desc">API keys, billing, team</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Layout Shell -->
+    <div class="shell">
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-top">
+                <div class="brand">
+                    <div class="brand-mark">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <path d="M12 2L4 6.5V17.5L12 22L20 17.5V6.5L12 2Z" fill="url(#bm)" stroke="rgba(255,255,255,0.2)" stroke-width="0.5"/>
+                            <path d="M12 8L8 10.5V15.5L12 18L16 15.5V10.5L12 8Z" fill="rgba(255,255,255,0.9)"/>
+                            <defs><linearGradient id="bm" x1="4" y1="2" x2="20" y2="22"><stop stop-color="#E8A838"/><stop offset="1" stop-color="#D45D2C"/></linearGradient></defs>
+                        </svg>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-name">NeuralForge</span>
+                        <span class="brand-tier">Pro Plan</span>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="nav">
+                <div class="nav-section">
+                    <a href="#" class="nav-item active" data-view="overview">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M3 4a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm9 0a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1V4zM3 13a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1H4a1 1 0 01-1-1v-3zm9 0a1 1 0 011-1h3a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-3z"/></svg>
+                        <span>Overview</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="agents">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M13 7H7v6h6V7z"/><path fill-rule="evenodd" d="M7 2a1 1 0 012 0v1h2V2a1 1 0 112 0v1h2a2 2 0 012 2v2h1a1 1 0 110 2h-1v2h1a1 1 0 110 2h-1v2a2 2 0 01-2 2h-2v1a1 1 0 11-2 0v-1H9v1a1 1 0 11-2 0v-1H5a2 2 0 01-2-2v-2H2a1 1 0 110-2h1V9H2a1 1 0 010-2h1V5a2 2 0 012-2h2V2zM5 5v10h10V5H5z" clip-rule="evenodd"/></svg>
+                        <span>Agentes</span>
+                        <span class="nav-badge">4</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="workflows">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 3a1 1 0 000 2v8a2 2 0 002 2h2.586l-1.293 1.293a1 1 0 101.414 1.414L10 15.414l2.293 2.293a1 1 0 001.414-1.414L12.414 15H15a2 2 0 002-2V5a1 1 0 100-2H3zm11 4a1 1 0 10-2 0v4a1 1 0 102 0V7zm-3 1a1 1 0 10-2 0v3a1 1 0 102 0V8zM8 9a1 1 0 00-2 0v2a1 1 0 102 0V9z" clip-rule="evenodd"/></svg>
+                        <span>Workflows</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="analytics">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zm6-4a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zm6-3a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z"/></svg>
+                        <span>Analytics</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="playground">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.316 3.051a1 1 0 01.633 1.265l-4 12a1 1 0 11-1.898-.632l4-12a1 1 0 011.265-.633zM5.707 6.293a1 1 0 010 1.414L3.414 10l2.293 2.293a1 1 0 11-1.414 1.414l-3-3a1 1 0 010-1.414l3-3a1 1 0 011.414 0zm8.586 0a1 1 0 011.414 0l3 3a1 1 0 010 1.414l-3 3a1 1 0 11-1.414-1.414L16.586 10l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+                        <span>Playground</span>
+                        <span class="nav-dot-new"></span>
+                    </a>
+                </div>
+
+                <div class="nav-divider"></div>
+
+                <div class="nav-section">
+                    <span class="nav-section-label">Sistema</span>
+                    <a href="#" class="nav-item" data-view="logs">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"/></svg>
+                        <span>Logs</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="keys">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 8a6 6 0 01-7.743 5.743L10 14l-1 1-1 1H6v2H2v-4l4.257-4.257A6 6 0 1118 8zm-6-4a1 1 0 100 2 2 2 0 012 2 1 1 0 102 0 4 4 0 00-4-4z" clip-rule="evenodd"/></svg>
+                        <span>API Keys</span>
+                    </a>
+                    <a href="#" class="nav-item" data-view="billing">
+                        <div class="nav-indicator"></div>
+                        <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor"><path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/><path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/></svg>
+                        <span>Billing</span>
+                    </a>
+                </div>
+            </nav>
+
+            <div class="sidebar-bottom">
+                <div class="usage-widget">
+                    <div class="usage-header">
+                        <span class="usage-label">Tokens este mês</span>
+                        <span class="usage-value">3.2M <span class="usage-limit">/ 5M</span></span>
+                    </div>
+                    <div class="usage-bar">
+                        <div class="usage-fill" style="--percent: 64%;"></div>
+                    </div>
+                    <span class="usage-note">Renova em 12 dias</span>
+                </div>
+
+                <div class="sidebar-user">
+                    <div class="user-avatar">MT</div>
+                    <div class="user-info">
+                        <span class="user-name">Matheus T.</span>
+                        <span class="user-role">Admin</span>
+                    </div>
+                    <button class="user-menu-btn" aria-label="Menu do usuário">
+                        <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M3 8a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm4.5 0a1.5 1.5 0 113 0 1.5 1.5 0 01-3 0zm6 0a1.5 1.5 0 01-1.5-1.5 0 013 0A1.5 1.5 0 0113.5 8z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main">
+            <!-- Top Bar -->
+            <header class="topbar">
+                <div class="topbar-left">
+                    <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="3" y1="5" x2="15" y2="5"/><line x1="3" y1="9" x2="15" y2="9"/><line x1="3" y1="13" x2="15" y2="13"/></svg>
+                    </button>
+                    <div class="topbar-breadcrumb">
+                        <span class="breadcrumb-root">Dashboard</span>
+                        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M4.5 3L7.5 6L4.5 9" stroke="currentColor" stroke-width="1.2"/></svg>
+                        <span class="breadcrumb-current">Command Center</span>
+                    </div>
+                </div>
+                <div class="topbar-center">
+                    <button class="search-trigger" id="searchTrigger">
+                        <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="6.5" cy="6.5" r="4.5"/><line x1="10" y1="10" x2="13" y2="13"/></svg>
+                        <span>Buscar ou executar comando...</span>
+                        <kbd>⌘K</kbd>
+                    </button>
+                </div>
+                <div class="topbar-right">
+                    <div class="system-status">
+                        <span class="status-pulse"></span>
+                        <span class="status-text">Todos os sistemas operacionais</span>
+                    </div>
+                    <button class="topbar-icon-btn" id="notifBtn" aria-label="Notificações">
+                        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.4"><path d="M13.73 11A6 6 0 005.27 11L4 13h10l-1.27-2z"/><path d="M9 2a2 2 0 00-2 2v.27"/><path d="M7.5 16a1.5 1.5 0 003 0"/></svg>
+                        <span class="notif-dot"></span>
+                    </button>
+                    <div class="topbar-divider"></div>
+                    <div class="topbar-time" id="topbarTime">--:--</div>
+                </div>
+            </header>
+
+            <!-- Dashboard Content -->
+            <div class="content">
+                <!-- Greeting Row -->
+                <div class="greeting-row">
+                    <div class="greeting">
+                        <h1 id="greetingText">Bom dia, Matheus</h1>
+                        <p class="greeting-sub" id="greetingSub">Seus agentes processaram <strong>12.847 requisições</strong> enquanto você dormia.</p>
+                    </div>
+                    <div class="quick-actions">
+                        <button class="quick-btn primary" id="newAgentBtn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><line x1="8" y1="3" x2="8" y2="13"/><line x1="3" y1="8" x2="13" y2="8"/></svg>
+                            Novo Agente
+                        </button>
+                        <button class="quick-btn">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 12l3-3 2 2 4-4 3 3"/></svg>
+                            Relatório
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Metrics Strip -->
+                <div class="metrics-strip">
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Requisições Hoje</span>
+                            <span class="metric-trend up">+14.2%</span>
+                        </div>
+                        <div class="metric-value-row">
+                            <span class="metric-big" data-counter="48392">0</span>
+                        </div>
+                        <div class="metric-spark" data-spark="requests"></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Tokens Consumidos</span>
+                            <span class="metric-trend up">+8.7%</span>
+                        </div>
+                        <div class="metric-value-row">
+                            <span class="metric-big" data-counter="2847000" data-format="abbr">0</span>
+                        </div>
+                        <div class="metric-spark" data-spark="tokens"></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Latência Média</span>
+                            <span class="metric-trend down good">-23ms</span>
+                        </div>
+                        <div class="metric-value-row">
+                            <span class="metric-big" data-counter="142" data-suffix="ms">0</span>
+                        </div>
+                        <div class="metric-spark" data-spark="latency"></div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-header">
+                            <span class="metric-label">Custo Acumulado</span>
+                            <span class="metric-trend neutral">~prev</span>
+                        </div>
+                        <div class="metric-value-row">
+                            <span class="metric-big" data-counter="347.82" data-prefix="R$" data-decimals="2">0</span>
+                        </div>
+                        <div class="metric-spark" data-spark="cost"></div>
+                    </div>
+                </div>
+
+                <!-- Bento Dashboard Grid -->
+                <div class="bento">
+                    <!-- Activity Graph — Full Width -->
+                    <div class="card card-chart">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Atividade dos Agentes</h3>
+                                <p class="card-subtitle">Requisições processadas nos últimos 7 dias</p>
+                            </div>
+                            <div class="card-actions">
+                                <div class="tab-group">
+                                    <button class="tab active">7D</button>
+                                    <button class="tab">30D</button>
+                                    <button class="tab">90D</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="chart-area" id="mainChart">
+                            <div class="chart-y-axis">
+                                <span>50K</span><span>40K</span><span>30K</span><span>20K</span><span>10K</span><span>0</span>
+                            </div>
+                            <div class="chart-grid">
+                                <div class="chart-bars-container" id="chartBars"></div>
+                                <div class="chart-line-overlay" id="chartLine"></div>
+                            </div>
+                            <div class="chart-x-axis" id="chartXAxis"></div>
+                        </div>
+                    </div>
+
+                    <!-- Agents Status -->
+                    <div class="card card-agents">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Agentes Ativos</h3>
+                                <p class="card-subtitle">4 de 10 slots utilizados</p>
+                            </div>
+                            <button class="icon-btn" aria-label="Configurar agentes">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.3"><circle cx="8" cy="8" r="2.5"/><path d="M13.5 8a5.5 5.5 0 01-.4 2.1l1.3.8-.8 1.4-1.3-.8a5.5 5.5 0 01-1.8 1l-.2 1.5h-1.6l-.2-1.5a5.5 5.5 0 01-1.8-1l-1.3.8-.8-1.4 1.3-.8A5.5 5.5 0 015.5 8a5.5 5.5 0 01.4-2.1l-1.3-.8.8-1.4 1.3.8a5.5 5.5 0 011.8-1L8.7 2h1.6l.2 1.5a5.5 5.5 0 011.8 1l1.3-.8.8 1.4-1.3.8c.3.6.4 1.3.4 2.1z"/></svg>
+                            </button>
+                        </div>
+                        <div class="agents-list">
+                            <div class="agent-row">
+                                <div class="agent-light running"></div>
+                                <div class="agent-info">
+                                    <span class="agent-name">Research Agent</span>
+                                    <span class="agent-meta">Pesquisa e Análise</span>
+                                </div>
+                                <div class="agent-stats">
+                                    <span class="agent-stat-val">2.3K</span>
+                                    <span class="agent-stat-label">req/h</span>
+                                </div>
+                                <div class="agent-health">
+                                    <div class="health-bar"><div class="health-fill" style="--w:94%"></div></div>
+                                    <span>94%</span>
+                                </div>
+                            </div>
+                            <div class="agent-row">
+                                <div class="agent-light running"></div>
+                                <div class="agent-info">
+                                    <span class="agent-name">Chief of Staff</span>
+                                    <span class="agent-meta">Gestão e Produtividade</span>
+                                </div>
+                                <div class="agent-stats">
+                                    <span class="agent-stat-val">1.8K</span>
+                                    <span class="agent-stat-label">req/h</span>
+                                </div>
+                                <div class="agent-health">
+                                    <div class="health-bar"><div class="health-fill" style="--w:99%"></div></div>
+                                    <span>99%</span>
+                                </div>
+                            </div>
+                            <div class="agent-row">
+                                <div class="agent-light running"></div>
+                                <div class="agent-info">
+                                    <span class="agent-name">Observability</span>
+                                    <span class="agent-meta">Monitoramento & Alertas</span>
+                                </div>
+                                <div class="agent-stats">
+                                    <span class="agent-stat-val">4.1K</span>
+                                    <span class="agent-stat-label">req/h</span>
+                                </div>
+                                <div class="agent-health">
+                                    <div class="health-bar"><div class="health-fill" style="--w:87%"></div></div>
+                                    <span>87%</span>
+                                </div>
+                            </div>
+                            <div class="agent-row">
+                                <div class="agent-light warning"></div>
+                                <div class="agent-info">
+                                    <span class="agent-name">SRE Agent</span>
+                                    <span class="agent-meta">Infra & Recuperação</span>
+                                </div>
+                                <div class="agent-stats">
+                                    <span class="agent-stat-val">890</span>
+                                    <span class="agent-stat-label">req/h</span>
+                                </div>
+                                <div class="agent-health">
+                                    <div class="health-bar warning"><div class="health-fill" style="--w:72%"></div></div>
+                                    <span>72%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <button class="card-cta">
+                            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="7" y1="2" x2="7" y2="12"/><line x1="2" y1="7" x2="12" y2="7"/></svg>
+                            Adicionar Agente
+                        </button>
+                    </div>
+
+                    <!-- Live Activity Feed -->
+                    <div class="card card-feed">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Feed ao Vivo</h3>
+                                <span class="live-indicator"><span class="live-dot"></span>Live</span>
+                            </div>
+                            <button class="icon-btn" aria-label="Pausar feed" id="pauseFeed">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><rect x="4" y="3" width="3" height="10" rx="0.5"/><rect x="9" y="3" width="3" height="10" rx="0.5"/></svg>
+                            </button>
+                        </div>
+                        <div class="feed-scroll" id="feedScroll">
+                            <!-- Feed items populated by JS -->
+                        </div>
+                    </div>
+
+                    <!-- AI Insights Panel -->
+                    <div class="card card-insights">
+                        <div class="card-head">
+                            <div class="insights-header">
+                                <div class="ai-badge">
+                                    <span class="ai-badge-dot"></span>
+                                    NeuralForge AI
+                                </div>
+                                <h3 class="card-title">Insights Automáticos</h3>
+                            </div>
+                        </div>
+                        <div class="insights-list">
+                            <div class="insight-item high">
+                                <div class="insight-priority">Alta</div>
+                                <div class="insight-body">
+                                    <p>O <strong>SRE Agent</strong> está com latência 37% acima do normal. Recomendo ajustar o timeout de 3s para 5s no endpoint <code>/health</code>.</p>
+                                    <div class="insight-actions">
+                                        <button class="insight-btn primary">Aplicar Fix</button>
+                                        <button class="insight-btn">Ignorar</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="insight-item medium">
+                                <div class="insight-priority">Média</div>
+                                <div class="insight-body">
+                                    <p>Padrão identificado: 68% das chamadas ao Research Agent ocorrem entre 9h-11h. Considere <strong>pré-aquecer o cache</strong> nesse horário.</p>
+                                    <div class="insight-actions">
+                                        <button class="insight-btn primary">Agendar</button>
+                                        <button class="insight-btn">Ver Dados</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="insight-item low">
+                                <div class="insight-priority">Info</div>
+                                <div class="insight-body">
+                                    <p>Você economizou <strong>R$89.40</strong> este mês com Prompt Caching. Ative também no Chief of Staff para economizar ~R$45/mês adicionais.</p>
+                                    <div class="insight-actions">
+                                        <button class="insight-btn primary">Ativar Cache</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Deployments -->
+                    <div class="card card-deploys">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Deploys Recentes</h3>
+                            </div>
+                        </div>
+                        <div class="deploys-list">
+                            <div class="deploy-row">
+                                <div class="deploy-status success"></div>
+                                <div class="deploy-info">
+                                    <span class="deploy-msg">Research Agent v2.4.1</span>
+                                    <span class="deploy-time">há 23 min</span>
+                                </div>
+                                <span class="deploy-hash">a3f7c2d</span>
+                            </div>
+                            <div class="deploy-row">
+                                <div class="deploy-status success"></div>
+                                <div class="deploy-info">
+                                    <span class="deploy-msg">Config: rate limit 5K→8K</span>
+                                    <span class="deploy-time">há 2 horas</span>
+                                </div>
+                                <span class="deploy-hash">e91b4a0</span>
+                            </div>
+                            <div class="deploy-row">
+                                <div class="deploy-status failed"></div>
+                                <div class="deploy-info">
+                                    <span class="deploy-msg">SRE Agent v1.9.0 <span class="deploy-fail-tag">rollback</span></span>
+                                    <span class="deploy-time">há 5 horas</span>
+                                </div>
+                                <span class="deploy-hash">7d2f8e1</span>
+                            </div>
+                            <div class="deploy-row">
+                                <div class="deploy-status success"></div>
+                                <div class="deploy-info">
+                                    <span class="deploy-msg">Chief of Staff v3.1.0</span>
+                                    <span class="deploy-time">ontem, 18:42</span>
+                                </div>
+                                <span class="deploy-hash">c48a91f</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Model Distribution -->
+                    <div class="card card-models">
+                        <div class="card-head">
+                            <div>
+                                <h3 class="card-title">Distribuição por Modelo</h3>
+                            </div>
+                        </div>
+                        <div class="model-donut" id="modelDonut">
+                            <div class="donut-ring">
+                                <svg viewBox="0 0 160 160">
+                                    <circle cx="80" cy="80" r="64" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="18"/>
+                                    <circle class="donut-seg seg-1" cx="80" cy="80" r="64" fill="none" stroke-width="18" stroke-dasharray="241.3 160.8" stroke-dashoffset="0" stroke-linecap="round"/>
+                                    <circle class="donut-seg seg-2" cx="80" cy="80" r="64" fill="none" stroke-width="18" stroke-dasharray="120.6 281.5" stroke-dashoffset="-241.3" stroke-linecap="round"/>
+                                    <circle class="donut-seg seg-3" cx="80" cy="80" r="64" fill="none" stroke-width="18" stroke-dasharray="40.2 361.9" stroke-dashoffset="-361.9" stroke-linecap="round"/>
+                                </svg>
+                                <div class="donut-center">
+                                    <span class="donut-total">2.8M</span>
+                                    <span class="donut-label">tokens</span>
+                                </div>
+                            </div>
+                            <div class="model-legend">
+                                <div class="legend-item"><span class="legend-dot" style="--c: var(--accent)"></span><span>Claude 4 Opus</span><strong>60%</strong></div>
+                                <div class="legend-item"><span class="legend-dot" style="--c: var(--accent-secondary)"></span><span>Claude 4 Sonnet</span><strong>30%</strong></div>
+                                <div class="legend-item"><span class="legend-dot" style="--c: var(--warm)"></span><span>Claude 4 Haiku</span><strong>10%</strong></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
