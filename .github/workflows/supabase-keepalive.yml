@@ -15,6 +15,6 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           curl -s \
-            "${SUPABASE_URL}/rest/v1/user_tenants?select=id&limit=1" \
+            "${SUPABASE_URL}/rest/v1/waitlist?select=id&limit=1" \
             -H "apikey: ${SUPABASE_ANON_KEY}" \
             -H "Authorization: Bearer ${SUPABASE_ANON_KEY}"
