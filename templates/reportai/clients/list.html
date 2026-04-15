@@ -1,0 +1,332 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Clientes - ReportAI{% endblock %}
+
+{% block page_title %}Clientes{% endblock %}
+
+{% block content %}
+<div class="clients-page">
+    <!-- Header Actions -->
+    <div class="flex justify-between items-center mb-xl">
+        <div>
+            <p class="text-secondary">Gestiona los clientes de tu agencia y sus integraciones.</p>
+        </div>
+        <button class="btn btn-primary" data-modal-open="add-client-modal">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Añadir Cliente
+        </button>
+    </div>
+    
+    <!-- Clients Table -->
+    <div class="table-container">
+        <table class="table" id="clients-table">
+            <thead>
+                <tr>
+                    <th>Cliente</th>
+                    <th>Industria</th>
+                    <th>Integraciones</th>
+                    <th>Último Reporte</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- TechStartup Inc -->
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-sm">
+                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem;">TS</div>
+                            <div>
+                                <div class="font-medium">TechStartup Inc</div>
+                                <div class="text-sm text-tertiary">marketing@techstartup.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">Tecnología</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs">
+                            <span class="status-badge success" title="Google Ads">Google</span>
+                            <span class="status-badge success" title="Meta Ads">Meta</span>
+                            <span class="status-badge success" title="GA4">GA4</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">12 Abr 2026</span>
+                    </td>
+                    <td>
+                        <span class="status-badge success">Activo</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs justify-end">
+                            <a href="{% url 'reportai:client_profile' 1 %}" class="btn btn-ghost btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Ver
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Fashion Brand Co -->
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-sm">
+                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #ec4899, #f43f5e);">FB</div>
+                            <div>
+                                <div class="font-medium">Fashion Brand Co</div>
+                                <div class="text-sm text-tertiary">digital@fashionbrand.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">Moda</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs">
+                            <span class="status-badge success" title="Meta Ads">Meta</span>
+                            <span class="status-badge success" title="GA4">GA4</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">10 Abr 2026</span>
+                    </td>
+                    <td>
+                        <span class="status-badge success">Activo</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs justify-end">
+                            <a href="{% url 'reportai:client_profile' 2 %}" class="btn btn-ghost btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Ver
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- Local Restaurant -->
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-sm">
+                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #f59e0b, #ef4444);">LR</div>
+                            <div>
+                                <div class="font-medium">Local Restaurant</div>
+                                <div class="text-sm text-tertiary">owner@localrestaurant.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">Hostelería</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs">
+                            <span class="status-badge success" title="Google Ads">Google</span>
+                            <span class="status-badge success" title="Meta Ads">Meta</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">08 Abr 2026</span>
+                    </td>
+                    <td>
+                        <span class="status-badge success">Activo</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs justify-end">
+                            <a href="{% url 'reportai:client_profile' 3 %}" class="btn btn-ghost btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Ver
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- B2B Solutions Ltd -->
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-sm">
+                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #0a66c2, #0075ff);">B2</div>
+                            <div>
+                                <div class="font-medium">B2B Solutions Ltd</div>
+                                <div class="text-sm text-tertiary">marketing@b2bsolutions.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">B2B / SaaS</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs">
+                            <span class="status-badge success" title="Google Ads">Google</span>
+                            <span class="status-badge success" title="GA4">GA4</span>
+                            <span class="status-badge success" title="LinkedIn Ads">LinkedIn</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">05 Abr 2026</span>
+                    </td>
+                    <td>
+                        <span class="status-badge success">Activo</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs justify-end">
+                            <a href="{% url 'reportai:client_profile' 4 %}" class="btn btn-ghost btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Ver
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                
+                <!-- E-commerce Plus -->
+                <tr>
+                    <td>
+                        <div class="flex items-center gap-sm">
+                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #10b981, #14b8a6);">EP</div>
+                            <div>
+                                <div class="font-medium">E-commerce Plus</div>
+                                <div class="text-sm text-tertiary">growth@ecommerceplus.com</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">E-commerce</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs">
+                            <span class="status-badge success" title="Google Ads">Google</span>
+                            <span class="status-badge success" title="Meta Ads">Meta</span>
+                            <span class="status-badge success" title="GA4">GA4</span>
+                        </div>
+                    </td>
+                    <td>
+                        <span class="text-secondary">01 Abr 2026</span>
+                    </td>
+                    <td>
+                        <span class="status-badge success">Activo</span>
+                    </td>
+                    <td>
+                        <div class="flex gap-xs justify-end">
+                            <a href="{% url 'reportai:client_profile' 5 %}" class="btn btn-ghost btn-sm">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                Ver
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add Client Modal -->
+<div class="modal-overlay" id="add-client-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Añadir Cliente</h2>
+            <button class="modal-close" data-modal-close>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="add-client-form">
+                <div class="form-group">
+                    <label class="form-label" for="client-name">Nombre del Cliente</label>
+                    <input type="text" class="form-input" id="client-name" name="name" placeholder="Empresa S.L." required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="client-email">Email</label>
+                    <input type="email" class="form-input" id="client-email" name="email" placeholder="marketing@empresa.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="client-whatsapp">WhatsApp <span class="form-label-optional">(opcional)</span></label>
+                    <input type="tel" class="form-input" id="client-whatsapp" name="whatsapp" placeholder="+34 612 345 678">
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="client-industry">Industria</label>
+                        <select class="form-select" id="client-industry" name="industry" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="tecnologia">Tecnología</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="moda">Moda</option>
+                            <option value="hosteleria">Hostelería</option>
+                            <option value="b2b">B2B / SaaS</option>
+                            <option value="salud">Salud</option>
+                            <option value="educacion">Educación</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="client-language">Idioma</label>
+                        <select class="form-select" id="client-language" name="language" required>
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            <option value="pt">Portugués</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="client-level">Nivel Técnico</label>
+                    <select class="form-select" id="client-level" name="technical_level" required>
+                        <option value="basico">Básico - Prefiere resúmenes simples</option>
+                        <option value="avanzado">Avanzado - Incluir métricas detalladas</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Plataformas Conectadas</label>
+                    <div class="flex flex-col gap-sm">
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="google_ads">
+                            <span class="text-sm">Google Ads</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="meta_ads">
+                            <span class="text-sm">Meta Ads</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="ga4">
+                            <span class="text-sm">Google Analytics 4</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="linkedin_ads">
+                            <span class="text-sm">LinkedIn Ads</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-modal-close>Cancelar</button>
+            <button type="submit" form="add-client-form" class="btn btn-primary">Añadir Cliente</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

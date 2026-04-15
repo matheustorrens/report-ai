@@ -1,0 +1,296 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Generar Reporte - ReportAI{% endblock %}
+
+{% block page_title %}
+<div class="flex items-center gap-md">
+    <a href="{% url 'reportai:reports' %}" class="btn btn-ghost btn-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    <span>Generar Reporte AI</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="generate-report-page">
+    <div class="grid-2" style="grid-template-columns: 1fr 1.5fr;">
+        <!-- Configuration Panel -->
+        <div class="flex flex-col gap-lg">
+            <!-- Step 1: Select Client -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title flex items-center gap-sm">
+                            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">1</span>
+                            Seleccionar Cliente
+                        </h3>
+                    </div>
+                </div>
+                <div class="form-group mb-0">
+                    <select class="form-select" id="report-client">
+                        <option value="">Seleccionar cliente...</option>
+                        <option value="1">TechStartup Inc</option>
+                        <option value="2">Fashion Brand Co</option>
+                        <option value="3">Local Restaurant</option>
+                        <option value="4">B2B Solutions Ltd</option>
+                        <option value="5">E-commerce Plus</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Step 2: Select Period -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title flex items-center gap-sm">
+                            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">2</span>
+                            Seleccionar Período
+                        </h3>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-md">
+                    <div class="flex gap-sm">
+                        <button class="btn btn-secondary period-btn active" data-period="7d">7 días</button>
+                        <button class="btn btn-ghost period-btn" data-period="14d">14 días</button>
+                        <button class="btn btn-ghost period-btn" data-period="30d">30 días</button>
+                        <button class="btn btn-ghost period-btn" data-period="custom">Personalizado</button>
+                    </div>
+                    <div class="grid-2 custom-dates" style="display: none;">
+                        <div class="form-group mb-0">
+                            <label class="form-label">Fecha inicio</label>
+                            <input type="date" class="form-input" id="date-start">
+                        </div>
+                        <div class="form-group mb-0">
+                            <label class="form-label">Fecha fin</label>
+                            <input type="date" class="form-input" id="date-end">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Step 3: Delivery Channel -->
+            <div class="card">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title flex items-center gap-sm">
+                            <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">3</span>
+                            Canal de Envío
+                        </h3>
+                    </div>
+                </div>
+                <div class="flex gap-md">
+                    <label class="form-checkbox">
+                        <input type="checkbox" name="channel" value="email" checked>
+                        <span class="text-sm flex items-center gap-xs">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                <polyline points="22,6 12,13 2,6"/>
+                            </svg>
+                            Email
+                        </span>
+                    </label>
+                    <label class="form-checkbox">
+                        <input type="checkbox" name="channel" value="whatsapp">
+                        <span class="text-sm flex items-center gap-xs">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                            </svg>
+                            WhatsApp
+                        </span>
+                    </label>
+                </div>
+            </div>
+            
+            <!-- Generate Button -->
+            <button class="btn btn-primary btn-lg w-full" id="generate-btn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                Generar Reporte con AI
+            </button>
+        </div>
+        
+        <!-- Preview Panel -->
+        <div class="card" style="min-height: 600px;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">Vista Previa del Reporte</h3>
+                    <p class="card-subtitle">El reporte se generará automáticamente con Grok AI</p>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="edit-report-btn" style="display: none;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                    Editar
+                </button>
+            </div>
+            
+            <!-- Empty State -->
+            <div class="empty-state" id="preview-empty">
+                <div class="empty-state-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <h4 class="empty-state-title">Sin reporte generado</h4>
+                <p class="empty-state-description">
+                    Selecciona un cliente y período, luego haz clic en "Generar Reporte con AI" 
+                    para crear un reporte automático.
+                </p>
+            </div>
+            
+            <!-- Loading State -->
+            <div class="empty-state" id="preview-loading" style="display: none;">
+                <div class="empty-state-icon">
+                    <svg width="32" height="32" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="40 60" stroke-linecap="round">
+                            <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                        </circle>
+                    </svg>
+                </div>
+                <h4 class="empty-state-title">Generando reporte...</h4>
+                <p class="empty-state-description">
+                    Grok AI está analizando los datos de campañas y generando el reporte. 
+                    Esto puede tardar unos segundos.
+                </p>
+            </div>
+            
+            <!-- Report Preview Content -->
+            <div id="preview-content" style="display: none;">
+                <div class="report-preview">
+                    <div class="report-header" style="background: var(--color-bg-elevated); padding: 1.5rem; border-radius: var(--radius-md); margin-bottom: 1rem;">
+                        <h2 style="font-size: 1.25rem; margin-bottom: 0.5rem;">📊 Reporte de Rendimiento</h2>
+                        <p class="text-sm text-tertiary">Período: 7 - 14 Abril 2026 | Cliente: TechStartup Inc</p>
+                    </div>
+                    
+                    <div class="report-section" style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--color-primary);">▸</span> Resumen Ejecutivo
+                        </h3>
+                        <p class="text-sm text-secondary" style="line-height: 1.6;">
+                            Esta semana tus campañas de Google Ads han tenido un <strong style="color: var(--color-success);">excelente rendimiento</strong>. 
+                            Las conversiones aumentaron un 23% respecto a la semana anterior, mientras que el CPA se redujo un 12%. 
+                            La campaña de búsqueda "Brand Keywords" sigue siendo la más rentable con un ROAS de 4.2x.
+                        </p>
+                    </div>
+                    
+                    <div class="report-section" style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--color-primary);">▸</span> Métricas Principales
+                        </h3>
+                        <div class="grid-2" style="gap: 0.75rem;">
+                            <div style="background: var(--color-bg-elevated); padding: 1rem; border-radius: var(--radius-md);">
+                                <p class="text-xs text-tertiary">Gasto Total</p>
+                                <p class="text-lg font-bold">€2,450</p>
+                                <p class="text-xs text-success">+8% vs anterior</p>
+                            </div>
+                            <div style="background: var(--color-bg-elevated); padding: 1rem; border-radius: var(--radius-md);">
+                                <p class="text-xs text-tertiary">Conversiones</p>
+                                <p class="text-lg font-bold">156</p>
+                                <p class="text-xs text-success">+23% vs anterior</p>
+                            </div>
+                            <div style="background: var(--color-bg-elevated); padding: 1rem; border-radius: var(--radius-md);">
+                                <p class="text-xs text-tertiary">CPA</p>
+                                <p class="text-lg font-bold">€15.70</p>
+                                <p class="text-xs text-success">-12% vs anterior</p>
+                            </div>
+                            <div style="background: var(--color-bg-elevated); padding: 1rem; border-radius: var(--radius-md);">
+                                <p class="text-xs text-tertiary">ROAS</p>
+                                <p class="text-lg font-bold">3.8x</p>
+                                <p class="text-xs text-success">+0.4 vs anterior</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="report-section" style="margin-bottom: 1.5rem;">
+                        <h3 style="font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem;">
+                            <span style="color: var(--color-primary);">▸</span> Recomendaciones
+                        </h3>
+                        <ul style="color: var(--color-text-secondary); font-size: 0.875rem; line-height: 1.8; padding-left: 1.25rem;">
+                            <li>Aumentar presupuesto de la campaña "Brand Keywords" (+20%) para capturar más demanda</li>
+                            <li>Revisar audiencias de remarketing en Meta Ads - CTR bajó esta semana</li>
+                            <li>Considerar pausar conjunto de anuncios "Intereses Amplios" por bajo rendimiento</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <div class="flex gap-md mt-xl">
+                    <button class="btn btn-primary flex-1" id="send-report-btn">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="22" y1="2" x2="11" y2="13"/>
+                            <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                        </svg>
+                        Enviar Reporte
+                    </button>
+                    <button class="btn btn-secondary">
+                        Guardar Borrador
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Period button toggle
+    const periodBtns = document.querySelectorAll('.period-btn');
+    const customDates = document.querySelector('.custom-dates');
+    
+    periodBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            periodBtns.forEach(b => {
+                b.classList.remove('active');
+                b.classList.remove('btn-secondary');
+                b.classList.add('btn-ghost');
+            });
+            btn.classList.add('active');
+            btn.classList.add('btn-secondary');
+            btn.classList.remove('btn-ghost');
+            
+            if (btn.dataset.period === 'custom') {
+                customDates.style.display = 'grid';
+            } else {
+                customDates.style.display = 'none';
+            }
+        });
+    });
+    
+    // Generate report simulation
+    const generateBtn = document.getElementById('generate-btn');
+    const previewEmpty = document.getElementById('preview-empty');
+    const previewLoading = document.getElementById('preview-loading');
+    const previewContent = document.getElementById('preview-content');
+    const editBtn = document.getElementById('edit-report-btn');
+    
+    generateBtn.addEventListener('click', async () => {
+        const client = document.getElementById('report-client').value;
+        if (!client) {
+            alert('Por favor selecciona un cliente');
+            return;
+        }
+        
+        // Show loading
+        previewEmpty.style.display = 'none';
+        previewLoading.style.display = 'block';
+        previewContent.style.display = 'none';
+        
+        // Simulate AI generation delay
+        await new Promise(resolve => setTimeout(resolve, 2500));
+        
+        // Show content
+        previewLoading.style.display = 'none';
+        previewContent.style.display = 'block';
+        editBtn.style.display = 'block';
+    });
+});
+</script>
+{% endblock %}

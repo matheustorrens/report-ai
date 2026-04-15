@@ -1,0 +1,451 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Términos de Servicio | ReportAI</title>
+    <meta name="description" content="Términos y condiciones de uso de ReportAI. Lee las condiciones que rigen el uso de nuestra plataforma de automatización de informes.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <style>
+        .legal-page {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+        }
+        
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .legal-header {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+        
+        .legal-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--color-white), var(--color-gray-300));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .legal-updated {
+            color: var(--color-gray-400);
+            font-size: 0.875rem;
+        }
+        
+        .legal-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 48px;
+        }
+        
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-white);
+            margin: 32px 0 16px;
+        }
+        
+        .legal-content h2:first-child {
+            margin-top: 0;
+        }
+        
+        .legal-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-gray-200);
+            margin: 24px 0 12px;
+        }
+        
+        .legal-content p {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        
+        .legal-content ul, .legal-content ol {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+        
+        .legal-content li {
+            margin-bottom: 8px;
+        }
+        
+        .legal-content a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        
+        .legal-content a:hover {
+            text-decoration: underline;
+        }
+        
+        .legal-content strong {
+            color: var(--color-white);
+            font-weight: 600;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-gray-400);
+            text-decoration: none;
+            margin-bottom: 32px;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--color-white);
+        }
+        
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .legal-title {
+                font-size: 2rem;
+            }
+            
+            .legal-content {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav__container">
+            <a href="/" class="nav__logo">
+                <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+            </a>
+            <a href="{% url 'home' %}" class="nav__cta btn btn--small">Volver al inicio</a>
+        </div>
+    </nav>
+
+    <main class="legal-page">
+        <div class="legal-container">
+            <a href="{% url 'home' %}" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5"/>
+                    <path d="M12 19l-7-7 7-7"/>
+                </svg>
+                Volver al inicio
+            </a>
+            
+            <div class="legal-header">
+                <h1 class="legal-title">Términos de Servicio</h1>
+                <p class="legal-updated">Última actualización: 15 de abril de 2026</p>
+            </div>
+            
+            <div class="legal-content">
+                <h2>1. Aceptación de los Términos</h2>
+                <p>
+                    Bienvenido a <strong>ReportAI</strong>. Al acceder o usar nuestra plataforma, aceptas estar 
+                    vinculado por estos Términos de Servicio ("Términos"). Si no estás de acuerdo con alguna 
+                    parte de estos términos, no podrás acceder al servicio.
+                </p>
+                <p>
+                    Estos Términos se aplican a todos los visitantes, usuarios y otras personas que accedan 
+                    o usen el servicio. Al usar ReportAI, declaras que tienes al menos 18 años y que tienes 
+                    capacidad legal para celebrar este acuerdo.
+                </p>
+                
+                <h2>2. Descripción del Servicio</h2>
+                <p>
+                    ReportAI es una plataforma de software como servicio (SaaS) que permite a agencias de 
+                    marketing digital:
+                </p>
+                <ul>
+                    <li>Conectar cuentas de Google Ads, Google Analytics 4 y Meta Ads de sus clientes</li>
+                    <li>Generar informes automatizados con inteligencia artificial</li>
+                    <li>Personalizar y enviar informes a clientes por email o WhatsApp</li>
+                    <li>Gestionar múltiples clientes desde un panel centralizado</li>
+                </ul>
+                <p>
+                    Nos reservamos el derecho de modificar, suspender o discontinuar el servicio (o cualquier 
+                    parte del mismo) en cualquier momento, con o sin previo aviso.
+                </p>
+                
+                <h2>3. Cuentas de Usuario</h2>
+                
+                <h3>3.1 Registro</h3>
+                <p>
+                    Para usar ReportAI, debes crear una cuenta proporcionando información precisa, completa 
+                    y actualizada. Eres responsable de mantener la confidencialidad de tu cuenta y contraseña.
+                </p>
+                
+                <h3>3.2 Responsabilidad de la Cuenta</h3>
+                <p>
+                    Eres responsable de todas las actividades que ocurran bajo tu cuenta. Debes notificarnos 
+                    inmediatamente de cualquier uso no autorizado de tu cuenta o cualquier otra violación de seguridad.
+                </p>
+                
+                <h3>3.3 Una Cuenta por Usuario</h3>
+                <p>
+                    Cada usuario debe mantener una sola cuenta. Compartir credenciales de acceso o crear 
+                    múltiples cuentas está prohibido.
+                </p>
+                
+                <h2>4. Uso Aceptable</h2>
+                <p>Te comprometes a NO usar ReportAI para:</p>
+                <ul>
+                    <li>Violar cualquier ley aplicable o regulación</li>
+                    <li>Infringir los derechos de propiedad intelectual de terceros</li>
+                    <li>Transmitir malware, virus u otro código malicioso</li>
+                    <li>Intentar acceder sin autorización a sistemas o datos</li>
+                    <li>Realizar scraping o extracción automatizada de datos no autorizada</li>
+                    <li>Compartir contenido falso, engañoso o fraudulento</li>
+                    <li>Acosar, amenazar o difamar a otros usuarios</li>
+                    <li>Revender, sublicenciar o redistribuir el servicio sin autorización</li>
+                    <li>Sobrecargar intencionalmente nuestros servidores</li>
+                </ul>
+                
+                <h2>5. Integraciones con Terceros</h2>
+                
+                <h3>5.1 Autorización OAuth</h3>
+                <p>
+                    Al conectar cuentas de Google Ads, GA4 o Meta Ads, autorizas a ReportAI a acceder a los 
+                    datos de esas cuentas en tu nombre. Esta autorización está limitada a los permisos 
+                    específicos que otorgas durante el proceso de conexión.
+                </p>
+                
+                <h3>5.2 Responsabilidad del Usuario</h3>
+                <p>
+                    Eres responsable de asegurarte de que tienes el derecho legal de conectar las cuentas de 
+                    tus clientes. Debes obtener el consentimiento apropiado de tus clientes antes de conectar 
+                    sus cuentas publicitarias a ReportAI.
+                </p>
+                
+                <h3>5.3 Términos de Terceros</h3>
+                <p>
+                    El uso de integraciones está sujeto a los términos de servicio de cada plataforma 
+                    (Google, Meta, etc.). Aceptas cumplir con dichos términos.
+                </p>
+                
+                <h2>6. Propiedad Intelectual</h2>
+                
+                <h3>6.1 Nuestra Propiedad</h3>
+                <p>
+                    ReportAI, incluyendo su código, diseño, logotipos, marcas comerciales y contenido, es 
+                    propiedad exclusiva de ReportAI o sus licenciantes. No adquieres ningún derecho de 
+                    propiedad sobre el servicio.
+                </p>
+                
+                <h3>6.2 Tu Contenido</h3>
+                <p>
+                    Retienes todos los derechos sobre los datos y contenido que cargas a ReportAI. Al subir 
+                    contenido, nos otorgas una licencia limitada para usar, almacenar y procesar dicho 
+                    contenido con el fin de proporcionarte el servicio.
+                </p>
+                
+                <h3>6.3 Informes Generados</h3>
+                <p>
+                    Los informes generados con ReportAI son de tu propiedad. Puedes usarlos, modificarlos 
+                    y distribuirlos libremente a tus clientes.
+                </p>
+                
+                <h2>7. Pagos y Suscripciones</h2>
+                
+                <h3>7.1 Planes y Precios</h3>
+                <p>
+                    ReportAI ofrece diferentes planes de suscripción. Los precios y características de cada 
+                    plan están disponibles en nuestra página de precios. Nos reservamos el derecho de 
+                    modificar precios con previo aviso de 30 días.
+                </p>
+                
+                <h3>7.2 Facturación</h3>
+                <p>
+                    Las suscripciones se facturan por adelantado según el ciclo de facturación elegido 
+                    (mensual o anual). Los pagos son procesados de forma segura a través de proveedores 
+                    de pago certificados.
+                </p>
+                
+                <h3>7.3 Reembolsos</h3>
+                <p>
+                    Ofrecemos una garantía de satisfacción de 14 días. Si no estás satisfecho con el 
+                    servicio dentro de los primeros 14 días, puedes solicitar un reembolso completo. 
+                    Después de este período, las suscripciones no son reembolsables.
+                </p>
+                
+                <h3>7.4 Cancelación</h3>
+                <p>
+                    Puedes cancelar tu suscripción en cualquier momento desde tu panel de usuario. 
+                    La cancelación será efectiva al final del período de facturación actual.
+                </p>
+                
+                <h2>8. Limitación de Responsabilidad</h2>
+                <p>
+                    EN LA MÁXIMA MEDIDA PERMITIDA POR LA LEY APLICABLE, REPORTAI NO SERÁ RESPONSABLE POR 
+                    DAÑOS INDIRECTOS, INCIDENTALES, ESPECIALES, CONSECUENTES O PUNITIVOS, NI POR PÉRDIDA 
+                    DE BENEFICIOS, INGRESOS, DATOS O USO, YA SEA EN UNA ACCIÓN CONTRACTUAL, AGRAVIO O 
+                    DE OTRO TIPO, INCLUSO SI SE NOS HA ADVERTIDO DE LA POSIBILIDAD DE TALES DAÑOS.
+                </p>
+                <p>
+                    NUESTRA RESPONSABILIDAD TOTAL HACIA TI POR CUALQUIER RECLAMO QUE SURJA DE O EN 
+                    RELACIÓN CON ESTOS TÉRMINOS NO EXCEDERÁ EL MONTO QUE NOS HAYAS PAGADO EN LOS 
+                    12 MESES ANTERIORES AL EVENTO QUE DIO LUGAR AL RECLAMO.
+                </p>
+                
+                <h2>9. Disponibilidad del Servicio</h2>
+                <p>
+                    Nos esforzamos por mantener una alta disponibilidad del servicio, pero no garantizamos 
+                    que el servicio estará disponible sin interrupciones o libre de errores. Podemos 
+                    realizar mantenimientos programados que pueden afectar temporalmente el servicio.
+                </p>
+                <p>
+                    No somos responsables de interrupciones causadas por factores fuera de nuestro control, 
+                    incluyendo pero no limitado a: fallos en APIs de terceros (Google, Meta), problemas 
+                    de conectividad a internet, o eventos de fuerza mayor.
+                </p>
+                
+                <h2>10. Exención de Garantías</h2>
+                <p>
+                    EL SERVICIO SE PROPORCIONA "TAL CUAL" Y "SEGÚN DISPONIBILIDAD", SIN GARANTÍAS DE 
+                    NINGÚN TIPO, YA SEAN EXPRESAS O IMPLÍCITAS, INCLUYENDO PERO NO LIMITADAS A GARANTÍAS 
+                    DE COMERCIABILIDAD, IDONEIDAD PARA UN PROPÓSITO PARTICULAR Y NO INFRACCIÓN.
+                </p>
+                
+                <h2>11. Indemnización</h2>
+                <p>
+                    Aceptas indemnizar y mantener indemne a ReportAI, sus directores, empleados y agentes, 
+                    de cualquier reclamo, demanda, pérdida, responsabilidad o gasto (incluyendo honorarios 
+                    de abogados) que surja de:
+                </p>
+                <ul>
+                    <li>Tu uso del servicio</li>
+                    <li>Tu incumplimiento de estos Términos</li>
+                    <li>Tu violación de derechos de terceros</li>
+                    <li>El contenido que cargues o transmitas a través del servicio</li>
+                </ul>
+                
+                <h2>12. Terminación</h2>
+                <p>
+                    Podemos suspender o terminar tu acceso al servicio inmediatamente, sin previo aviso, 
+                    por cualquier razón, incluyendo pero no limitado a:
+                </p>
+                <ul>
+                    <li>Incumplimiento de estos Términos</li>
+                    <li>Actividades fraudulentas o ilegales</li>
+                    <li>Falta de pago</li>
+                    <li>Solicitud de autoridades legales</li>
+                </ul>
+                <p>
+                    Tras la terminación, tu derecho a usar el servicio cesará inmediatamente. Podrás 
+                    solicitar la exportación de tus datos dentro de los 30 días posteriores a la terminación.
+                </p>
+                
+                <h2>13. Modificaciones de los Términos</h2>
+                <p>
+                    Nos reservamos el derecho de modificar estos Términos en cualquier momento. Los cambios 
+                    materiales se notificarán por correo electrónico o mediante un aviso en el servicio 
+                    con al menos 30 días de anticipación.
+                </p>
+                <p>
+                    Tu uso continuado del servicio después de la fecha de entrada en vigor de los nuevos 
+                    términos constituye tu aceptación de los mismos.
+                </p>
+                
+                <h2>14. Ley Aplicable y Jurisdicción</h2>
+                <p>
+                    Estos Términos se regirán e interpretarán de acuerdo con las leyes de España, sin 
+                    tener en cuenta sus disposiciones sobre conflictos de leyes.
+                </p>
+                <p>
+                    Cualquier disputa que surja de estos Términos se someterá a la jurisdicción exclusiva 
+                    de los tribunales de Madrid, España.
+                </p>
+                
+                <h2>15. Resolución de Disputas</h2>
+                <p>
+                    Antes de iniciar cualquier procedimiento legal, las partes intentarán resolver 
+                    cualquier disputa de buena fe mediante negociación directa durante un período 
+                    de 30 días.
+                </p>
+                
+                <h2>16. Disposiciones Generales</h2>
+                
+                <h3>16.1 Acuerdo Completo</h3>
+                <p>
+                    Estos Términos, junto con nuestra Política de Privacidad, constituyen el acuerdo 
+                    completo entre tú y ReportAI respecto al uso del servicio.
+                </p>
+                
+                <h3>16.2 Divisibilidad</h3>
+                <p>
+                    Si alguna disposición de estos Términos se considera inválida o inaplicable, las 
+                    disposiciones restantes permanecerán en pleno vigor y efecto.
+                </p>
+                
+                <h3>16.3 Renuncia</h3>
+                <p>
+                    El hecho de que no ejerzamos o hagamos cumplir cualquier derecho o disposición de 
+                    estos Términos no constituirá una renuncia a dicho derecho o disposición.
+                </p>
+                
+                <h3>16.4 Cesión</h3>
+                <p>
+                    No puedes ceder ni transferir estos Términos sin nuestro consentimiento previo por escrito. 
+                    Podemos ceder estos Términos sin restricciones.
+                </p>
+                
+                <h2>17. Contacto</h2>
+                <p>Si tienes preguntas sobre estos Términos de Servicio, contáctanos:</p>
+                <ul>
+                    <li><strong>Email:</strong> <a href="mailto:legal@reportai.io">legal@reportai.io</a></li>
+                    <li><strong>Dirección:</strong> ReportAI, Madrid, España</li>
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__brand">
+                    <a href="/" class="footer__logo">
+                        <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+                    </a>
+                    <p class="footer__tagline">Informes de Google Ads automáticos con IA.</p>
+                </div>
+                
+                <div class="footer__links">
+                    <a href="{% url 'home' %}">Inicio</a>
+                    <a href="{% url 'privacy_policy' %}">Política de Privacidad</a>
+                    <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>
+                </div>
+            </div>
+            
+            <div class="footer__bottom">
+                <p class="footer__copy">&copy; 2026 ReportAI. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

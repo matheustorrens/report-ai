@@ -1,0 +1,268 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Dashboard - ReportAI{% endblock %}
+
+{% block page_title %}Dashboard{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/reportai/dashboard.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-page">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+        <div class="kpi-card reports">
+            <div class="kpi-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                </svg>
+            </div>
+            <div class="kpi-value" id="kpi-reports">0</div>
+            <div class="kpi-label">Reportes Enviados</div>
+            <div class="kpi-trend positive" id="trend-reports">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                </svg>
+                0%
+            </div>
+        </div>
+        
+        <div class="kpi-card time">
+            <div class="kpi-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+            </div>
+            <div class="kpi-value" id="kpi-time">0h</div>
+            <div class="kpi-label">Tiempo Ahorrado</div>
+            <div class="kpi-trend positive" id="trend-time">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                </svg>
+                0%
+            </div>
+        </div>
+        
+        <div class="kpi-card clients">
+            <div class="kpi-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                    <circle cx="9" cy="7" r="4"/>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+                </svg>
+            </div>
+            <div class="kpi-value" id="kpi-clients">0</div>
+            <div class="kpi-label">Clientes Activos</div>
+            <div class="kpi-trend positive" id="trend-clients">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                </svg>
+                0%
+            </div>
+        </div>
+        
+        <div class="kpi-card efficiency">
+            <div class="kpi-icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                    <polyline points="22 4 12 14.01 9 11.01"/>
+                </svg>
+            </div>
+            <div class="kpi-value" id="kpi-efficiency">0%</div>
+            <div class="kpi-label">Eficiencia de Entrega</div>
+            <div class="kpi-trend positive" id="trend-efficiency">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 15l-6-6-6 6"/>
+                </svg>
+                0%
+            </div>
+        </div>
+    </div>
+    
+    <!-- Main Content Grid -->
+    <div class="grid-2" style="grid-template-columns: 2fr 1fr;">
+        <!-- Chart Section -->
+        <div class="chart-container">
+            <div class="chart-header">
+                <div>
+                    <h3 class="chart-title">Manual vs ReportAI</h3>
+                    <p class="text-sm text-tertiary mt-xs">Horas dedicadas a reportes por semana</p>
+                </div>
+                <div class="chart-legend">
+                    <div class="chart-legend-item">
+                        <span class="chart-legend-dot manual"></span>
+                        <span>Manual</span>
+                    </div>
+                    <div class="chart-legend-item">
+                        <span class="chart-legend-dot reportai"></span>
+                        <span>ReportAI</span>
+                    </div>
+                </div>
+            </div>
+            <div class="chart-area">
+                <canvas id="comparison-chart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Needs Review Panel -->
+        <div class="review-panel">
+            <div class="review-panel-header">
+                <div class="review-panel-title">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <path d="M12 8v4"/>
+                        <path d="M12 16h.01"/>
+                    </svg>
+                    Necesita Revisión
+                </div>
+                <span class="review-panel-badge">3</span>
+            </div>
+            <div id="pending-reviews-list">
+                <!-- Populated by JavaScript -->
+                <div class="empty-state" style="padding: 2rem;">
+                    <div class="empty-state-icon" style="width: 48px; height: 48px;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="animate-pulse">
+                            <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="40 60" stroke-linecap="round">
+                                <animateTransform attributeName="transform" type="rotate" from="0 12 12" to="360 12 12" dur="1s" repeatCount="indefinite"/>
+                            </circle>
+                        </svg>
+                    </div>
+                    <p class="text-sm text-tertiary">Cargando...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="mt-xl">
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">Acciones Rápidas</h3>
+                    <p class="card-subtitle">Genera un nuevo reporte o añade un cliente</p>
+                </div>
+            </div>
+            <div class="flex gap-md">
+                <a href="{% url 'reportai:report_generate' %}" class="btn btn-primary">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="12" y1="18" x2="12" y2="12"/>
+                        <line x1="9" y1="15" x2="15" y2="15"/>
+                    </svg>
+                    Generar Reporte AI
+                </a>
+                <button class="btn btn-secondary" data-modal-open="add-client-modal">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                        <circle cx="8.5" cy="7" r="4"/>
+                        <line x1="20" y1="8" x2="20" y2="14"/>
+                        <line x1="23" y1="11" x2="17" y2="11"/>
+                    </svg>
+                    Añadir Cliente
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Client Modal -->
+<div class="modal-overlay" id="add-client-modal">
+    <div class="modal">
+        <div class="modal-header">
+            <h2 class="modal-title">Añadir Cliente</h2>
+            <button class="modal-close" data-modal-close>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="add-client-form">
+                <div class="form-group">
+                    <label class="form-label" for="client-name">Nombre del Cliente</label>
+                    <input type="text" class="form-input" id="client-name" name="name" placeholder="Empresa S.L." required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="client-email">Email</label>
+                    <input type="email" class="form-input" id="client-email" name="email" placeholder="marketing@empresa.com" required>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="client-whatsapp">WhatsApp <span class="form-label-optional">(opcional)</span></label>
+                    <input type="tel" class="form-input" id="client-whatsapp" name="whatsapp" placeholder="+34 612 345 678">
+                </div>
+                
+                <div class="grid-2">
+                    <div class="form-group">
+                        <label class="form-label" for="client-industry">Industria</label>
+                        <select class="form-select" id="client-industry" name="industry" required>
+                            <option value="">Seleccionar...</option>
+                            <option value="tecnologia">Tecnología</option>
+                            <option value="ecommerce">E-commerce</option>
+                            <option value="moda">Moda</option>
+                            <option value="hosteleria">Hostelería</option>
+                            <option value="b2b">B2B / SaaS</option>
+                            <option value="salud">Salud</option>
+                            <option value="educacion">Educación</option>
+                            <option value="otros">Otros</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="form-label" for="client-language">Idioma</label>
+                        <select class="form-select" id="client-language" name="language" required>
+                            <option value="es">Español</option>
+                            <option value="en">Inglés</option>
+                            <option value="pt">Portugués</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label" for="client-level">Nivel Técnico</label>
+                    <select class="form-select" id="client-level" name="technical_level" required>
+                        <option value="basico">Básico - Prefiere resúmenes simples</option>
+                        <option value="avanzado">Avanzado - Incluir métricas detalladas</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label class="form-label">Plataformas Conectadas</label>
+                    <div class="flex flex-col gap-sm">
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="google_ads">
+                            <span class="text-sm">Google Ads</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="meta_ads">
+                            <span class="text-sm">Meta Ads</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="ga4">
+                            <span class="text-sm">Google Analytics 4</span>
+                        </label>
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="platforms" value="linkedin_ads">
+                            <span class="text-sm">LinkedIn Ads</span>
+                        </label>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-modal-close>Cancelar</button>
+            <button type="submit" form="add-client-form" class="btn btn-primary">Añadir Cliente</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

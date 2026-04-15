@@ -1,0 +1,329 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Política de Privacidad | ReportAI</title>
+    <meta name="description" content="Política de privacidad de ReportAI. Conoce cómo recopilamos, usamos y protegemos tu información personal.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <style>
+        .legal-page {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+        }
+        
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .legal-header {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+        
+        .legal-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--color-white), var(--color-gray-300));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .legal-updated {
+            color: var(--color-gray-400);
+            font-size: 0.875rem;
+        }
+        
+        .legal-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 48px;
+        }
+        
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-white);
+            margin: 32px 0 16px;
+        }
+        
+        .legal-content h2:first-child {
+            margin-top: 0;
+        }
+        
+        .legal-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-gray-200);
+            margin: 24px 0 12px;
+        }
+        
+        .legal-content p {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        
+        .legal-content ul, .legal-content ol {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+        
+        .legal-content li {
+            margin-bottom: 8px;
+        }
+        
+        .legal-content a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        
+        .legal-content a:hover {
+            text-decoration: underline;
+        }
+        
+        .legal-content strong {
+            color: var(--color-white);
+            font-weight: 600;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-gray-400);
+            text-decoration: none;
+            margin-bottom: 32px;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--color-white);
+        }
+        
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .legal-title {
+                font-size: 2rem;
+            }
+            
+            .legal-content {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav__container">
+            <a href="/" class="nav__logo">
+                <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+            </a>
+            <a href="{% url 'home' %}" class="nav__cta btn btn--small">Volver al inicio</a>
+        </div>
+    </nav>
+
+    <main class="legal-page">
+        <div class="legal-container">
+            <a href="{% url 'home' %}" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5"/>
+                    <path d="M12 19l-7-7 7-7"/>
+                </svg>
+                Volver al inicio
+            </a>
+            
+            <div class="legal-header">
+                <h1 class="legal-title">Política de Privacidad</h1>
+                <p class="legal-updated">Última actualización: 15 de abril de 2026</p>
+            </div>
+            
+            <div class="legal-content">
+                <h2>1. Introducción</h2>
+                <p>
+                    En <strong>ReportAI</strong> ("nosotros", "nuestro" o "la empresa"), nos comprometemos a proteger 
+                    tu privacidad y tus datos personales. Esta Política de Privacidad explica cómo recopilamos, 
+                    usamos, compartimos y protegemos tu información cuando utilizas nuestra plataforma de 
+                    automatización de informes de marketing digital.
+                </p>
+                <p>
+                    Al usar ReportAI, aceptas las prácticas descritas en esta política. Si no estás de acuerdo 
+                    con esta política, por favor no utilices nuestros servicios.
+                </p>
+                
+                <h2>2. Información que Recopilamos</h2>
+                
+                <h3>2.1 Información proporcionada directamente</h3>
+                <ul>
+                    <li><strong>Datos de registro:</strong> Nombre, dirección de correo electrónico, contraseña y nombre de la agencia.</li>
+                    <li><strong>Información de facturación:</strong> Datos de pago necesarios para procesar suscripciones.</li>
+                    <li><strong>Datos de clientes:</strong> Información de los clientes de tu agencia que gestionas en la plataforma.</li>
+                </ul>
+                
+                <h3>2.2 Información de integraciones</h3>
+                <p>Cuando conectas plataformas de publicidad, recopilamos:</p>
+                <ul>
+                    <li><strong>Google Ads:</strong> Tokens de acceso OAuth, IDs de cuentas y métricas de campañas seleccionadas.</li>
+                    <li><strong>Google Analytics 4:</strong> Tokens de acceso OAuth, IDs de propiedades y métricas de tráfico seleccionadas.</li>
+                    <li><strong>Meta Ads:</strong> Tokens de acceso, IDs de cuentas publicitarias y métricas de campañas.</li>
+                </ul>
+                <p>
+                    <strong>Importante:</strong> Solo accedemos a los datos que necesitamos para generar los informes. 
+                    No almacenamos datos de campañas de forma permanente; los consultamos en tiempo real cuando 
+                    generas un informe.
+                </p>
+                
+                <h3>2.3 Información recopilada automáticamente</h3>
+                <ul>
+                    <li>Dirección IP y ubicación aproximada</li>
+                    <li>Tipo de navegador y dispositivo</li>
+                    <li>Páginas visitadas y acciones realizadas en la plataforma</li>
+                    <li>Fecha y hora de acceso</li>
+                </ul>
+                
+                <h2>3. Cómo Usamos tu Información</h2>
+                <p>Utilizamos la información recopilada para:</p>
+                <ul>
+                    <li>Proporcionar y mantener nuestros servicios de generación de informes</li>
+                    <li>Procesar transacciones y enviar notificaciones relacionadas</li>
+                    <li>Personalizar tu experiencia y mejorar la plataforma</li>
+                    <li>Comunicarnos contigo sobre actualizaciones, soporte técnico y marketing (con tu consentimiento)</li>
+                    <li>Detectar y prevenir fraudes o actividades maliciosas</li>
+                    <li>Cumplir con obligaciones legales</li>
+                </ul>
+                
+                <h2>4. Cómo Compartimos tu Información</h2>
+                <p><strong>No vendemos tus datos personales.</strong> Podemos compartir información en los siguientes casos:</p>
+                <ul>
+                    <li><strong>Proveedores de servicios:</strong> Con empresas que nos ayudan a operar (procesadores de pago, servicios de hosting, etc.), bajo estrictos acuerdos de confidencialidad.</li>
+                    <li><strong>APIs de terceros:</strong> Para conectar con Google Ads, GA4 y Meta Ads, compartimos tokens de autorización con estas plataformas.</li>
+                    <li><strong>Requisitos legales:</strong> Cuando sea requerido por ley o para proteger nuestros derechos.</li>
+                    <li><strong>Transferencias empresariales:</strong> En caso de fusión, adquisición o venta de activos.</li>
+                </ul>
+                
+                <h2>5. Seguridad de los Datos</h2>
+                <p>Implementamos medidas de seguridad técnicas y organizativas para proteger tu información:</p>
+                <ul>
+                    <li>Encriptación de datos en tránsito (HTTPS/TLS) y en reposo</li>
+                    <li>Almacenamiento seguro de tokens OAuth con encriptación</li>
+                    <li>Acceso restringido a datos personales solo a empleados autorizados</li>
+                    <li>Auditorías de seguridad regulares</li>
+                    <li>Política de retención de datos limitada</li>
+                </ul>
+                
+                <h2>6. Tus Derechos (RGPD)</h2>
+                <p>Si te encuentras en el Espacio Económico Europeo, tienes los siguientes derechos:</p>
+                <ul>
+                    <li><strong>Acceso:</strong> Solicitar una copia de tus datos personales.</li>
+                    <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos.</li>
+                    <li><strong>Eliminación:</strong> Solicitar la eliminación de tus datos ("derecho al olvido").</li>
+                    <li><strong>Portabilidad:</strong> Recibir tus datos en un formato estructurado.</li>
+                    <li><strong>Oposición:</strong> Oponerte al procesamiento de tus datos para ciertos fines.</li>
+                    <li><strong>Limitación:</strong> Solicitar la restricción del procesamiento.</li>
+                </ul>
+                <p>Para ejercer estos derechos, contáctanos en <a href="mailto:privacidad@reportai.io">privacidad@reportai.io</a>.</p>
+                
+                <h2>7. Retención de Datos</h2>
+                <p>
+                    Conservamos tus datos mientras tu cuenta esté activa o según sea necesario para proporcionarte 
+                    servicios. Después de la eliminación de tu cuenta, retenemos ciertos datos durante un período 
+                    limitado para cumplir con obligaciones legales y resolver disputas.
+                </p>
+                <ul>
+                    <li>Datos de cuenta: Hasta 30 días después de la eliminación de la cuenta</li>
+                    <li>Logs de actividad: 90 días</li>
+                    <li>Datos de facturación: 7 años (requisito fiscal)</li>
+                </ul>
+                
+                <h2>8. Cookies</h2>
+                <p>Utilizamos cookies esenciales para el funcionamiento de la plataforma:</p>
+                <ul>
+                    <li><strong>Cookies de sesión:</strong> Para mantener tu sesión iniciada.</li>
+                    <li><strong>Cookies de preferencias:</strong> Para recordar tu configuración.</li>
+                    <li><strong>Cookies analíticas:</strong> Para entender cómo se usa la plataforma (solo con tu consentimiento).</li>
+                </ul>
+                
+                <h2>9. Transferencias Internacionales</h2>
+                <p>
+                    Tus datos pueden transferirse y procesarse en países fuera del EEE. En tales casos, 
+                    garantizamos que se apliquen salvaguardias adecuadas, como Cláusulas Contractuales Tipo 
+                    aprobadas por la Comisión Europea.
+                </p>
+                
+                <h2>10. Menores de Edad</h2>
+                <p>
+                    ReportAI no está dirigido a menores de 18 años. No recopilamos intencionadamente información 
+                    de menores. Si descubrimos que hemos recopilado datos de un menor, los eliminaremos de inmediato.
+                </p>
+                
+                <h2>11. Cambios en esta Política</h2>
+                <p>
+                    Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos cualquier 
+                    cambio significativo por correo electrónico o mediante un aviso en la plataforma. 
+                    La fecha de "última actualización" en la parte superior indica cuándo se revisó por última vez.
+                </p>
+                
+                <h2>12. Contacto</h2>
+                <p>Si tienes preguntas sobre esta Política de Privacidad o sobre el tratamiento de tus datos, contáctanos:</p>
+                <ul>
+                    <li><strong>Email:</strong> <a href="mailto:contato@cacemirolabs.com">privacidad@reportai.io</a></li>
+                    <li><strong>Dirección:</strong> ReportAI, Madrid, España</li>
+                </ul>
+                <p>
+                    También puedes presentar una reclamación ante la autoridad de protección de datos de tu país 
+                    si consideras que no hemos manejado tu información correctamente.
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__brand">
+                    <a href="/" class="footer__logo">
+                        <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+                    </a>
+                    <p class="footer__tagline">Informes de Google Ads automáticos con IA.</p>
+                </div>
+                
+                <div class="footer__links">
+                    <a href="{% url 'home' %}">Inicio</a>
+                    <a href="{% url 'privacy_policy' %}">Política de Privacidad</a>
+                    <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>
+                </div>
+            </div>
+            
+            <div class="footer__bottom">
+                <p class="footer__copy">&copy; 2026 ReportAI. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

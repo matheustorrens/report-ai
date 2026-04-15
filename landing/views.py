@@ -25,3 +25,11 @@ def home(request):
         return HttpResponseRedirect(reverse('home') + '#waitlist')
 
 
+def privacy_policy(request):
+    """Privacy Policy page."""
+    return render(request, 'landing/privacy_policy.html')
+
+
+def terms_of_service(request):
+    """Terms of Service page."""
+    return render(request, 'landing/terms_of_service.html')

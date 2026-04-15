@@ -1390,11 +1390,30 @@ ul, ol {
 
 .footer__bottom {
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
 }
 
 .footer__copy {
     font-size: var(--font-size-sm);
     color: var(--color-text-tertiary);
+}
+
+.footer__legal {
+    display: flex;
+    gap: 24px;
+}
+
+.footer__legal a {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-tertiary);
+    transition: color var(--duration-fast) var(--ease-out-expo);
+}
+
+.footer__legal a:hover {
+    color: var(--color-primary);
 }
 
 /* --------------------------------------------------------------------------
