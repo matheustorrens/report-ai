@@ -1,0 +1,179 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Métricas — {{ client.name }} - ReportAI{% endblock %}
+
+{% block page_title %}
+<div class="flex items-center gap-md">
+    <a href="{% url 'reportai:client_profile' client.id %}" class="btn btn-ghost btn-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M19 12H5"/>
+            <path d="M12 19l-7-7 7-7"/>
+        </svg>
+    </a>
+    <span>Configurar métricas — {{ client.name }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="metrics-config-page">
+
+    {% if messages %}
+    <div style="margin-bottom: 1.5rem;">
+        {% for msg in messages %}
+        <div class="alert alert-{{ msg.tags }}" style="padding: 0.875rem 1.25rem; border-radius: 8px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; font-size: 0.875rem; margin-bottom: 0.5rem;">
+            {{ msg }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <p class="text-secondary mb-xl" style="max-width: 560px;">
+        Define qué métricas se muestran en el dashboard público de <strong style="color: var(--color-text-primary);">{{ client.name }}</strong>.
+        Puedes activar/desactivar, renombrar y reordenar cada métrica por plataforma.
+    </p>
+
+    <form method="post" action="{% url 'reportai:client_metrics_config' client.id %}">
+        {% csrf_token %}
+
+        <div class="flex flex-col gap-xl">
+
+            {% for platform_key, platform_data in platforms.items %}
+            <div class="card">
+                <div class="card-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                    <h3 class="card-title" style="margin: 0;">{{ platform_data.label }}</h3>
+                    <span class="badge" style="font-size: 0.75rem; padding: 2px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); color: var(--color-text-tertiary);">
+                        {{ platform_data.metrics|length }} métricas
+                    </span>
+                </div>
+
+                <div class="metrics-table">
+                    <!-- Header -->
+                    <div class="metrics-row metrics-header">
+                        <span>Visible</span>
+                        <span>Nombre en el dashboard</span>
+                        <span>Orden</span>
+                        <span>Clave interna</span>
+                    </div>
+
+                    {% for config in platform_data.metrics %}
+                    <div class="metrics-row">
+                        <!-- Checkbox visible -->
+                        <label class="toggle-label" style="display: flex; align-items: center; cursor: pointer;">
+                            <input
+                                type="checkbox"
+                                name="metric_{{ config.id }}_visible"
+                                {% if config.is_visible %}checked{% endif %}
+                                style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer;"
+                            >
+                        </label>
+
+                        <!-- Display name editável -->
+                        <input
+                            type="text"
+                            name="metric_{{ config.id }}_name"
+                            value="{{ config.display_name }}"
+                            class="form-input-inline"
+                            placeholder="Nombre visible"
+                            maxlength="80"
+                        >
+
+                        <!-- Ordem -->
+                        <input
+                            type="number"
+                            name="metric_{{ config.id }}_order"
+                            value="{{ config.order }}"
+                            class="form-input-inline form-input-order"
+                            min="0"
+                            max="99"
+                        >
+
+                        <!-- Chave interna (readonly) -->
+                        <code style="font-size: 0.75rem; color: var(--color-text-tertiary); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 4px;">{{ config.metric_key }}</code>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="card" style="text-align: center; padding: 3rem; color: var(--color-text-tertiary);">
+                No hay métricas configuradas para este cliente.
+            </div>
+            {% endfor %}
+
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 0.75rem; align-items: center;">
+            <button type="submit" class="btn btn-primary">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Guardar configuración
+            </button>
+            <a href="{% url 'reportai:client_profile' client.id %}" class="btn btn-secondary">Cancelar</a>
+            <a href="/dashboard/{{ client.dashboard_token }}/" target="_blank" class="btn btn-ghost" style="margin-left: auto;" title="Ver dashboard público">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                    <polyline points="15 3 21 3 21 9"/>
+                    <line x1="10" y1="14" x2="21" y2="3"/>
+                </svg>
+                Ver dashboard
+            </a>
+        </div>
+    </form>
+
+</div>
+
+<style>
+.metrics-table {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.metrics-row {
+    display: grid;
+    grid-template-columns: 52px 1fr 72px 120px;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.metrics-row:last-child {
+    border-bottom: none;
+}
+
+.metrics-header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--color-text-tertiary);
+    padding-bottom: 0.75rem;
+}
+
+.form-input-inline {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 0.875rem;
+    padding: 0.4rem 0.625rem;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.15s;
+}
+
+.form-input-inline:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+
+.form-input-order {
+    text-align: center;
+    width: 100%;
+}
+</style>
+{% endblock %}

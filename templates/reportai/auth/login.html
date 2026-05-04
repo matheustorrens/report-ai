@@ -35,6 +35,7 @@
                 
                 <form class="auth-form login-form" method="post">
                     {% csrf_token %}
+                    {% if error %}<p class="form-error" style="color:var(--color-error);margin-bottom:12px;">{{ error }}</p>{% endif %}
                     
                     <div class="form-group">
                         <label class="form-label" for="email">Email</label>

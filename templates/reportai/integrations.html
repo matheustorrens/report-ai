@@ -12,7 +12,7 @@
         <div class="card-header">
             <div>
                 <h3 class="card-title">Seleccionar Cliente</h3>
-                <p class="card-subtitle">Selecciona un cliente para gestionar sus integraciones</p>
+                <p class="card-subtitle">Selecciona un cliente para gestionar sus cuentas de integración</p>
             </div>
         </div>
         <div class="form-group mb-0">
@@ -28,178 +28,127 @@
     </div>
 
     {% if selected_client %}
-    <!-- Integration Cards -->
-    <h3 class="text-lg font-medium mb-md">Plataformas de {{ selected_client.name }}</h3>
-    <div class="grid-2 mb-xl">
-        <!-- Google Ads -->
-        <div class="integration-card {% if google_ads_integration and google_ads_integration.status == 'connected' %}connected{% elif google_ads_integration and google_ads_integration.status == 'action_required' %}action-required{% else %}disconnected{% endif %}">
-            <div class="integration-header">
-                <div class="integration-logo" style="background: rgba(234, 67, 53, 0.1);">
-                    <svg width="28" height="28" viewBox="0 0 24 24">
-                        <path fill="#EA4335" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
+    
+    <!-- Integration Summary Cards -->
+    <div class="integration-summary mb-xl">
+        <h3 class="text-lg font-medium mb-md">Resumen de Integraciones - {{ selected_client.name }}</h3>
+        <div class="grid-3 mb-lg">
+            {% for channel, channel_data in integrations_by_channel.items %}
+            <div class="summary-card {% if channel_data.count > 0 %}has-accounts{% endif %}">
+                <div class="summary-icon {{ channel }}">
+                    {% if channel == 'google_ads' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/>
                     </svg>
-                </div>
-                <div class="integration-info">
-                    <h4 class="integration-name">Google Ads</h4>
-                    <p class="integration-description">Campañas de búsqueda, display y shopping</p>
-                </div>
-                {% if google_ads_integration and google_ads_integration.status == 'connected' %}
-                <span class="badge badge-success">Conectado</span>
-                {% elif google_ads_integration and google_ads_integration.status == 'action_required' %}
-                <span class="badge badge-warning">Acción Necesaria</span>
-                {% else %}
-                <span class="badge badge-secondary">Desconectado</span>
-                {% endif %}
-            </div>
-            
-            {% if google_ads_integration and google_ads_integration.status == 'connected' %}
-            <div class="integration-details">
-                <div class="integration-stat">
-                    <span class="text-tertiary text-sm">Métricas seleccionadas</span>
-                    <span class="font-medium">{{ google_ads_metrics|length }}</span>
-                </div>
-                <div class="integration-stat">
-                    <span class="text-tertiary text-sm">Última sincronización</span>
-                    <span class="font-medium">
-                        {% if google_ads_integration.last_sync %}
-                        {{ google_ads_integration.last_sync|timesince }} atrás
-                        {% else %}
-                        Nunca
-                        {% endif %}
-                    </span>
-                </div>
-            </div>
-            
-            <!-- Selected Metrics Pills -->
-            {% if google_ads_metrics %}
-            <div class="selected-metrics-preview mb-md">
-                <p class="text-xs text-tertiary mb-sm">Métricas activas:</p>
-                <div class="flex flex-wrap gap-xs">
-                    {% for metric in available_google_ads_metrics %}
-                        {% if metric.0 in google_ads_metrics %}
-                        <span class="metric-pill">{{ metric.1 }}</span>
-                        {% endif %}
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-            
-            <div class="integration-actions">
-                <button class="btn btn-secondary btn-sm" onclick="openMetricsModal('google_ads')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    {% elif channel == 'ga4' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/>
+                        <path fill="currentColor" d="M18.5 10L17 12.5 15.5 10 14 10 16.25 14 14 18l1.5 0 1-2.5 1 2.5 1.5 0-2.25-4 2.25-4z"/>
                     </svg>
-                    Configurar Métricas
-                </button>
-                <a href="{% url 'reportai:oauth_disconnect' 'google_ads' selected_client.id %}" class="btn btn-danger btn-sm">
-                    Desconectar
-                </a>
-            </div>
-            {% else %}
-            <div class="integration-details">
-                <p class="text-sm text-tertiary" style="text-align: center; padding: 1rem 0;">
-                    Conecta la cuenta de Google Ads de este cliente para comenzar a extraer datos.
-                </p>
-            </div>
-            <div class="integration-actions">
-                <a href="{% url 'reportai:oauth_start' 'google_ads' %}?client_id={{ selected_client.id }}" class="btn btn-primary btn-sm w-full">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                        <polyline points="10 17 15 12 10 7"/>
-                        <line x1="15" y1="12" x2="3" y2="12"/>
+                    {% elif channel == 'meta_ads' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
                     </svg>
-                    Conectar Google Ads
-                </a>
-            </div>
-            {% endif %}
-        </div>
-        
-        <!-- GA4 -->
-        <div class="integration-card {% if ga4_integration and ga4_integration.status == 'connected' %}connected{% elif ga4_integration and ga4_integration.status == 'action_required' %}action-required{% else %}disconnected{% endif %}">
-            <div class="integration-header">
-                <div class="integration-logo" style="background: rgba(245, 158, 11, 0.1);">
-                    <svg width="28" height="28" viewBox="0 0 24 24">
-                        <path fill="#F9AB00" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/>
-                        <path fill="#F9AB00" d="M18.5 10L17 12.5 15.5 10 14 10 16.25 14 14 18l1.5 0 1-2.5 1 2.5 1.5 0-2.25-4 2.25-4z"/>
-                    </svg>
+                    {% endif %}
                 </div>
-                <div class="integration-info">
-                    <h4 class="integration-name">Google Analytics 4</h4>
-                    <p class="integration-description">Datos de tráfico web y conversiones</p>
-                </div>
-                {% if ga4_integration and ga4_integration.status == 'connected' %}
-                <span class="badge badge-success">Conectado</span>
-                {% elif ga4_integration and ga4_integration.status == 'action_required' %}
-                <span class="badge badge-warning">Acción Necesaria</span>
-                {% else %}
-                <span class="badge badge-secondary">Desconectado</span>
-                {% endif %}
-            </div>
-            
-            {% if ga4_integration and ga4_integration.status == 'connected' %}
-            <div class="integration-details">
-                <div class="integration-stat">
-                    <span class="text-tertiary text-sm">Métricas seleccionadas</span>
-                    <span class="font-medium">{{ ga4_metrics|length }}</span>
-                </div>
-                <div class="integration-stat">
-                    <span class="text-tertiary text-sm">Última sincronización</span>
-                    <span class="font-medium">
-                        {% if ga4_integration.last_sync %}
-                        {{ ga4_integration.last_sync|timesince }} atrás
-                        {% else %}
-                        Nunca
-                        {% endif %}
-                    </span>
+                <div class="summary-info">
+                    <span class="summary-name">{{ channel_data.name }}</span>
+                    <span class="summary-count">{{ channel_data.count }} cuenta{% if channel_data.count != 1 %}s{% endif %} conectada{% if channel_data.count != 1 %}s{% endif %}</span>
+                    {% if channel_data.pending_count > 0 %}
+                    <span class="summary-count" style="color: #f59e0b; font-size: 0.75rem;">{{ channel_data.pending_count }} pendiente{% if channel_data.pending_count != 1 %}s{% endif %} de configurar</span>
+                    {% endif %}
                 </div>
             </div>
-            
-            <!-- Selected Metrics Pills -->
-            {% if ga4_metrics %}
-            <div class="selected-metrics-preview mb-md">
-                <p class="text-xs text-tertiary mb-sm">Métricas activas:</p>
-                <div class="flex flex-wrap gap-xs">
-                    {% for metric in available_ga4_metrics %}
-                        {% if metric.0 in ga4_metrics %}
-                        <span class="metric-pill">{{ metric.1 }}</span>
-                        {% endif %}
-                    {% endfor %}
-                </div>
+            {% empty %}
+            <div class="summary-card">
+                <p class="text-tertiary">No hay canales configurados.</p>
             </div>
-            {% endif %}
-            
-            <div class="integration-actions">
-                <button class="btn btn-secondary btn-sm" onclick="openMetricsModal('ga4')">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="3"/>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
-                    </svg>
-                    Configurar Métricas
-                </button>
-                <a href="{% url 'reportai:oauth_disconnect' 'ga4' selected_client.id %}" class="btn btn-danger btn-sm">
-                    Desconectar
-                </a>
-            </div>
-            {% else %}
-            <div class="integration-details">
-                <p class="text-sm text-tertiary" style="text-align: center; padding: 1rem 0;">
-                    Conecta el GA4 de este cliente para obtener datos de tráfico y conversiones.
-                </p>
-            </div>
-            <div class="integration-actions">
-                <a href="{% url 'reportai:oauth_start' 'ga4' %}?client_id={{ selected_client.id }}" class="btn btn-primary btn-sm w-full">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
-                        <polyline points="10 17 15 12 10 7"/>
-                        <line x1="15" y1="12" x2="3" y2="12"/>
-                    </svg>
-                    Conectar GA4
-                </a>
-            </div>
-            {% endif %}
+            {% endfor %}
         </div>
     </div>
+
+    <!-- Channel Sections -->
+    {% for channel, channel_data in integrations_by_channel.items %}
+    <div class="channel-section mb-xl">
+        <div class="channel-header">
+            <div class="channel-title-row">
+                <div class="channel-icon {{ channel }}">
+                    {% if channel == 'google_ads' %}
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+                    {% elif channel == 'ga4' %}
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/><path fill="currentColor" d="M18.5 10L17 12.5 15.5 10 14 10 16.25 14 14 18l1.5 0 1-2.5 1 2.5 1.5 0-2.25-4 2.25-4z"/></svg>
+                    {% elif channel == 'meta_ads' %}
+                    <svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    {% endif %}
+                </div>
+                <h3 class="text-lg font-medium">{{ channel_data.name }}</h3>
+            </div>
+            <a href="{% url 'reportai:oauth_start' channel %}?client_id={{ selected_client.id }}" class="btn btn-primary btn-sm">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/>
+                    <line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Agregar Cuenta
+            </a>
+        </div>
+        
+        {% if channel_data.accounts %}
+        <div class="accounts-grid">
+            {% for account in channel_data.accounts %}
+            <div class="account-card {% if account.status == 'connected' %}connected{% elif account.status == 'pending_selection' %}pending{% else %}disconnected{% endif %}">
+                <div class="account-header">
+                    <div class="account-info">
+                        <h4 class="account-name">{{ account.account_name|default:account.account_id }}</h4>
+                        <span class="account-id">ID: {{ account.account_id }}</span>
+                    </div>
+                    <div class="account-status">
+                        {% if account.status == 'connected' %}
+                        <span class="badge badge-success">Conectado</span>
+                        {% elif account.status == 'pending_selection' %}
+                        <span class="badge badge-warning">Configurar</span>
+                        {% elif account.status == 'token_expired' %}
+                        <span class="badge badge-danger">Token Expirado</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Desconectado</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="account-stats">
+                    <div class="stat">
+                        <span class="stat-value">{{ account.selected_campaigns.count }}</span>
+                        <span class="stat-label">Campañas</span>
+                    </div>
+                </div>
+                
+                <div class="account-actions">
+                    {% if channel != 'ga4' %}
+                    <a href="{% url 'reportai:select_campaigns' account.id %}" class="btn btn-secondary btn-sm">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                            <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                        </svg>
+                        Campañas
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'reportai:disconnect_account' account.id %}" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro de desconectar esta cuenta?')">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="3 6 5 6 21 6"/>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-channel">
+            <p class="text-tertiary">No hay cuentas de {{ channel_data.name }} conectadas para este cliente.</p>
+            <p class="text-sm text-tertiary">Haz clic en "Agregar Cuenta" para conectar una cuenta de {{ channel_data.name }}.</p>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
     
     {% else %}
     <!-- Empty State - No client selected -->
@@ -215,7 +164,7 @@
             </div>
             <h4 class="empty-state-title">Selecciona un cliente</h4>
             <p class="empty-state-description">
-                Selecciona un cliente del menú desplegable para gestionar sus integraciones con Google Ads y GA4.
+                Selecciona un cliente del menú desplegable para gestionar sus integraciones con Google Ads, GA4 y Meta Ads.
             </p>
         </div>
     </div>
@@ -225,149 +174,65 @@
     <div class="card mt-xl">
         <div class="card-header">
             <div>
-                <h3 class="card-title">¿Necesitas ayuda con las integraciones?</h3>
-                <p class="card-subtitle">Recursos útiles para configurar tus conexiones</p>
+                <h3 class="card-title">¿Cómo funciona el nuevo sistema de integraciones?</h3>
+                <p class="card-subtitle">Un cliente puede tener múltiples cuentas por canal</p>
             </div>
         </div>
-        <div class="grid-3">
-            <a href="#" class="help-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
-                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
-                </svg>
-                <span>Guía de configuración</span>
-            </a>
-            <a href="#" class="help-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
-                    <line x1="12" y1="17" x2="12.01" y2="17"/>
-                </svg>
-                <span>Preguntas frecuentes</span>
-            </a>
-            <a href="#" class="help-link">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-                </svg>
-                <span>Contactar soporte</span>
-            </a>
-        </div>
-    </div>
-</div>
-
-<!-- Metrics Selection Modal - Google Ads -->
-<div class="modal" id="google-ads-metrics-modal">
-    <div class="modal-overlay" onclick="closeMetricsModal('google_ads')"></div>
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 class="modal-title">Seleccionar Métricas de Google Ads</h3>
-            <button class="modal-close" onclick="closeMetricsModal('google_ads')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p class="text-secondary mb-lg">Selecciona las métricas que quieres incluir en los reportes de este cliente.</p>
-            <div class="metrics-grid" id="google-ads-metrics-list">
-                {% for metric in available_google_ads_metrics %}
-                <label class="metric-checkbox">
-                    <input type="checkbox" name="google_ads_metric" value="{{ metric.0 }}" 
-                           {% if metric.0 in google_ads_metrics %}checked{% endif %}>
-                    <span class="metric-checkbox-content">
-                        <span class="metric-checkbox-name">{{ metric.1 }}</span>
-                        <span class="metric-checkbox-key">{{ metric.0 }}</span>
-                    </span>
-                </label>
-                {% endfor %}
+        <div class="help-content">
+            <div class="help-step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h4>Conectar cuenta</h4>
+                    <p>Haz clic en "Agregar Cuenta" para autenticarte con Google o Meta. Verás todas las cuentas disponibles.</p>
+                </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeMetricsModal('google_ads')">Cancelar</button>
-            <button class="btn btn-primary" onclick="saveMetrics('google_ads')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
-                </svg>
-                Guardar Selección
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- Metrics Selection Modal - GA4 -->
-<div class="modal" id="ga4-metrics-modal">
-    <div class="modal-overlay" onclick="closeMetricsModal('ga4')"></div>
-    <div class="modal-content" style="max-width: 600px;">
-        <div class="modal-header">
-            <h3 class="modal-title">Seleccionar Métricas de GA4</h3>
-            <button class="modal-close" onclick="closeMetricsModal('ga4')">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <line x1="18" y1="6" x2="6" y2="18"/>
-                    <line x1="6" y1="6" x2="18" y2="18"/>
-                </svg>
-            </button>
-        </div>
-        <div class="modal-body">
-            <p class="text-secondary mb-lg">Selecciona las métricas que quieres incluir en los reportes de este cliente.</p>
-            <div class="metrics-grid" id="ga4-metrics-list">
-                {% for metric in available_ga4_metrics %}
-                <label class="metric-checkbox">
-                    <input type="checkbox" name="ga4_metric" value="{{ metric.0 }}"
-                           {% if metric.0 in ga4_metrics %}checked{% endif %}>
-                    <span class="metric-checkbox-content">
-                        <span class="metric-checkbox-name">{{ metric.1 }}</span>
-                        <span class="metric-checkbox-key">{{ metric.0 }}</span>
-                    </span>
-                </label>
-                {% endfor %}
+            <div class="help-step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h4>Seleccionar cuentas</h4>
+                    <p>Elige qué cuentas quieres agregar al cliente. Puedes agregar múltiples cuentas del mismo canal.</p>
+                </div>
             </div>
-        </div>
-        <div class="modal-footer">
-            <button class="btn btn-secondary" onclick="closeMetricsModal('ga4')">Cancelar</button>
-            <button class="btn btn-primary" onclick="saveMetrics('ga4')">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
-                    <polyline points="17 21 17 13 7 13 7 21"/>
-                    <polyline points="7 3 7 8 15 8"/>
-                </svg>
-                Guardar Selección
-            </button>
+            <div class="help-step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h4>Configurar campañas</h4>
+                    <p>Para cada cuenta, selecciona las campañas que quieres incluir en los reportes.</p>
+                </div>
+            </div>
+            <div class="help-step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h4>Seleccionar métricas</h4>
+                    <p>Elige las métricas específicas que quieres mostrar para cada cuenta en los reportes.</p>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <style>
-.integration-card {
+/* Integration Summary */
+.integration-summary {
+    margin-bottom: 2rem;
+}
+
+.summary-card {
     background: var(--color-bg-raised);
     border-radius: var(--radius-lg);
-    padding: 1.5rem;
+    padding: 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
     border: 1px solid var(--color-border);
     transition: var(--transition-base);
 }
 
-.integration-card:hover {
-    border-color: var(--color-border-hover);
-}
-
-.integration-card.connected {
+.summary-card.has-accounts {
     border-color: rgba(34, 197, 94, 0.3);
 }
 
-.integration-card.action-required {
-    border-color: rgba(245, 158, 11, 0.3);
-}
-
-.integration-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 1rem;
-    margin-bottom: 1rem;
-}
-
-.integration-logo {
+.summary-icon {
     width: 48px;
     height: 48px;
     border-radius: var(--radius-md);
@@ -377,127 +242,247 @@
     flex-shrink: 0;
 }
 
-.integration-info {
-    flex: 1;
-    min-width: 0;
+.summary-icon.google_ads {
+    background: rgba(234, 67, 53, 0.1);
+    color: #EA4335;
 }
 
-.integration-name {
-    font-size: 1rem;
+.summary-icon.ga4 {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F9AB00;
+}
+
+.summary-icon.meta_ads {
+    background: rgba(24, 119, 242, 0.1);
+    color: #1877F2;
+}
+
+.summary-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.summary-name {
     font-weight: 600;
-    margin-bottom: 0.25rem;
+    font-size: 0.95rem;
 }
 
-.integration-description {
-    font-size: 0.75rem;
+.summary-count {
+    font-size: 0.8rem;
     color: var(--color-text-tertiary);
 }
 
-.integration-details {
+/* Channel Section */
+.channel-section {
+    background: var(--color-bg-raised);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--color-border);
+}
+
+.channel-header {
     display: flex;
-    gap: 2rem;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.channel-title-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.channel-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.channel-icon.google_ads {
+    background: rgba(234, 67, 53, 0.1);
+    color: #EA4335;
+}
+
+.channel-icon.ga4 {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F9AB00;
+}
+
+.channel-icon.meta_ads {
+    background: rgba(24, 119, 242, 0.1);
+    color: #1877F2;
+}
+
+/* Accounts Grid */
+.accounts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.account-card {
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-md);
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    transition: var(--transition-base);
+}
+
+.account-card:hover {
+    border-color: var(--color-border-hover);
+}
+
+.account-card.connected {
+    border-left: 3px solid #22c55e;
+}
+
+.account-card.pending {
+    border-left: 3px solid #f59e0b;
+}
+
+.account-card.disconnected {
+    border-left: 3px solid #6b7280;
+}
+
+.account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.account-info {
+    min-width: 0;
+}
+
+.account-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.account-id {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    font-family: monospace;
+}
+
+.account-stats {
+    display: flex;
+    gap: 1.5rem;
     padding: 1rem 0;
     border-top: 1px solid var(--color-border);
     border-bottom: 1px solid var(--color-border);
     margin-bottom: 1rem;
 }
 
-.integration-stat {
+.stat {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
 }
 
-.integration-actions {
-    display: flex;
-    gap: 0.5rem;
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
 }
 
-.help-link {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 1rem;
-    background: var(--color-bg-elevated);
-    border-radius: var(--radius-md);
-    color: var(--color-text-primary);
-    text-decoration: none;
-    transition: var(--transition-base);
-}
-
-.help-link:hover {
-    background: var(--color-bg-hover);
-}
-
-.help-link svg {
-    color: var(--color-primary);
-}
-
-/* Metric pills preview */
-.selected-metrics-preview {
-    padding: 0.75rem;
-    background: var(--color-bg-elevated);
-    border-radius: var(--radius-md);
-}
-
-.metric-pill {
-    display: inline-block;
-    padding: 0.25rem 0.5rem;
-    background: var(--color-primary-alpha);
-    color: var(--color-primary);
-    border-radius: var(--radius-sm);
-    font-size: 0.7rem;
-    font-weight: 500;
-}
-
-/* Metrics modal */
-.metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.75rem;
-}
-
-.metric-checkbox {
-    display: flex;
-    align-items: center;
-    padding: 0.75rem;
-    background: var(--color-bg-elevated);
-    border-radius: var(--radius-md);
-    cursor: pointer;
-    transition: var(--transition-base);
-    border: 1px solid transparent;
-}
-
-.metric-checkbox:hover {
-    background: var(--color-bg-hover);
-}
-
-.metric-checkbox input {
-    margin-right: 0.75rem;
-    width: 18px;
-    height: 18px;
-    accent-color: var(--color-primary);
-}
-
-.metric-checkbox input:checked + .metric-checkbox-content {
-    color: var(--color-primary);
-}
-
-.metric-checkbox-content {
-    display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
-}
-
-.metric-checkbox-name {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
-
-.metric-checkbox-key {
+.stat-label {
     font-size: 0.7rem;
     color: var(--color-text-tertiary);
-    font-family: monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.account-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.empty-channel {
+    text-align: center;
+    padding: 2rem;
+    background: var(--color-bg-elevated);
+    border-radius: var(--radius-md);
+}
+
+/* Help Content */
+.help-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    padding-top: 1rem;
+}
+
+.help-step {
+    display: flex;
+    gap: 1rem;
+}
+
+.step-number {
+    width: 32px;
+    height: 32px;
+    background: var(--color-primary);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.step-content h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.step-content p {
+    font-size: 0.8rem;
+    color: var(--color-text-tertiary);
+    line-height: 1.5;
+}
+
+/* Badges */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+}
+
+.badge-success {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.badge-warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+
+.badge-danger {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+.badge-secondary {
+    background: var(--color-bg-elevated);
+    color: var(--color-text-tertiary);
 }
 
 /* Modal styles */

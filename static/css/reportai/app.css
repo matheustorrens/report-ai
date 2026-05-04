@@ -223,26 +223,10 @@ button {
     gap: var(--spacing-sm);
 }
 
-.sidebar-logo-icon {
-    width: 36px;
-    height: 36px;
-    background: linear-gradient(135deg, var(--color-primary), #00c2ff);
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: var(--font-weight-bold);
-}
-
-.sidebar-logo-text {
-    font-size: var(--font-size-xl);
-    font-weight: var(--font-weight-bold);
-    letter-spacing: -0.02em;
-}
-
-.sidebar-logo-text span {
-    color: var(--color-primary);
+.sidebar-logo-img {
+    height: 32px;
+    width: auto;
+    display: block;
 }
 
 .sidebar-nav {

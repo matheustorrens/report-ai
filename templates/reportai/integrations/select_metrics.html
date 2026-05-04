@@ -1,0 +1,570 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Seleccionar Métricas - {{ account.display_name }} - ReportAI{% endblock %}
+
+{% block page_title %}Seleccionar Métricas{% endblock %}
+
+{% block content %}
+<div class="select-metrics-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb mb-lg">
+        <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="breadcrumb-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver a Integraciones
+        </a>
+    </div>
+
+    <!-- Header Card -->
+    <div class="card mb-xl">
+        <div class="card-header">
+            <div class="header-with-icon">
+                <div class="channel-icon {{ account.channel }}">
+                    {% if account.channel == 'google_ads' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+                    {% elif account.channel == 'ga4' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/><path fill="currentColor" d="M18.5 10L17 12.5 15.5 10 14 10 16.25 14 14 18l1.5 0 1-2.5 1 2.5 1.5 0-2.25-4 2.25-4z"/></svg>
+                    {% elif account.channel == 'meta_ads' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    {% endif %}
+                </div>
+                <div>
+                    <h3 class="card-title">{{ account.display_name }}</h3>
+                    <p class="card-subtitle">
+                        Cliente: <strong>{{ client.name }}</strong> • 
+                        ID: <code>{{ account.account_id }}</code>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <p class="text-secondary">
+            Selecciona las métricas que quieres incluir en los reportes.
+            Estas métricas se mostrarán en los informes generados para este cliente.
+        </p>
+    </div>
+
+    <!-- Metrics Selection -->
+    <div class="card mb-xl">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Métricas Disponibles</h3>
+                <p class="card-subtitle">{{ available_metrics|length }} métrica(s) disponible(s) para {{ account.get_channel_display }}</p>
+            </div>
+            <div class="select-actions">
+                <button class="btn btn-secondary btn-sm" onclick="selectRecommended()">Seleccionar Recomendadas</button>
+                <button class="btn btn-secondary btn-sm" onclick="selectAll()">Todas</button>
+                <button class="btn btn-secondary btn-sm" onclick="deselectAll()">Ninguna</button>
+            </div>
+        </div>
+        
+        <div class="metrics-categories">
+            <!-- Performance Metrics -->
+            <div class="metrics-category">
+                <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Métricas de Rendimiento
+                </h4>
+                <div class="metrics-grid">
+                    {% for metric in available_metrics %}
+                    {% if metric.0 in 'impressions,clicks,sessions,users,pageviews,reach' %}
+                    <label class="metric-checkbox {% if metric.0 in 'impressions,clicks,sessions,users' %}recommended{% endif %}">
+                        <input type="checkbox" 
+                               name="metric" 
+                               value="{{ metric.0 }}"
+                               {% if metric.0 in selected_metric_keys %}checked{% endif %}
+                               data-recommended="{% if metric.0 in 'impressions,clicks,sessions,users' %}true{% endif %}">
+                        <div class="metric-checkbox-content">
+                            <span class="metric-checkbox-name">{{ metric.1 }}</span>
+                            <span class="metric-checkbox-key">{{ metric.0 }}</span>
+                        </div>
+                        <div class="metric-check">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Cost Metrics -->
+            <div class="metrics-category">
+                <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="1" x2="12" y2="23"/>
+                        <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                    </svg>
+                    Métricas de Costo
+                </h4>
+                <div class="metrics-grid">
+                    {% for metric in available_metrics %}
+                    {% if metric.0 in 'cost,spend,cpc,cpm,cpa' %}
+                    <label class="metric-checkbox {% if metric.0 in 'cost,spend,cpc' %}recommended{% endif %}">
+                        <input type="checkbox" 
+                               name="metric" 
+                               value="{{ metric.0 }}"
+                               {% if metric.0 in selected_metric_keys %}checked{% endif %}
+                               data-recommended="{% if metric.0 in 'cost,spend,cpc' %}true{% endif %}">
+                        <div class="metric-checkbox-content">
+                            <span class="metric-checkbox-name">{{ metric.1 }}</span>
+                            <span class="metric-checkbox-key">{{ metric.0 }}</span>
+                        </div>
+                        <div class="metric-check">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Conversion Metrics -->
+            <div class="metrics-category">
+                <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                    Métricas de Conversión
+                </h4>
+                <div class="metrics-grid">
+                    {% for metric in available_metrics %}
+                    {% if metric.0 in 'conversions,conversion_value,conversion_rate,roas,revenue' %}
+                    <label class="metric-checkbox {% if metric.0 in 'conversions,roas' %}recommended{% endif %}">
+                        <input type="checkbox" 
+                               name="metric" 
+                               value="{{ metric.0 }}"
+                               {% if metric.0 in selected_metric_keys %}checked{% endif %}
+                               data-recommended="{% if metric.0 in 'conversions,roas' %}true{% endif %}">
+                        <div class="metric-checkbox-content">
+                            <span class="metric-checkbox-name">{{ metric.1 }}</span>
+                            <span class="metric-checkbox-key">{{ metric.0 }}</span>
+                        </div>
+                        <div class="metric-check">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Engagement Metrics -->
+            <div class="metrics-category">
+                <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                    </svg>
+                    Métricas de Engagement
+                </h4>
+                <div class="metrics-grid">
+                    {% for metric in available_metrics %}
+                    {% if metric.0 in 'ctr,bounce_rate,session_duration,pages_per_session,engaged_sessions,engagement_rate,frequency,events,new_users,video_views,video_thruplay' %}
+                    <label class="metric-checkbox {% if metric.0 in 'ctr,engagement_rate' %}recommended{% endif %}">
+                        <input type="checkbox" 
+                               name="metric" 
+                               value="{{ metric.0 }}"
+                               {% if metric.0 in selected_metric_keys %}checked{% endif %}
+                               data-recommended="{% if metric.0 in 'ctr,engagement_rate' %}true{% endif %}">
+                        <div class="metric-checkbox-content">
+                            <span class="metric-checkbox-name">{{ metric.1 }}</span>
+                            <span class="metric-checkbox-key">{{ metric.0 }}</span>
+                        </div>
+                        <div class="metric-check">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Other Metrics (catch-all) -->
+            <div class="metrics-category">
+                <h4 class="category-title">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    Otras Métricas
+                </h4>
+                <div class="metrics-grid">
+                    {% for metric in available_metrics %}
+                    {% if metric.0 not in 'impressions,clicks,sessions,users,pageviews,reach,cost,spend,cpc,cpm,cpa,conversions,conversion_value,conversion_rate,roas,revenue,ctr,bounce_rate,session_duration,pages_per_session,engaged_sessions,engagement_rate,frequency,events,new_users,video_views,video_thruplay' %}
+                    <label class="metric-checkbox">
+                        <input type="checkbox" 
+                               name="metric" 
+                               value="{{ metric.0 }}"
+                               {% if metric.0 in selected_metric_keys %}checked{% endif %}>
+                        <div class="metric-checkbox-content">
+                            <span class="metric-checkbox-name">{{ metric.1 }}</span>
+                            <span class="metric-checkbox-key">{{ metric.0 }}</span>
+                        </div>
+                        <div class="metric-check">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                                <polyline points="20 6 9 17 4 12"/>
+                            </svg>
+                        </div>
+                    </label>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Selected Summary -->
+    <div class="selected-summary card mb-lg">
+        <div class="summary-content">
+            <span class="summary-count">
+                <strong id="selected-count">0</strong> métrica(s) seleccionada(s)
+            </span>
+            <div class="selected-preview" id="selected-preview"></div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+        <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="btn btn-secondary">
+            Cancelar
+        </a>
+        <button class="btn btn-primary" onclick="saveSelectedMetrics()" id="save-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Guardar y Finalizar
+        </button>
+    </div>
+</div>
+
+<style>
+.breadcrumb {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: var(--transition-base);
+}
+
+.breadcrumb-link:hover {
+    color: var(--color-primary);
+}
+
+.header-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.channel-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.channel-icon.google_ads {
+    background: rgba(234, 67, 53, 0.1);
+    color: #EA4335;
+}
+
+.channel-icon.ga4 {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F9AB00;
+}
+
+.channel-icon.meta_ads {
+    background: rgba(24, 119, 242, 0.1);
+    color: #1877F2;
+}
+
+.select-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.metrics-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.metrics-category {
+    border-bottom: 1px solid var(--color-border);
+    padding-bottom: 1.5rem;
+}
+
+.metrics-category:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+.category-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--color-text-secondary);
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+}
+
+.metric-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.metric-checkbox:hover {
+    border-color: var(--color-primary);
+    background: var(--color-bg-hover);
+}
+
+.metric-checkbox.recommended {
+    border-color: rgba(59, 130, 246, 0.3);
+}
+
+.metric-checkbox.recommended::before {
+    content: '★';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #3b82f6;
+    color: white;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    font-size: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.metric-checkbox {
+    position: relative;
+}
+
+.metric-checkbox input {
+    display: none;
+}
+
+.metric-checkbox:has(input:checked) {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+.metric-checkbox input:checked + .metric-checkbox-content + .metric-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.metric-checkbox-content {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.metric-checkbox-name {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.metric-checkbox-key {
+    font-size: 0.7rem;
+    color: var(--color-text-tertiary);
+    font-family: monospace;
+}
+
+.metric-check {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: var(--transition-base);
+    flex-shrink: 0;
+}
+
+.selected-summary {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+}
+
+.summary-content {
+    padding: 1rem;
+}
+
+.summary-count {
+    display: block;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.selected-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+.selected-preview .metric-pill {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    background: var(--color-primary-alpha);
+    color: var(--color-primary);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    font-weight: 500;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: 1rem;
+}
+</style>
+
+<script>
+// Update selected count and preview
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('input[name="metric"]:checked');
+    const count = checkboxes.length;
+    document.getElementById('selected-count').textContent = count;
+    
+    // Update preview
+    const preview = document.getElementById('selected-preview');
+    preview.innerHTML = '';
+    checkboxes.forEach(cb => {
+        const name = cb.closest('.metric-checkbox').querySelector('.metric-checkbox-name').textContent;
+        const pill = document.createElement('span');
+        pill.className = 'metric-pill';
+        pill.textContent = name;
+        preview.appendChild(pill);
+    });
+}
+
+// Initialize
+document.querySelectorAll('input[name="metric"]').forEach(cb => {
+    cb.addEventListener('change', updateSelectedCount);
+});
+updateSelectedCount();
+
+function selectRecommended() {
+    document.querySelectorAll('input[name="metric"]').forEach(cb => {
+        cb.checked = cb.dataset.recommended === 'true';
+    });
+    updateSelectedCount();
+}
+
+function selectAll() {
+    document.querySelectorAll('input[name="metric"]').forEach(cb => {
+        cb.checked = true;
+    });
+    updateSelectedCount();
+}
+
+function deselectAll() {
+    document.querySelectorAll('input[name="metric"]').forEach(cb => {
+        cb.checked = false;
+    });
+    updateSelectedCount();
+}
+
+async function saveSelectedMetrics() {
+    const checkboxes = document.querySelectorAll('input[name="metric"]:checked');
+    const metrics = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (metrics.length === 0) {
+        alert('Por favor, selecciona al menos una métrica.');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="loading-spinner"></span> Guardando...';
+    
+    try {
+        const response = await fetch('/app/api/integrations/account/{{ account.id }}/metrics/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                metrics: metrics
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Redirect back to integrations page
+            window.location.href = '/app/integrations/?client_id={{ client.id }}';
+        } else {
+            alert(data.error || 'Error al guardar las métricas.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Guardar y Finalizar
+            `;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión. Por favor, intenta de nuevo.');
+        saveBtn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

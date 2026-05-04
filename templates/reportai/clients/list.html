@@ -8,11 +8,12 @@
 {% block content %}
 <div class="clients-page">
     <!-- Header Actions -->
-    <div class="flex justify-between items-center mb-xl">
-        <div>
+    <div class="page-header mb-xl">
+        <div class="page-header-content">
             <p class="text-secondary">Gestiona los clientes de tu agencia y sus integraciones.</p>
+            <span class="client-count">{{ total_clients }} cliente{% if total_clients != 1 %}s{% endif %}</span>
         </div>
-        <button class="btn btn-primary" data-modal-open="add-client-modal">
+        <button class="btn btn-primary" onclick="openAddClientModal()">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <line x1="12" y1="5" x2="12" y2="19"/>
                 <line x1="5" y1="12" x2="19" y2="12"/>
@@ -21,312 +22,814 @@
         </button>
     </div>
     
-    <!-- Clients Table -->
-    <div class="table-container">
-        <table class="table" id="clients-table">
-            <thead>
-                <tr>
-                    <th>Cliente</th>
-                    <th>Industria</th>
-                    <th>Integraciones</th>
-                    <th>Último Reporte</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- TechStartup Inc -->
-                <tr>
-                    <td>
-                        <div class="flex items-center gap-sm">
-                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem;">TS</div>
-                            <div>
-                                <div class="font-medium">TechStartup Inc</div>
-                                <div class="text-sm text-tertiary">marketing@techstartup.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">Tecnología</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs">
-                            <span class="status-badge success" title="Google Ads">Google</span>
-                            <span class="status-badge success" title="Meta Ads">Meta</span>
-                            <span class="status-badge success" title="GA4">GA4</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">12 Abr 2026</span>
-                    </td>
-                    <td>
-                        <span class="status-badge success">Activo</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs justify-end">
-                            <a href="{% url 'reportai:client_profile' 1 %}" class="btn btn-ghost btn-sm">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Ver
-                            </a>
-                        </div>
-                    </td>
-                </tr>
+    {% if clients_data %}
+    <!-- Clients Grid -->
+    <div class="clients-grid">
+        {% for item in clients_data %}
+        <div class="client-card" data-client-id="{{ item.client.id }}">
+            <div class="client-card-header">
+                <div class="client-avatar">
+                    {{ item.client.name|slice:":2"|upper }}
+                </div>
+                <div class="client-info">
+                    <h3 class="client-name">{{ item.client.name }}</h3>
+                    {% if item.client.email %}
+                    <span class="client-email">{{ item.client.email }}</span>
+                    {% elif item.client.company %}
+                    <span class="client-email">{{ item.client.company }}</span>
+                    {% else %}
+                    <span class="client-email text-tertiary">Sin email</span>
+                    {% endif %}
+                </div>
+                <div class="client-menu">
+                    <button class="btn-icon" onclick="toggleClientMenu({{ item.client.id }})">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="1"/>
+                            <circle cx="12" cy="5" r="1"/>
+                            <circle cx="12" cy="19" r="1"/>
+                        </svg>
+                    </button>
+                    <div class="dropdown-menu" id="menu-{{ item.client.id }}">
+                        <a href="{% url 'reportai:client_profile' item.client.id %}" class="dropdown-item">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            Ver perfil
+                        </a>
+                        <a href="{% url 'reportai:integrations' %}?client_id={{ item.client.id }}" class="dropdown-item">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                <path d="M2 17l10 5 10-5"/>
+                                <path d="M2 12l10 5 10-5"/>
+                            </svg>
+                            Integraciones
+                        </a>
+                        <button class="dropdown-item" onclick="openEditClientModal({{ item.client.id }}, '{{ item.client.name|escapejs }}', '{{ item.client.email|default:''|escapejs }}', '{{ item.client.phone|default:''|escapejs }}', '{{ item.client.company|default:''|escapejs }}', '{{ item.client.knowledge_level|default:'leigo' }}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                            </svg>
+                            Editar
+                        </button>
+                        <div class="dropdown-divider"></div>
+                        <button class="dropdown-item danger" onclick="confirmDeleteClient({{ item.client.id }}, '{{ item.client.name|escapejs }}')">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/>
+                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                            </svg>
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="client-card-body">
+                {% if item.client.company %}
+                <div class="client-detail">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 21h18"/>
+                        <path d="M9 8h1"/>
+                        <path d="M9 12h1"/>
+                        <path d="M9 16h1"/>
+                        <path d="M14 8h1"/>
+                        <path d="M14 12h1"/>
+                        <path d="M14 16h1"/>
+                        <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16"/>
+                    </svg>
+                    <span>{{ item.client.company }}</span>
+                </div>
+                {% endif %}
                 
-                <!-- Fashion Brand Co -->
-                <tr>
-                    <td>
-                        <div class="flex items-center gap-sm">
-                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #ec4899, #f43f5e);">FB</div>
-                            <div>
-                                <div class="font-medium">Fashion Brand Co</div>
-                                <div class="text-sm text-tertiary">digital@fashionbrand.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">Moda</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs">
-                            <span class="status-badge success" title="Meta Ads">Meta</span>
-                            <span class="status-badge success" title="GA4">GA4</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">10 Abr 2026</span>
-                    </td>
-                    <td>
-                        <span class="status-badge success">Activo</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs justify-end">
-                            <a href="{% url 'reportai:client_profile' 2 %}" class="btn btn-ghost btn-sm">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Ver
-                            </a>
-                        </div>
-                    </td>
-                </tr>
+                {% if item.client.phone %}
+                <div class="client-detail">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                    </svg>
+                    <span>{{ item.client.phone }}</span>
+                </div>
+                {% endif %}
                 
-                <!-- Local Restaurant -->
-                <tr>
-                    <td>
-                        <div class="flex items-center gap-sm">
-                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #f59e0b, #ef4444);">LR</div>
-                            <div>
-                                <div class="font-medium">Local Restaurant</div>
-                                <div class="text-sm text-tertiary">owner@localrestaurant.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">Hostelería</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs">
-                            <span class="status-badge success" title="Google Ads">Google</span>
-                            <span class="status-badge success" title="Meta Ads">Meta</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">08 Abr 2026</span>
-                    </td>
-                    <td>
-                        <span class="status-badge success">Activo</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs justify-end">
-                            <a href="{% url 'reportai:client_profile' 3 %}" class="btn btn-ghost btn-sm">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Ver
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                
-                <!-- B2B Solutions Ltd -->
-                <tr>
-                    <td>
-                        <div class="flex items-center gap-sm">
-                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #0a66c2, #0075ff);">B2</div>
-                            <div>
-                                <div class="font-medium">B2B Solutions Ltd</div>
-                                <div class="text-sm text-tertiary">marketing@b2bsolutions.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">B2B / SaaS</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs">
-                            <span class="status-badge success" title="Google Ads">Google</span>
-                            <span class="status-badge success" title="GA4">GA4</span>
-                            <span class="status-badge success" title="LinkedIn Ads">LinkedIn</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">05 Abr 2026</span>
-                    </td>
-                    <td>
-                        <span class="status-badge success">Activo</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs justify-end">
-                            <a href="{% url 'reportai:client_profile' 4 %}" class="btn btn-ghost btn-sm">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Ver
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-                
-                <!-- E-commerce Plus -->
-                <tr>
-                    <td>
-                        <div class="flex items-center gap-sm">
-                            <div class="user-avatar" style="width: 36px; height: 36px; font-size: 0.75rem; background: linear-gradient(135deg, #10b981, #14b8a6);">EP</div>
-                            <div>
-                                <div class="font-medium">E-commerce Plus</div>
-                                <div class="text-sm text-tertiary">growth@ecommerceplus.com</div>
-                            </div>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">E-commerce</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs">
-                            <span class="status-badge success" title="Google Ads">Google</span>
-                            <span class="status-badge success" title="Meta Ads">Meta</span>
-                            <span class="status-badge success" title="GA4">GA4</span>
-                        </div>
-                    </td>
-                    <td>
-                        <span class="text-secondary">01 Abr 2026</span>
-                    </td>
-                    <td>
-                        <span class="status-badge success">Activo</span>
-                    </td>
-                    <td>
-                        <div class="flex gap-xs justify-end">
-                            <a href="{% url 'reportai:client_profile' 5 %}" class="btn btn-ghost btn-sm">
-                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                                    <circle cx="12" cy="12" r="3"/>
-                                </svg>
-                                Ver
-                            </a>
-                        </div>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                <div class="client-integrations">
+                    <span class="integrations-label">Integraciones:</span>
+                    <div class="integration-badges">
+                        {% if item.integrations.google_ads %}
+                        <span class="badge badge-google" title="Google Ads conectado">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+                        </span>
+                        {% endif %}
+                        {% if item.integrations.ga4 %}
+                        <span class="badge badge-ga4" title="GA4 conectado">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/></svg>
+                        </span>
+                        {% endif %}
+                        {% if item.integrations.meta_ads %}
+                        <span class="badge badge-meta" title="Meta Ads conectado">
+                            <svg width="12" height="12" viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                        </span>
+                        {% endif %}
+                        {% if not item.integrations.google_ads and not item.integrations.ga4 and not item.integrations.meta_ads %}
+                        <span class="no-integrations">Sin integraciones</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="client-card-footer">
+                <a href="{% url 'reportai:integrations' %}?client_id={{ item.client.id }}" class="btn btn-secondary btn-sm">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    Integraciones
+                </a>
+                <a href="{% url 'reportai:client_profile' item.client.id %}" class="btn btn-primary btn-sm">
+                    Ver Perfil
+                </a>
+            </div>
+        </div>
+        {% endfor %}
     </div>
+    
+    {% else %}
+    <!-- Empty State -->
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+                <circle cx="9" cy="7" r="4"/>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+        </div>
+        <h3 class="empty-state-title">No hay clientes todavía</h3>
+        <p class="empty-state-description">
+            Añade tu primer cliente para comenzar a gestionar sus integraciones y generar reportes.
+        </p>
+        <button class="btn btn-primary" onclick="openAddClientModal()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+            Añadir Primer Cliente
+        </button>
+    </div>
+    {% endif %}
 </div>
 
-<!-- Add Client Modal -->
-<div class="modal-overlay" id="add-client-modal">
-    <div class="modal">
-        <div class="modal-header">
-            <h2 class="modal-title">Añadir Cliente</h2>
-            <button class="modal-close" data-modal-close>
+<!-- Add/Edit Client Modal -->
+<div class="modal-overlay" id="client-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.2s;">
+    <div class="modal" style="background: #1e1e2d; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative;">
+        <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h2 class="modal-title" id="modal-title" style="font-size: 1.125rem; font-weight: 600; margin: 0; color: #fff;">Añadir Cliente</h2>
+            <button class="modal-close" onclick="closeClientModal()" style="background: transparent; border: none; color: #888; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                     <line x1="18" y1="6" x2="6" y2="18"/>
                     <line x1="6" y1="6" x2="18" y2="18"/>
                 </svg>
             </button>
         </div>
-        <div class="modal-body">
-            <form id="add-client-form">
-                <div class="form-group">
-                    <label class="form-label" for="client-name">Nombre del Cliente</label>
-                    <input type="text" class="form-input" id="client-name" name="name" placeholder="Empresa S.L." required>
+        <form id="client-form" onsubmit="submitClientForm(event)">
+            <input type="hidden" id="client-id" value="">
+            <div class="modal-body" style="padding: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label" for="client-name" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Nombre del Cliente *</label>
+                    <input type="text" class="form-input" id="client-name" name="name" placeholder="Ej: Acme Corporation" required style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label" for="client-email">Email</label>
-                    <input type="email" class="form-input" id="client-email" name="email" placeholder="marketing@empresa.com" required>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label class="form-label" for="client-email" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Email</label>
+                    <input type="email" class="form-input" id="client-email" name="email" placeholder="contacto@empresa.com" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label" for="client-whatsapp">WhatsApp <span class="form-label-optional">(opcional)</span></label>
-                    <input type="tel" class="form-input" id="client-whatsapp" name="whatsapp" placeholder="+34 612 345 678">
-                </div>
-                
-                <div class="grid-2">
-                    <div class="form-group">
-                        <label class="form-label" for="client-industry">Industria</label>
-                        <select class="form-select" id="client-industry" name="industry" required>
-                            <option value="">Seleccionar...</option>
-                            <option value="tecnologia">Tecnología</option>
-                            <option value="ecommerce">E-commerce</option>
-                            <option value="moda">Moda</option>
-                            <option value="hosteleria">Hostelería</option>
-                            <option value="b2b">B2B / SaaS</option>
-                            <option value="salud">Salud</option>
-                            <option value="educacion">Educación</option>
-                            <option value="otros">Otros</option>
-                        </select>
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="client-phone" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Teléfono</label>
+                        <input type="tel" class="form-input" id="client-phone" name="phone" placeholder="+34 600 000 000" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
                     </div>
                     
-                    <div class="form-group">
-                        <label class="form-label" for="client-language">Idioma</label>
-                        <select class="form-select" id="client-language" name="language" required>
-                            <option value="es">Español</option>
-                            <option value="en">Inglés</option>
-                            <option value="pt">Portugués</option>
-                        </select>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" for="client-company" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Empresa</label>
+                        <input type="text" class="form-input" id="client-company" name="company" placeholder="Nombre de la empresa" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
                     </div>
                 </div>
                 
-                <div class="form-group">
-                    <label class="form-label" for="client-level">Nivel Técnico</label>
-                    <select class="form-select" id="client-level" name="technical_level" required>
-                        <option value="basico">Básico - Prefiere resúmenes simples</option>
-                        <option value="avanzado">Avanzado - Incluir métricas detalladas</option>
+                <div class="form-group" style="margin-top: 1.25rem; margin-bottom: 0;">
+                    <label class="form-label" for="client-knowledge-level" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Nivel de conocimiento del cliente</label>
+                    <select class="form-input" id="client-knowledge-level" name="knowledge_level" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box; cursor: pointer;">
+                        <option value="leigo">Leigo — resumen en lenguaje de negocio</option>
+                        <option value="avancado">Avanzado — métricas técnicas y desglose por plataforma</option>
                     </select>
+                    <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.375rem; margin-bottom: 0;">Determina qué métricas se muestran en el dashboard público del cliente.</p>
                 </div>
-                
-                <div class="form-group">
-                    <label class="form-label">Plataformas Conectadas</label>
-                    <div class="flex flex-col gap-sm">
-                        <label class="form-checkbox">
-                            <input type="checkbox" name="platforms" value="google_ads">
-                            <span class="text-sm">Google Ads</span>
-                        </label>
-                        <label class="form-checkbox">
-                            <input type="checkbox" name="platforms" value="meta_ads">
-                            <span class="text-sm">Meta Ads</span>
-                        </label>
-                        <label class="form-checkbox">
-                            <input type="checkbox" name="platforms" value="ga4">
-                            <span class="text-sm">Google Analytics 4</span>
-                        </label>
-                        <label class="form-checkbox">
-                            <input type="checkbox" name="platforms" value="linkedin_ads">
-                            <span class="text-sm">LinkedIn Ads</span>
-                        </label>
-                    </div>
-                </div>
-            </form>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" class="btn btn-secondary" onclick="closeClientModal()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Cancelar</button>
+                <button type="submit" class="btn btn-primary" id="submit-btn" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: #0075ff; border: none; color: #fff;">
+                    <span id="submit-text">Crear Cliente</span>
+                    <span id="submit-loading" style="display: none;">
+                        <svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 12a9 9 0 11-6.219-8.56"/>
+                        </svg>
+                        Guardando...
+                    </span>
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" id="delete-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.2s;">
+    <div class="modal" style="background: #1e1e2d; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 400px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative;">
+        <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h2 class="modal-title" style="font-size: 1.125rem; font-weight: 600; margin: 0; color: #fff;">Eliminar Cliente</h2>
+            <button class="modal-close" onclick="closeDeleteModal()" style="background: transparent; border: none; color: #888; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
         </div>
-        <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-modal-close>Cancelar</button>
-            <button type="submit" form="add-client-form" class="btn btn-primary">Añadir Cliente</button>
+        <div class="modal-body" style="padding: 1.5rem;">
+            <div class="delete-warning" style="text-align: center; margin-bottom: 1rem; color: #f59e0b;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <p style="text-align: center; font-size: 0.95rem; margin-bottom: 0.5rem; color: #e0e0e0;">
+                ¿Estás seguro de que quieres eliminar al cliente <strong id="delete-client-name"></strong>?
+            </p>
+            <p style="text-align: center; font-size: 0.8rem; color: #888;">
+                Esta acción eliminará todas las integraciones y datos asociados. No se puede deshacer.
+            </p>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Cancelar</button>
+            <button type="button" class="btn btn-danger" id="confirm-delete-btn" onclick="deleteClient()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: #ef4444; border: none; color: #fff;">
+                Eliminar Cliente
+            </button>
         </div>
     </div>
 </div>
+
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.client-count {
+    font-size: 0.8rem;
+    color: var(--color-text-tertiary);
+}
+
+/* Clients Grid */
+.clients-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+}
+
+.client-card {
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    transition: var(--transition-base);
+}
+
+.client-card:hover {
+    border-color: var(--color-border-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.client-card-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.25rem;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.client-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: linear-gradient(135deg, var(--color-primary), #6366f1);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 1rem;
+    flex-shrink: 0;
+}
+
+.client-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.client-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.client-email {
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.client-menu {
+    position: relative;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: var(--color-text-tertiary);
+    border-radius: var(--radius-sm);
+    transition: var(--transition-base);
+}
+
+.btn-icon:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 160px;
+    padding: 0.5rem;
+    display: none;
+    z-index: 100;
+}
+
+.dropdown-menu.active {
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    transition: var(--transition-base);
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    background: none;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-text-primary);
+}
+
+.dropdown-item.danger {
+    color: #ef4444;
+}
+
+.dropdown-item.danger:hover {
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--color-border);
+    margin: 0.5rem 0;
+}
+
+.client-card-body {
+    padding: 1.25rem;
+}
+
+.client-detail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--color-text-secondary);
+    margin-bottom: 0.5rem;
+}
+
+.client-detail svg {
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+}
+
+.client-integrations {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--color-border);
+}
+
+.integrations-label {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.integration-badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: var(--radius-sm);
+}
+
+.badge-google {
+    background: rgba(234, 67, 53, 0.1);
+    color: #EA4335;
+}
+
+.badge-ga4 {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F9AB00;
+}
+
+.badge-meta {
+    background: rgba(24, 119, 242, 0.1);
+    color: #1877F2;
+}
+
+.no-integrations {
+    font-size: 0.8rem;
+    color: var(--color-text-tertiary);
+    font-style: italic;
+}
+
+.client-card-footer {
+    display: flex;
+    gap: 0.75rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-elevated);
+    border-top: 1px solid var(--color-border);
+}
+
+.client-card-footer .btn {
+    flex: 1;
+}
+
+/* Empty State */
+.empty-state-card {
+    background: var(--color-bg-raised);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 4rem 2rem;
+    text-align: center;
+    max-width: 400px;
+    margin: 2rem auto;
+}
+
+.empty-state-icon {
+    width: 80px;
+    height: 80px;
+    background: var(--color-bg-elevated);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    color: var(--color-text-tertiary);
+}
+
+.empty-state-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state-description {
+    color: var(--color-text-secondary);
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+}
+
+/* Form */
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #e0e0e0;
+}
+
+.form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 8px;
+    background: #0d0d14;
+    color: #fff;
+    transition: all 0.2s;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: #0075ff;
+    box-shadow: 0 0 0 3px rgba(0, 117, 255, 0.2);
+}
+
+.form-input::placeholder {
+    color: #666;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px rgba(0, 117, 255, 0.1);
+}
+
+.form-input::placeholder {
+    color: var(--color-text-tertiary);
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+}
+
+/* Animation */
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+let editingClientId = null;
+let deletingClientId = null;
+
+// Close modal when clicking on overlay (but not the modal content)
+document.getElementById('client-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeClientModal();
+    }
+});
+
+document.getElementById('delete-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.client-menu')) {
+        document.querySelectorAll('.dropdown-menu').forEach(menu => {
+            menu.classList.remove('active');
+        });
+    }
+});
+
+function toggleClientMenu(clientId) {
+    const menu = document.getElementById(`menu-${clientId}`);
+    const isActive = menu.classList.contains('active');
+    
+    // Close all menus
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('active');
+    });
+    
+    // Toggle this one
+    if (!isActive) {
+        menu.classList.add('active');
+    }
+}
+
+function openAddClientModal() {
+    editingClientId = null;
+    document.getElementById('modal-title').textContent = 'Añadir Cliente';
+    document.getElementById('submit-text').textContent = 'Crear Cliente';
+    document.getElementById('client-form').reset();
+    document.getElementById('client-id').value = '';
+    const modal = document.getElementById('client-modal');
+    modal.classList.add('active');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    document.body.style.overflow = 'hidden';
+}
+
+function openEditClientModal(id, name, email, phone, company, knowledgeLevel) {
+    editingClientId = id;
+    document.getElementById('modal-title').textContent = 'Editar Cliente';
+    document.getElementById('submit-text').textContent = 'Guardar Cambios';
+    document.getElementById('client-id').value = id;
+    document.getElementById('client-name').value = name;
+    document.getElementById('client-email').value = email;
+    document.getElementById('client-phone').value = phone;
+    document.getElementById('client-company').value = company;
+    document.getElementById('client-knowledge-level').value = knowledgeLevel || 'leigo';
+    const modal = document.getElementById('client-modal');
+    modal.classList.add('active');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    document.body.style.overflow = 'hidden';
+    
+    // Close dropdown
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('active');
+    });
+}
+
+function closeClientModal() {
+    const modal = document.getElementById('client-modal');
+    modal.classList.remove('active');
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    document.body.style.overflow = '';
+}
+
+function confirmDeleteClient(id, name) {
+    deletingClientId = id;
+    document.getElementById('delete-client-name').textContent = name;
+    const modal = document.getElementById('delete-modal');
+    modal.classList.add('active');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    document.body.style.overflow = 'hidden';
+    
+    // Close dropdown
+    document.querySelectorAll('.dropdown-menu').forEach(m => {
+        m.classList.remove('active');
+    });
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('delete-modal');
+    modal.classList.remove('active');
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    document.body.style.overflow = '';
+    deletingClientId = null;
+}
+
+async function submitClientForm(event) {
+    event.preventDefault();
+    
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoading = document.getElementById('submit-loading');
+    
+    submitBtn.disabled = true;
+    submitText.style.display = 'none';
+    submitLoading.style.display = 'inline-flex';
+    
+    const formData = {
+        name: document.getElementById('client-name').value,
+        email: document.getElementById('client-email').value,
+        phone: document.getElementById('client-phone').value,
+        company: document.getElementById('client-company').value,
+        knowledge_level: document.getElementById('client-knowledge-level').value,
+    };
+    
+    const clientId = document.getElementById('client-id').value;
+    const url = clientId ? `/app/api/clients/${clientId}/` : '/app/api/clients/';
+    
+    try {
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify(formData)
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            if (!clientId && data.profile_url) {
+                // Novo cliente criado: redireciona para perfil com modal de onboarding
+                window.location.href = data.profile_url;
+            } else {
+                window.location.reload();
+            }
+        } else {
+            alert(data.error || 'Error al guardar el cliente.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión. Por favor, intenta de nuevo.');
+    } finally {
+        submitBtn.disabled = false;
+        submitText.style.display = 'inline';
+        submitLoading.style.display = 'none';
+    }
+}
+
+async function deleteClient() {
+    if (!deletingClientId) return;
+    
+    const deleteBtn = document.getElementById('confirm-delete-btn');
+    deleteBtn.disabled = true;
+    deleteBtn.textContent = 'Eliminando...';
+    
+    try {
+        const response = await fetch(`/app/api/clients/${deletingClientId}/delete/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Error al eliminar el cliente.');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión. Por favor, intenta de nuevo.');
+    } finally {
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = 'Eliminar Cliente';
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
 {% endblock %}

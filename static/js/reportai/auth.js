@@ -44,48 +44,46 @@ function initFormValidation() {
     
     forms.forEach(form => {
         form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            
             const formData = new FormData(form);
             const data = Object.fromEntries(formData.entries());
             
             // Basic validation
-            let isValid = true;
             const errors = {};
             
             // Email validation
             if (data.email && !isValidEmail(data.email)) {
                 errors.email = 'Por favor, introduce un email válido';
-                isValid = false;
             }
             
             // Password validation (for register)
             if (data.password && data.password.length < 8) {
                 errors.password = 'La contraseña debe tener al menos 8 caracteres';
-                isValid = false;
             }
             
             // Password confirmation
             if (data.password_confirm && data.password !== data.password_confirm) {
                 errors.password_confirm = 'Las contraseñas no coinciden';
-                isValid = false;
             }
             
             // Agency name validation (for register)
             if (data.agency_name && data.agency_name.length < 2) {
                 errors.agency_name = 'El nombre de la agencia es requerido';
-                isValid = false;
             }
             
             // Show/clear errors
             clearFormErrors(form);
-            if (!isValid) {
+            if (Object.keys(errors).length > 0) {
+                e.preventDefault();
                 showFormErrors(form, errors);
                 return;
             }
             
-            // Simulate form submission (mock)
-            handleAuthSubmit(form, data);
+            // Sem erros: deixa o formulário submeter normalmente para o Django
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.textContent = 'Procesando...';
+            }
         });
     });
 }
@@ -115,14 +113,11 @@ function showFormErrors(form, errors) {
 }
 
 // =============================================================================
-// AUTH SUBMISSION (MOCK)
+// AUTH SUBMISSION
 // =============================================================================
 
-async function handleAuthSubmit(form, data) {
+function handleAuthSubmit(form) {
     const submitBtn = form.querySelector('button[type="submit"]');
-    const originalText = submitBtn.textContent;
-    
-    // Show loading state
     submitBtn.disabled = true;
     submitBtn.innerHTML = `
         <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" class="animate-spin">
@@ -130,20 +125,8 @@ async function handleAuthSubmit(form, data) {
         </svg>
         Procesando...
     `;
-    
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    // Mock success - redirect based on form type
-    const isRegister = form.classList.contains('register-form');
-    
-    if (isRegister) {
-        // Redirect to onboarding integrations
-        window.location.href = '/app/onboarding/integrations/';
-    } else {
-        // Redirect to dashboard
-        window.location.href = '/app/';
-    }
+    // Submete o formulário nativamente para o backend Django processar
+    form.submit();
 }
 
 // =============================================================================

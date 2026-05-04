@@ -135,14 +135,34 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# URL de login usada pelo @login_required
+LOGIN_URL = '/app/login/'
+
 # Google OAuth2 / API Settings
 GOOGLE_ADS_DEVELOPER_TOKEN = os.environ.get('GOOGLE_ADS_DEVELOPER_TOKEN', '')
 GOOGLE_ADS_CLIENT_ID = os.environ.get('GOOGLE_ADS_CLIENT_ID', '')
 GOOGLE_ADS_CLIENT_SECRET = os.environ.get('GOOGLE_ADS_CLIENT_SECRET', '')
 GOOGLE_ADS_LOGIN_CUSTOMER_ID = os.environ.get('GOOGLE_ADS_LOGIN_CUSTOMER_ID', '')
+GOOGLE_ADS_API_VERSION = os.environ.get('GOOGLE_ADS_API_VERSION', 'v23')
 
 # OAuth redirect URI - change to production URL in production
 GOOGLE_OAUTH_REDIRECT_URI = os.environ.get(
     'GOOGLE_OAUTH_REDIRECT_URI', 
     'http://localhost:8000/oauth/callback'
 )
+
+# Groq API (geração de mensagens com IA)
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY', '')
+GROQ_MODEL = os.environ.get('GROQ_MODEL', 'llama-3.3-70b-versatile')
+
+# SendGrid (envio de e-mail)
+SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
+SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@cacemirolabs.com')
+SENDGRID_FROM_NAME = os.environ.get('SENDGRID_FROM_NAME', 'ReportAI')
+
+# WAHA — WhatsApp via Docker local
+WAHA_URL = os.environ.get('WAHA_URL', 'http://localhost:3000')
+WAHA_SESSION = os.environ.get('WAHA_SESSION', 'default')
+
+# URL base do projeto (usado para gerar links no relatório)
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')

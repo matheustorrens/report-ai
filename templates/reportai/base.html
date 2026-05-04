@@ -7,7 +7,7 @@
     <title>{% block title %}ReportAI{% endblock %}</title>
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%230075ff' width='100' height='100' rx='20'/><text x='50' y='65' font-size='50' text-anchor='middle' fill='white' font-weight='bold'>R</text></svg>">
+    <link rel="icon" type="image/png" href="{% static 'img/ReportAI.png' %}">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -24,8 +24,7 @@
         <aside class="app-sidebar">
             <div class="sidebar-header">
                 <a href="{% url 'reportai:dashboard' %}" class="sidebar-logo">
-                    <div class="sidebar-logo-icon">R</div>
-                    <span class="sidebar-logo-text">Report<span>AI</span></span>
+                    <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI" class="sidebar-logo-img">
                 </a>
             </div>
             
@@ -62,7 +61,7 @@
                             <line x1="16" y1="17" x2="8" y2="17"/>
                             <polyline points="10 9 9 9 8 9"/>
                         </svg>
-                        <span class="nav-label">Reports</span>
+                        <span class="nav-label">Reportes</span>
                     </a>
                 </div>
                 

@@ -1,0 +1,349 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ client.name }} — Reporte de Campañas</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-primary:       #0075ff;
+            --color-bg-app:        #0a0a10;
+            --color-bg-card:       #141420;
+            --color-bg-elevated:   #1e1e2d;
+            --color-text-primary:  #e6eaed;
+            --color-text-secondary:#9ca3af;
+            --color-text-tertiary: #6b7280;
+            --color-border:        rgba(255,255,255,0.06);
+            --color-border-light:  rgba(255,255,255,0.10);
+            --color-success:       #10b981;
+            --color-success-bg:    rgba(16,185,129,0.12);
+            --color-warning:       #f59e0b;
+            --color-warning-bg:    rgba(245,158,11,0.12);
+            --color-orange:        #f97316;
+            --color-orange-bg:     rgba(249,115,22,0.12);
+            --color-error:         #ef4444;
+            --color-error-bg:      rgba(239,68,68,0.12);
+            --font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            --radius: 12px;
+        }
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: var(--font-family);
+            background: var(--color-bg-app);
+            color: var(--color-text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .pd-wrapper {
+            flex: 1;
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 32px 20px 64px;
+        }
+        .pd-header { margin-bottom: 32px; }
+        .pd-brand {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .pd-brand-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--color-primary);
+        }
+        .pd-brand-name {
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--color-text-tertiary);
+        }
+        .pd-client-name {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-text-primary);
+            line-height: 1.2;
+            margin-bottom: 6px;
+        }
+        .pd-report-date {
+            font-size: 0.875rem;
+            color: var(--color-text-tertiary);
+        }
+        .pd-section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--color-text-tertiary);
+            margin-bottom: 12px;
+        }
+        /* Score */
+        .pd-score-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .pd-score-number {
+            font-size: 2.25rem;
+            font-weight: 700;
+            line-height: 1;
+            flex-shrink: 0;
+            min-width: 72px;
+        }
+        .pd-score-number.green  { color: var(--color-success); }
+        .pd-score-number.yellow { color: var(--color-warning); }
+        .pd-score-number.orange { color: var(--color-orange);  }
+        .pd-score-number.red    { color: var(--color-error);   }
+        .pd-score-details { flex: 1; min-width: 0; }
+        .pd-score-label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: var(--color-text-tertiary);
+            margin-bottom: 8px;
+        }
+        .pd-score-bar-track {
+            height: 6px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .pd-score-bar { height: 100%; border-radius: 999px; transition: width 0.6s ease; }
+        .pd-score-bar.green  { background: var(--color-success); }
+        .pd-score-bar.yellow { background: var(--color-warning); }
+        .pd-score-bar.orange { background: var(--color-orange);  }
+        .pd-score-bar.red    { background: var(--color-error);   }
+        .pd-score-context { font-size: 0.8125rem; color: var(--color-text-secondary); }
+        /* Metrics grid */
+        .pd-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+        .pd-metric-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 18px 16px;
+        }
+        .pd-metric-label { font-size: 0.75rem; color: var(--color-text-tertiary); margin-bottom: 6px; }
+        .pd-metric-value { font-size: 1.375rem; font-weight: 700; color: var(--color-text-primary); line-height: 1; margin-bottom: 6px; }
+        .pd-metric-delta { font-size: 0.75rem; font-weight: 500; }
+        .pd-metric-delta.up   { color: var(--color-success); }
+        .pd-metric-delta.down { color: var(--color-error); }
+        .pd-metric-delta.flat { color: var(--color-text-tertiary); }
+        /* Message */
+        .pd-message-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 28px;
+        }
+        .pd-message-text {
+            font-size: 0.9375rem;
+            line-height: 1.75;
+            color: var(--color-text-secondary);
+            white-space: pre-wrap;
+        }
+        /* Breakdown por plataforma — tabs */
+        .pd-tabs {
+            display: flex;
+            gap: 4px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            margin-bottom: 20px;
+        }
+        .pd-tab {
+            background: none;
+            border: none;
+            color: var(--color-text-tertiary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+            margin-bottom: -1px;
+        }
+        .pd-tab:hover { color: var(--color-text-secondary); }
+        .pd-tab.active {
+            color: var(--color-text-primary);
+            border-bottom-color: var(--color-primary);
+        }
+        .pd-tab-panel { display: none; }
+        .pd-tab-panel.active { display: block; }
+        /* Breakdown */
+        .pd-breakdown { margin-bottom: 28px; }
+        .pd-kpi-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--color-border);
+            font-size: 0.8125rem;
+        }
+        .pd-kpi-row:last-child { border-bottom: none; }
+        .pd-kpi-key   { color: var(--color-text-tertiary); }
+        .pd-kpi-value { color: var(--color-text-primary); font-weight: 600; }
+        /* Empty */
+        .pd-empty {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 48px 24px;
+            text-align: center;
+            color: var(--color-text-tertiary);
+        }
+        .pd-empty-icon  { font-size: 2.5rem; margin-bottom: 16px; }
+        .pd-empty-title { font-size: 1rem; font-weight: 600; color: var(--color-text-secondary); margin-bottom: 8px; }
+        .pd-empty-body  { font-size: 0.875rem; }
+        /* Footer */
+        .pd-footer {
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--color-text-tertiary);
+        }
+        .pd-footer a { color: var(--color-primary); text-decoration: none; }
+    </style>
+</head>
+<body>
+
+<div class="pd-wrapper">
+
+    <!-- Header -->
+    <header class="pd-header">
+        <div class="pd-brand">
+            <div class="pd-brand-dot"></div>
+            <span class="pd-brand-name">ReportAI</span>
+        </div>
+        <h1 class="pd-client-name">{{ client.name }}</h1>
+        {% if latest_log %}
+        <p class="pd-report-date">Semana del {{ latest_log.sent_at|date:"d \d\e F, Y" }}</p>
+        {% endif %}
+    </header>
+
+    {% if not latest_log %}
+    <!-- Estado vacío: sin reportes todavía -->
+    <div class="pd-empty">
+        <div class="pd-empty-icon">📊</div>
+        <div class="pd-empty-title">Todavía no hay reportes</div>
+        <div class="pd-empty-body">Tu agencia enviará el primer reporte en breve.</div>
+    </div>
+
+    {% else %}
+
+    <!-- Score de campaña -->
+    {% if latest_log.campaign_score is not None %}
+    {% with score=latest_log.campaign_score %}
+    <div class="pd-score-card">
+        <div class="pd-score-number {% if score >= 80 %}green{% elif score >= 60 %}yellow{% elif score >= 40 %}orange{% else %}red{% endif %}">{{ score }}</div>
+        <div class="pd-score-details">
+            <div class="pd-score-label">Puntuación de campaña</div>
+            <div class="pd-score-bar-track">
+                <div class="pd-score-bar {% if score >= 80 %}green{% elif score >= 60 %}yellow{% elif score >= 40 %}orange{% else %}red{% endif %}" style="width: {{ score }}%;"></div>
+            </div>
+            {% if latest_log.score_reason %}
+            <div class="pd-score-context">{{ latest_log.score_reason }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endwith %}
+    {% endif %}
+
+    <!-- Cards de métricas destacadas (order=0 por plataforma) -->
+    {% if metrics_by_platform %}
+    <p class="pd-section-title" style="margin-bottom: 12px;">Esta semana</p>
+    <div class="pd-metrics-grid" style="margin-bottom: 28px;">
+        {% for platform_key, platform_data in metrics_by_platform.items %}
+        {% for metric in platform_data.card_metrics %}
+        <div class="pd-metric-card">
+            <div class="pd-metric-label">{{ metric.display_name }}</div>
+            <div class="pd-metric-value">{{ metric.formatted_value }}</div>
+            {% if metric.delta is not None %}
+            <span class="pd-metric-delta {{ metric.delta_class }}">
+                {{ metric.delta_arrow }} {{ metric.delta_abs }}% vs semana anterior
+            </span>
+            {% endif %}
+        </div>
+        {% endfor %}
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Mensaje de IA -->
+    {% if latest_log.message_generated %}
+    <p class="pd-section-title">Análisis de tu agencia</p>
+    <div class="pd-message-card">
+        <p class="pd-message-text">{{ latest_log.message_generated }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Desglose por plataforma — tabs -->
+    {% if metrics_by_platform %}
+    <div class="pd-breakdown">
+        <p class="pd-section-title">Desglose por plataforma</p>
+
+        <!-- Navegação de tabs -->
+        <div class="pd-tabs">
+            {% for platform_key, platform_data in metrics_by_platform.items %}
+            {% if forloop.first %}
+            <button class="pd-tab active" data-platform="{{ platform_key }}">{{ platform_data.label }}</button>
+            {% else %}
+            <button class="pd-tab" data-platform="{{ platform_key }}">{{ platform_data.label }}</button>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <!-- Painéis de conteúdo -->
+        {% for platform_key, platform_data in metrics_by_platform.items %}
+        <div class="pd-tab-panel {% if forloop.first %}active{% endif %}" data-platform="{{ platform_key }}"
+             style="background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px;">
+            {% for metric in platform_data.all_metrics %}
+            <div class="pd-kpi-row">
+                <span class="pd-kpi-key">{{ metric.display_name }}</span>
+                <span class="pd-kpi-value">{{ metric.formatted_value }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% endif %}{# end if latest_log #}
+
+    <footer class="pd-footer">
+        Reporte generado por <a href="https://getreportai.com" target="_blank">ReportAI</a>
+    </footer>
+
+</div>
+
+<script>
+document.querySelectorAll('.pd-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.pd-tab, .pd-tab-panel').forEach(el => el.classList.remove('active'));
+        tab.classList.add('active');
+        const panel = document.querySelector('.pd-tab-panel[data-platform="' + tab.dataset.platform + '"]');
+        if (panel) panel.classList.add('active');
+    });
+});
+</script>
+
+</body>
+</html>

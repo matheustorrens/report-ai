@@ -1,0 +1,420 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Seleccionar Cuentas - {{ channel_name }} - ReportAI{% endblock %}
+
+{% block page_title %}Seleccionar Cuentas de {{ channel_name }}{% endblock %}
+
+{% block content %}
+<div class="select-accounts-page">
+    <!-- Breadcrumb -->
+    <div class="breadcrumb mb-lg">
+        <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="breadcrumb-link">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+            Volver a Integraciones
+        </a>
+    </div>
+
+    <!-- Header Card -->
+    <div class="card mb-xl">
+        <div class="card-header">
+            <div class="header-with-icon">
+                <div class="channel-icon {{ channel }}">
+                    {% if channel == 'google_ads' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"/></svg>
+                    {% elif channel == 'ga4' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M12.87 15.07l-2.54-2.51.03-.03A17.52 17.52 0 0014.07 6H17V4h-7V2H8v2H1v2h11.17C11.5 7.92 10.44 9.75 9 11.35 8.07 10.32 7.3 9.19 6.69 8h-2c.73 1.63 1.73 3.17 2.98 4.56l-5.09 5.02L4 19l5-5 3.11 3.11.76-2.04z"/><path fill="currentColor" d="M18.5 10L17 12.5 15.5 10 14 10 16.25 14 14 18l1.5 0 1-2.5 1 2.5 1.5 0-2.25-4 2.25-4z"/></svg>
+                    {% elif channel == 'meta_ads' %}
+                    <svg width="24" height="24" viewBox="0 0 24 24"><path fill="currentColor" d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    {% endif %}
+                </div>
+                <div>
+                    <h3 class="card-title">Cuentas disponibles de {{ channel_name }}</h3>
+                    <p class="card-subtitle">Cliente: <strong>{{ client.name }}</strong></p>
+                </div>
+            </div>
+        </div>
+        <p class="text-secondary">
+            Selecciona las cuentas de {{ channel_name }} que deseas agregar a este cliente.
+            Puedes seleccionar múltiples cuentas para incluirlas en los reportes.
+        </p>
+    </div>
+
+    {% if has_accounts %}
+    <!-- Accounts List -->
+    <div class="card mb-xl">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Cuentas Encontradas</h3>
+                <p class="card-subtitle">{{ available_accounts|length }} cuenta(s) disponible(s)</p>
+            </div>
+            <div class="select-actions">
+                <button class="btn btn-secondary btn-sm" onclick="selectAll()">Seleccionar Todas</button>
+                <button class="btn btn-secondary btn-sm" onclick="deselectAll()">Deseleccionar Todas</button>
+            </div>
+        </div>
+        
+        <div class="accounts-list" id="accounts-list">
+            {% for account in available_accounts %}
+            <label class="account-option {% if account.already_connected %}already-connected{% endif %}">
+                <input type="checkbox" 
+                       name="account" 
+                       value="{{ account.id }}"
+                       data-name="{{ account.name }}"
+                       data-customer-id="{{ account.customer_id|default:account.id }}"
+                       data-customer-name="{{ account.customer_name|default:account.name }}"
+                       data-login-customer-id="{{ account.login_customer_id|default:'' }}"
+                       {% if account.already_connected %}disabled{% endif %}>
+                <div class="account-option-content">
+                    <div class="account-option-main">
+                        <span class="account-option-name">{{ account.name }}</span>
+                        <span class="account-option-id">ID: {{ account.id }}</span>
+                    </div>
+                    <div class="account-option-meta">
+                        {% if account.currency %}
+                        <span class="meta-badge">{{ account.currency }}</span>
+                        {% endif %}
+                        {% if account.type %}
+                        <span class="meta-badge">{{ account.type }}</span>
+                        {% endif %}
+                        {% if account.websiteUrl %}
+                        <span class="meta-badge website">{{ account.websiteUrl }}</span>
+                        {% endif %}
+                        {% if account.already_connected %}
+                        <span class="meta-badge connected">Ya conectada</span>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="account-option-check">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+            </label>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-bar">
+        <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="btn btn-secondary">
+            Cancelar
+        </a>
+        <button class="btn btn-primary" onclick="saveSelectedAccounts()" id="save-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Agregar Cuentas Seleccionadas
+        </button>
+    </div>
+
+    {% else %}
+    <!-- No Accounts Found -->
+    <div class="card">
+        <div class="empty-state">
+            <div class="empty-state-icon warning">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <line x1="12" y1="8" x2="12" y2="12"/>
+                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+            </div>
+            <h4 class="empty-state-title">No se encontraron cuentas</h4>
+            {% if api_error %}
+            <div style="background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <p style="font-size: 0.8rem; font-weight: 600; color: #ef4444; margin-bottom: 0.5rem;">Error de la API de Google:</p>
+                <code style="font-size: 0.75rem; color: #fca5a5; word-break: break-all;">{{ api_error }}</code>
+            </div>
+            <p class="empty-state-description">
+                Posibles causas: el Developer Token aún no está aprobado por Google, o las credenciales OAuth no tienen los permisos necesarios.
+            </p>
+            {% else %}
+            {% if channel == 'ga4' %}
+            <p class="empty-state-description">
+                No se encontraron propiedades de Google Analytics 4 asociadas a esta cuenta de Google.
+                Verifica que la cuenta autenticada tiene acceso a al menos una propiedad de GA4.
+            </p>
+            <div style="background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); border-radius: 8px; padding: 1rem; margin: 1rem 0; text-align: left; max-width: 600px; margin-left: auto; margin-right: auto;">
+                <p style="font-size: 0.8rem; font-weight: 600; color: #f59e0b; margin-bottom: 0.5rem;">¿Cómo solucionarlo?</p>
+                <ul style="font-size: 0.8rem; color: var(--color-text-secondary); margin: 0; padding-left: 1.2rem; line-height: 1.8;">
+                    <li>Asegúrate de que la cuenta de Google tiene acceso a <strong>Google Analytics 4</strong> (no Universal Analytics).</li>
+                    <li>Inicia sesión en <a href="https://analytics.google.com" target="_blank" style="color: #f59e0b;">analytics.google.com</a> y verifica que existan propiedades GA4.</li>
+                    <li>Vuelve a conectar usando la cuenta correcta.</li>
+                </ul>
+            </div>
+            {% else %}
+            <p class="empty-state-description">
+                No se encontraron cuentas de {{ channel_name }} asociadas a este login de Google.
+                Verifica que la cuenta de Google con la que te autenticaste tiene acceso a cuentas de {{ channel_name }}.
+            </p>
+            {% endif %}
+            {% endif %}
+            <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="btn btn-primary mt-lg">
+                Volver a Integraciones
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+.breadcrumb {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.875rem;
+    transition: var(--transition-base);
+}
+
+.breadcrumb-link:hover {
+    color: var(--color-primary);
+}
+
+.header-with-icon {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.channel-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.channel-icon.google_ads {
+    background: rgba(234, 67, 53, 0.1);
+    color: #EA4335;
+}
+
+.channel-icon.ga4 {
+    background: rgba(245, 158, 11, 0.1);
+    color: #F9AB00;
+}
+
+.channel-icon.meta_ads {
+    background: rgba(24, 119, 242, 0.1);
+    color: #1877F2;
+}
+
+.select-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.accounts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.account-option {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem 1.25rem;
+    background: var(--color-bg-elevated);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: var(--transition-base);
+}
+
+.account-option:hover:not(.already-connected) {
+    border-color: var(--color-primary);
+    background: var(--color-bg-hover);
+}
+
+.account-option.already-connected {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.account-option input {
+    display: none;
+}
+
+.account-option input:checked + .account-option-content + .account-option-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.account-option input:checked ~ .account-option-content {
+    color: var(--color-primary);
+}
+
+.account-option input:not(:disabled):checked ~ * {
+    border-color: var(--color-primary);
+}
+
+.account-option:has(input:checked) {
+    border-color: var(--color-primary);
+    background: rgba(var(--color-primary-rgb), 0.05);
+}
+
+.account-option-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.account-option-main {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+.account-option-name {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.account-option-id {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    font-family: monospace;
+}
+
+.account-option-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.meta-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.2rem 0.5rem;
+    background: var(--color-bg-raised);
+    border-radius: var(--radius-sm);
+    font-size: 0.7rem;
+    color: var(--color-text-secondary);
+}
+
+.meta-badge.connected {
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+}
+
+.meta-badge.website {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.account-option-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--color-primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: var(--transition-base);
+    flex-shrink: 0;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem 0;
+    border-top: 1px solid var(--color-border);
+    margin-top: 1rem;
+}
+
+.empty-state-icon.warning {
+    background: rgba(245, 158, 11, 0.1);
+    color: #f59e0b;
+}
+</style>
+
+<script>
+function selectAll() {
+    document.querySelectorAll('#accounts-list input[type="checkbox"]:not(:disabled)').forEach(cb => {
+        cb.checked = true;
+    });
+}
+
+function deselectAll() {
+    document.querySelectorAll('#accounts-list input[type="checkbox"]').forEach(cb => {
+        cb.checked = false;
+    });
+}
+
+async function saveSelectedAccounts() {
+    const checkboxes = document.querySelectorAll('#accounts-list input[type="checkbox"]:checked');
+    const accounts = Array.from(checkboxes).map(cb => ({
+        id: cb.value,
+        name: cb.dataset.name,
+        customer_id: cb.dataset.customerId || cb.value,
+        customer_name: cb.dataset.customerName || cb.dataset.name,
+        login_customer_id: cb.dataset.loginCustomerId || null
+    }));
+    
+    if (accounts.length === 0) {
+        alert('Por favor, selecciona al menos una cuenta.');
+        return;
+    }
+    
+    const saveBtn = document.getElementById('save-btn');
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="loading-spinner"></span> Guardando...';
+    
+    try {
+        const response = await fetch('/app/api/integrations/save-accounts/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                client_id: '{{ client.id }}',
+                channel: '{{ channel }}',
+                accounts: accounts
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.error || 'Error al guardar las cuentas.');
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = `
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                    <polyline points="17 21 17 13 7 13 7 21"/>
+                    <polyline points="7 3 7 8 15 8"/>
+                </svg>
+                Agregar Cuentas Seleccionadas
+            `;
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error de conexión. Por favor, intenta de nuevo.');
+        saveBtn.disabled = false;
+    }
+}
+</script>
+{% endblock %}

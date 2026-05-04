@@ -1,7 +1,7 @@
 {% extends 'reportai/base.html' %}
 {% load static %}
 
-{% block title %}{{ client_name }} - ReportAI{% endblock %}
+{% block title %}{{ client.name }} - ReportAI{% endblock %}
 
 {% block page_title %}
 <div class="flex items-center gap-md">
@@ -21,14 +21,13 @@
     <div class="card mb-xl">
         <div class="flex items-start justify-between">
             <div class="flex items-center gap-lg">
-                <div class="user-avatar" style="width: 64px; height: 64px; font-size: 1.5rem;">{{ client_initials|default:"TS" }}</div>
+                <div class="user-avatar" style="width: 64px; height: 64px; font-size: 1.5rem;">{{ client_initials }}</div>
                 <div>
-                    <h2 class="text-2xl font-bold mb-xs">{{ client_name|default:"TechStartup Inc" }}</h2>
-                    <p class="text-secondary mb-sm">{{ client_email|default:"marketing@techstartup.com" }}</p>
+                    <h2 class="text-2xl font-bold mb-xs">{{ client.name }}</h2>
+                    <p class="text-secondary mb-sm">{{ client.email|default:"—" }}</p>
                     <div class="flex items-center gap-md">
                         <span class="status-badge success">Activo</span>
-                        <span class="text-sm text-tertiary">Industria: {{ client_industry|default:"Tecnología" }}</span>
-                        <span class="text-sm text-tertiary">Idioma: {{ client_language|default:"Español" }}</span>
+                        {% if client.company %}<span class="text-sm text-tertiary">{{ client.company }}</span>{% endif %}
                     </div>
                 </div>
             </div>
@@ -40,7 +39,7 @@
                     </svg>
                     Editar
                 </button>
-                <a href="{% url 'reportai:reports_generate' %}?client={{ client_id|default:1 }}" class="btn btn-primary">
+                <a href="{% url 'reportai:report_generate' %}?client={{ client.id }}" class="btn btn-primary">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
                         <polyline points="14 2 14 8 20 8"/>
@@ -52,7 +51,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="grid-2" style="grid-template-columns: 1fr 2fr;">
         <!-- Client Info Sidebar -->
         <div class="flex flex-col gap-lg">
@@ -65,27 +64,30 @@
                             <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
                             <polyline points="22,6 12,13 2,6"/>
                         </svg>
-                        <span class="text-sm">{{ client_email|default:"marketing@techstartup.com" }}</span>
+                        <span class="text-sm">{{ client.email|default:"—" }}</span>
                     </div>
                     <div class="flex items-center gap-sm">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-tertiary">
                             <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
                         </svg>
-                        <span class="text-sm">{{ client_whatsapp|default:"+34 612 345 678" }}</span>
+                        <span class="text-sm">{{ client.phone|default:"—" }}</span>
                     </div>
                     <div class="flex items-center gap-sm">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-tertiary">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
                             <circle cx="12" cy="7" r="4"/>
                         </svg>
-                        <span class="text-sm">Nivel: {{ client_level|default:"Avanzado" }}</span>
+                        <span class="text-sm">Nivel: {{ client.get_knowledge_level_display }}</span>
                     </div>
                 </div>
             </div>
-            
+
             <!-- Integrations -->
             <div class="card">
-                <h3 class="card-title mb-md">Integraciones</h3>
+                <div class="flex items-center justify-between mb-md">
+                    <h3 class="card-title" style="margin: 0;">Integraciones</h3>
+                    <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="btn btn-ghost btn-sm" style="font-size: 0.8rem;">Gestionar</a>
+                </div>
                 <div class="flex flex-col gap-sm">
                     <div class="flex items-center justify-between py-sm">
                         <div class="flex items-center gap-sm">
@@ -96,7 +98,13 @@
                             </div>
                             <span class="text-sm">Google Ads</span>
                         </div>
-                        <span class="status-badge success">OK</span>
+                        {% if integrations.google_ads and integrations.google_ads.status == 'connected' %}
+                        <span class="status-badge success">Conectado</span>
+                        {% elif integrations.google_ads %}
+                        <span class="status-badge warning">{{ integrations.google_ads.get_status_display }}</span>
+                        {% else %}
+                        <span class="status-badge">Sin conectar</span>
+                        {% endif %}
                     </div>
                     <div class="flex items-center justify-between py-sm">
                         <div class="flex items-center gap-sm">
@@ -107,7 +115,13 @@
                             </div>
                             <span class="text-sm">Meta Ads</span>
                         </div>
-                        <span class="status-badge success">OK</span>
+                        {% if integrations.meta_ads and integrations.meta_ads.status == 'connected' %}
+                        <span class="status-badge success">Conectado</span>
+                        {% elif integrations.meta_ads %}
+                        <span class="status-badge warning">{{ integrations.meta_ads.get_status_display }}</span>
+                        {% else %}
+                        <span class="status-badge">Sin conectar</span>
+                        {% endif %}
                     </div>
                     <div class="flex items-center justify-between py-sm">
                         <div class="flex items-center gap-sm">
@@ -118,105 +132,324 @@
                             </div>
                             <span class="text-sm">GA4</span>
                         </div>
-                        <span class="status-badge success">OK</span>
+                        {% if integrations.ga4 and integrations.ga4.status == 'connected' %}
+                        <span class="status-badge success">Conectado</span>
+                        {% elif integrations.ga4 %}
+                        <span class="status-badge warning">{{ integrations.ga4.get_status_display }}</span>
+                        {% else %}
+                        <span class="status-badge">Sin conectar</span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
         </div>
-        
-        <!-- Reports History -->
-        <div class="card">
-            <div class="card-header">
-                <div>
-                    <h3 class="card-title">Historial de Reportes</h3>
-                    <p class="card-subtitle">Reportes enviados a este cliente</p>
+
+        <!-- Main Content Area with Tabs -->
+        <div class="card" style="min-height: 400px;">
+            <!-- Tab Navigation -->
+            <div class="profile-tabs">
+                <button class="profile-tab active" data-tab="history">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                    Historial de Reportes
+                </button>
+                <button class="profile-tab" data-tab="metrics">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="20" x2="18" y2="10"/>
+                        <line x1="12" y1="20" x2="12" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="14"/>
+                    </svg>
+                    Métricas
+                </button>
+            </div>
+
+            <!-- Tab: Historial de Reportes -->
+            <div class="profile-tab-panel active" id="tab-history">
+                <div class="table-container" style="border: none; background: transparent;">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Reporte</th>
+                                <th>Fecha</th>
+                                <th>Canal</th>
+                                <th>Estado</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for log in recent_logs %}
+                            <tr>
+                                <td>
+                                    <div class="font-medium">Reporte #{{ log.id }}</div>
+                                </td>
+                                <td>
+                                    <span class="text-secondary">{{ log.sent_at|date:"d M Y, H:i" }}</span>
+                                </td>
+                                <td>
+                                    <div class="flex items-center gap-xs">
+                                        {% if log.channel_used == 'email' %}
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                                            <polyline points="22,6 12,13 2,6"/>
+                                        </svg>
+                                        <span class="text-sm">Email</span>
+                                        {% elif log.channel_used == 'whatsapp' %}
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                                        </svg>
+                                        <span class="text-sm">WhatsApp</span>
+                                        {% else %}
+                                        <span class="text-sm">Email + WhatsApp</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>
+                                    {% if log.status == 'sent' %}
+                                    <span class="status-badge success">Enviado</span>
+                                    {% elif log.status == 'partial' %}
+                                    <span class="status-badge warning">Parcial</span>
+                                    {% elif log.status == 'failed' %}
+                                    <span class="status-badge error">Fallido</span>
+                                    {% else %}
+                                    <span class="status-badge">Pendiente</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'reportai:reports' %}" class="btn btn-ghost btn-sm">Ver</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" style="text-align: center; padding: 2.5rem; color: var(--color-text-tertiary);">
+                                    No hay reportes aún. <a href="{% url 'reportai:report_generate' %}?client={{ client.id }}" style="color: var(--color-primary);">Genera el primero</a>.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
-            
-            <div class="table-container" style="border: none; background: transparent;">
-                <table class="table">
-                    <thead>
-                        <tr>
-                            <th>Reporte</th>
-                            <th>Fecha</th>
-                            <th>Canal</th>
-                            <th>Estado</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>
-                                <div class="font-medium">Reporte Mensual - Abril 2026</div>
-                            </td>
-                            <td>
-                                <span class="text-secondary">12 Abr 2026, 14:30</span>
-                            </td>
-                            <td>
-                                <div class="flex items-center gap-xs">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                        <polyline points="22,6 12,13 2,6"/>
-                                    </svg>
-                                    <span class="text-sm">Email</span>
+
+            <!-- Tab: Métricas -->
+            <div class="profile-tab-panel" id="tab-metrics" style="padding: 1.25rem 0;">
+
+                {% if messages %}
+                <div style="margin-bottom: 1.25rem;">
+                    {% for msg in messages %}
+                    <div style="padding: 0.875rem 1.25rem; border-radius: 8px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3); color: #10b981; font-size: 0.875rem; margin-bottom: 0.5rem;">{{ msg }}</div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                {% if not connected_channels %}
+                <!-- Sin integraciones conectadas -->
+                <div style="text-align: center; padding: 3rem 1.5rem; color: var(--color-text-tertiary);">
+                    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="margin: 0 auto 1rem; display: block; color: var(--color-text-tertiary);">
+                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                        <path d="M2 17l10 5 10-5"/>
+                        <path d="M2 12l10 5 10-5"/>
+                    </svg>
+                    <p style="font-size: 0.9375rem; color: var(--color-text-secondary); margin-bottom: 0.5rem; font-weight: 500;">Sin integraciones conectadas</p>
+                    <p style="font-size: 0.875rem; margin-bottom: 1.5rem;">Conecta al menos una integración para configurar las métricas de este cliente.</p>
+                    <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="btn btn-primary btn-sm">
+                        Conectar integraciones →
+                    </a>
+                </div>
+
+                {% else %}
+                <!-- Formulario de métricas por plataforma -->
+                <form method="post" action="{% url 'reportai:client_metrics_config' client.id %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.path }}?tab=metrics">
+                    <div class="flex flex-col gap-xl">
+                        {% for platform_key, platform_data in platforms.items %}
+                        <div>
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.875rem;">
+                                <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary); margin: 0;">{{ platform_data.label }}</h4>
+                                <span style="font-size: 0.7rem; padding: 2px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); color: var(--color-text-tertiary);">{{ platform_data.metrics|length }} métricas</span>
+                            </div>
+                            <div class="metrics-table">
+                                <div class="metrics-row metrics-header">
+                                    <span>Visible</span>
+                                    <span>Nombre en el dashboard</span>
+                                    <span>Orden</span>
+                                    <span>Clave</span>
                                 </div>
-                            </td>
-                            <td>
-                                <span class="status-badge success">Visto</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-ghost btn-sm">Ver</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="font-medium">Reporte Semanal - Sem 14</div>
-                            </td>
-                            <td>
-                                <span class="text-secondary">05 Abr 2026, 10:00</span>
-                            </td>
-                            <td>
-                                <div class="flex items-center gap-xs">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
-                                    </svg>
-                                    <span class="text-sm">WhatsApp</span>
+                                {% for config in platform_data.metrics %}
+                                <div class="metrics-row">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" name="metric_{{ config.id }}_visible" {% if config.is_visible %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer;">
+                                    </label>
+                                    <input type="text" name="metric_{{ config.id }}_name" value="{{ config.display_name }}" class="form-input-inline" placeholder="Nombre visible" maxlength="80">
+                                    <input type="number" name="metric_{{ config.id }}_order" value="{{ config.order }}" class="form-input-inline form-input-order" min="0" max="99">
+                                    <code style="font-size: 0.75rem; color: var(--color-text-tertiary); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 4px;">{{ config.metric_key }}</code>
                                 </div>
-                            </td>
-                            <td>
-                                <span class="status-badge success">Entregado</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-ghost btn-sm">Ver</button>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>
-                                <div class="font-medium">Reporte Mensual - Marzo 2026</div>
-                            </td>
-                            <td>
-                                <span class="text-secondary">15 Mar 2026, 09:15</span>
-                            </td>
-                            <td>
-                                <div class="flex items-center gap-xs">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
-                                        <polyline points="22,6 12,13 2,6"/>
-                                    </svg>
-                                    <span class="text-sm">Email</span>
-                                </div>
-                            </td>
-                            <td>
-                                <span class="status-badge success">Visto</span>
-                            </td>
-                            <td>
-                                <button class="btn btn-ghost btn-sm">Ver</button>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% empty %}
+                        <p style="color: var(--color-text-tertiary); font-size: 0.875rem;">No hay métricas configuradas para las plataformas conectadas.</p>
+                        {% endfor %}
+                    </div>
+                    <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; align-items: center;">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                                <polyline points="17 21 17 13 7 13 7 21"/>
+                            </svg>
+                            Guardar cambios
+                        </button>
+                        <a href="{% url 'public_dashboard' client.dashboard_token %}" target="_blank" class="btn btn-ghost btn-sm" style="margin-left: auto;" title="Ver dashboard público">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
+                                <polyline points="15 3 21 3 21 9"/>
+                                <line x1="10" y1="14" x2="21" y2="3"/>
+                            </svg>
+                            Ver dashboard
+                        </a>
+                    </div>
+                </form>
+                {% endif %}
+
             </div>
         </div>
     </div>
 </div>
+
+<!-- Modal: Onboarding (abre quando ?onboarding=1) -->
+<div id="onboarding-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: var(--color-bg-elevated, #1e1e2d); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 420px; padding: 2rem; box-shadow: 0 25px 50px rgba(0,0,0,0.5); text-align: center;">
+        <div style="width: 52px; height: 52px; background: rgba(16,185,129,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem;">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+        </div>
+        <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--color-text-primary, #e6eaed);">¡Cliente creado con éxito!</h2>
+        <p style="font-size: 0.9rem; color: var(--color-text-secondary, #9ca3af); margin-bottom: 1.75rem; line-height: 1.6;">¿Quieres conectar las integraciones ahora para que este cliente pueda recibir reportes?</p>
+        <div style="display: flex; gap: 0.75rem; justify-content: center;">
+            <button onclick="closeOnboardingModal()" class="btn btn-secondary">Hacer después</button>
+            <a href="{% url 'reportai:integrations' %}?client_id={{ client.id }}" class="btn btn-primary">Conectar integraciones</a>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Tabs de navegação do perfil */
+.profile-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 1.25rem;
+}
+.profile-tab {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    color: var(--color-text-tertiary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    padding: 10px 16px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: color 0.2s, border-color 0.2s;
+    margin-bottom: -1px;
+}
+.profile-tab:hover { color: var(--color-text-secondary); }
+.profile-tab.active {
+    color: var(--color-text-primary);
+    border-bottom-color: var(--color-primary);
+}
+.profile-tab-panel { display: none; }
+.profile-tab-panel.active { display: block; }
+
+/* Métricas inline (reutilizado de metrics_config.html) */
+.metrics-table { display: flex; flex-direction: column; gap: 0; }
+.metrics-row {
+    display: grid;
+    grid-template-columns: 52px 1fr 72px 120px;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--color-border);
+}
+.metrics-row:last-child { border-bottom: none; }
+.metrics-header {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+}
+.form-input-inline {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 0.8125rem;
+    padding: 5px 10px;
+    width: 100%;
+    transition: border-color 0.2s;
+}
+.form-input-inline:focus {
+    outline: none;
+    border-color: var(--color-primary);
+}
+.form-input-order { width: 60px; text-align: center; }
+</style>
+
+<script>
+// Tabs do perfil
+document.querySelectorAll('.profile-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.profile-tab, .profile-tab-panel').forEach(el => el.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
+    });
+});
+
+// Modal de onboarding (abre se ?onboarding=1)
+{% if show_onboarding %}
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('onboarding-modal');
+    modal.style.display = 'flex';
+    // Redireciona para perfil sem o query param (limpa a URL)
+    history.replaceState(null, '', window.location.pathname);
+});
+{% endif %}
+
+function closeOnboardingModal() {
+    document.getElementById('onboarding-modal').style.display = 'none';
+}
+
+// Fecha modal ao clicar fora
+document.getElementById('onboarding-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeOnboardingModal();
+});
+
+// Redireciona para aba de métricas se houver mensagem de sucesso de métricas
+{% if messages %}
+document.addEventListener('DOMContentLoaded', () => {
+    const metricsBtn = document.querySelector('.profile-tab[data-tab="metrics"]');
+    if (metricsBtn) metricsBtn.click();
+});
+{% endif %}
+
+// Abre aba correta com base no query param ?tab=
+(function() {
+    const tab = new URLSearchParams(window.location.search).get('tab');
+    if (tab) {
+        document.addEventListener('DOMContentLoaded', () => {
+            const btn = document.querySelector(`.profile-tab[data-tab="${tab}"]`);
+            if (btn) btn.click();
+            // Limpa o query param sem recarregar a página
+            history.replaceState(null, '', window.location.pathname);
+        });
+    }
+})();
+</script>
 {% endblock %}
