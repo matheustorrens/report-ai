@@ -1,10 +1,14 @@
 import json
 import secrets
+import uuid as uuid_module
 from datetime import timedelta
+from types import SimpleNamespace
 from urllib.parse import urlencode
 
+from django.db.models import Count, Q
 from django.shortcuts import render, redirect, get_object_or_404
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
+from django.template.loader import render_to_string
 from django.views.decorators.http import require_POST, require_GET, require_http_methods
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
@@ -14,11 +18,11 @@ from django.urls import reverse
 
 import requests
 
-from .models import Client, IntegrationAccount, SelectedCampaign, SelectedMetric, ReportLog, ClientMetricConfig
+from .models import Client, IntegrationAccount, SelectedCampaign, SelectedMetric, ReportLog, ClientMetricConfig, TimelineEntry, AgencyProfile
 from .services.groq_service import generate_report_message, MOCK_METRICS
 from .services.email_service import send_report_email
-from .services.whatsapp_service import send_report_whatsapp
 from .services.ga4_service import get_weekly_metrics as get_ga4_metrics
+from .services.google_ads_service import get_weekly_metrics as get_google_ads_metrics
 from .google_services import (
     discover_customer_hierarchy,
     fetch_google_ads_campaigns,
@@ -48,6 +52,19 @@ META_API_URL = 'https://graph.facebook.com/v18.0'
 GOOGLE_ADS_SCOPE = 'https://www.googleapis.com/auth/adwords'
 GA4_SCOPE = 'https://www.googleapis.com/auth/analytics.readonly'
 META_ADS_SCOPE = 'ads_management,ads_read,business_management'
+
+
+# ============================================================
+# UTILITÁRIOS LOCAIS
+# ============================================================
+
+def _clean_phone(val):
+    """Normaliza número de telefone: mantém + inicial, remove tudo que não é dígito."""
+    if not val:
+        return ''
+    s = val.strip()
+    prefix = '+' if s.startswith('+') else ''
+    return prefix + ''.join(c for c in s if c.isdigit())
 
 
 # ============================================================
@@ -114,6 +131,13 @@ def register_view(request):
             password=password,
             first_name=agency_name,
         )
+        # Registra os timestamps de aceite dos documentos legais no momento do registro
+        profile, _ = AgencyProfile.objects.get_or_create(user=user)
+        now = timezone.now()
+        profile.terms_accepted_at = now
+        profile.privacy_accepted_at = now
+        profile.legal_version = "1.0"
+        profile.save()
         auth_login(request, user)
         return redirect('reportai:dashboard')
     return render(request, 'reportai/auth/register.html')
@@ -131,6 +155,61 @@ def logout_view(request):
     return redirect('reportai:login')
 
 
+@login_required
+def agency_profile_view(request):
+    """Página de configuração do perfil da agência: nome, email e WhatsApp."""
+    user = request.user
+    profile, _ = AgencyProfile.objects.get_or_create(user=user)
+
+    if request.method == 'POST':
+        agency_name = request.POST.get('agency_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        whatsapp = _clean_phone(request.POST.get('whatsapp', ''))
+
+        error = None
+        if not agency_name:
+            error = 'El nombre de la agencia es obligatorio.'
+        elif not email or '@' not in email:
+            error = 'Introduce un email válido.'
+
+        if error:
+            return render(request, 'reportai/agency/profile.html', {
+                'active_nav': 'profile',
+                'error': error,
+                'agency_name': agency_name,
+                'email': email,
+                'whatsapp': whatsapp,
+            })
+
+        # Verifica se email já está em uso por outro usuário
+        from django.contrib.auth.models import User as AuthUser
+        if AuthUser.objects.filter(email=email).exclude(pk=user.pk).exists():
+            return render(request, 'reportai/agency/profile.html', {
+                'active_nav': 'profile',
+                'error': 'Este email ya está en uso por otra cuenta.',
+                'agency_name': agency_name,
+                'email': email,
+                'whatsapp': whatsapp,
+            })
+
+        user.first_name = agency_name
+        user.email = email
+        user.save(update_fields=['first_name', 'email'])
+
+        profile.whatsapp = whatsapp
+        profile.save(update_fields=['whatsapp'])
+
+        messages.success(request, 'Perfil actualizado correctamente.')
+        return redirect('reportai:agency_profile')
+
+    return render(request, 'reportai/agency/profile.html', {
+        'active_nav': 'profile',
+        'agency_name': user.first_name,
+        'email': user.email,
+        'whatsapp': profile.whatsapp,
+    })
+
+
 # ============================================================
 # DASHBOARD VIEW
 # ============================================================
@@ -138,17 +217,81 @@ def logout_view(request):
 @login_required
 def dashboard_view(request):
     """Página principal do dashboard com dados reais do banco."""
+    now = timezone.now()
+    week_ago = now - timedelta(days=7)
+    two_weeks_ago = now - timedelta(days=14)
+
+    # Totais gerais
     total_clients = Client.objects.filter(owner=request.user).count()
-    total_reports = ReportLog.objects.filter(client__owner=request.user).count()
-    sent_reports = ReportLog.objects.filter(client__owner=request.user, status='sent').count()
-    failed_reports = ReportLog.objects.filter(client__owner=request.user, status='failed').count()
-    # Eficiência: porcentagem de envios bem-sucedidos
-    efficiency = int((sent_reports / total_reports * 100) if total_reports > 0 else 0)
+    report_stats = ReportLog.objects.filter(client__owner=request.user).aggregate(
+        total=Count('id'),
+        sent=Count('id', filter=Q(status='sent')),
+        failed=Count('id', filter=Q(status='failed')),
+    )
+    total_reports = report_stats['total']
+    sent_reports = report_stats['sent']
+    failed_reports = report_stats['failed']
+
+    # Cálculo de tendências — compara últimos 7 dias com os 7 dias anteriores
+    def _pct_delta(current, previous):
+        """Retorna (valor_formatado, é_positivo) para o template."""
+        if previous == 0:
+            return ('+100' if current > 0 else '0'), current > 0
+        delta = round((current - previous) / previous * 100)
+        sign = '+' if delta >= 0 else ''
+        return f'{sign}{delta}', delta >= 0
+
+    stats_this = ReportLog.objects.filter(
+        client__owner=request.user, sent_at__gte=week_ago
+    ).aggregate(
+        total=Count('id'),
+        sent=Count('id', filter=Q(status='sent')),
+    )
+    stats_prev = ReportLog.objects.filter(
+        client__owner=request.user,
+        sent_at__gte=two_weeks_ago, sent_at__lt=week_ago,
+    ).aggregate(
+        total=Count('id'),
+        sent=Count('id', filter=Q(status='sent')),
+    )
+    clients_this_week = Client.objects.filter(
+        owner=request.user, created_at__gte=week_ago
+    ).count()
+    clients_prev_week = Client.objects.filter(
+        owner=request.user,
+        created_at__gte=two_weeks_ago, created_at__lt=week_ago,
+    ).count()
+
+    trend_reports_val, trend_reports_pos = _pct_delta(stats_this['total'], stats_prev['total'])
+    trend_sent_val, trend_sent_pos = _pct_delta(stats_this['sent'], stats_prev['sent'])
+    trend_clients_val, trend_clients_pos = _pct_delta(clients_this_week, clients_prev_week)
+
     # Clientes com relatórios falhados na última semana para o painel de revisão
-    week_ago = timezone.now() - timedelta(days=7)
     needs_attention = (
         ReportLog.objects
         .filter(client__owner=request.user, status='failed', sent_at__gte=week_ago)
+        .select_related('client')
+        .order_by('-sent_at')[:5]
+    )
+    # Próximos envíos: calcula candidato por cliente e ordena por data
+    clients_qs = Client.objects.filter(owner=request.user)
+    upcoming = []
+    for client in clients_qs:
+        candidate_date = None
+        if client.next_report_at:
+            candidate_date = client.next_report_at
+        else:
+            last_log = ReportLog.objects.filter(client=client).order_by('-sent_at').first()
+            if last_log and client.report_frequency_days:
+                candidate_date = last_log.sent_at + timedelta(days=client.report_frequency_days)
+        if candidate_date:
+            upcoming.append({'client': client, 'date': candidate_date})
+    upcoming_reports = sorted(upcoming, key=lambda x: x['date'])[:5]
+    next_report = upcoming_reports[0] if upcoming_reports else None
+    # Últimos 5 relatórios enviados para o painel esquerdo
+    recent_reports = (
+        ReportLog.objects
+        .filter(client__owner=request.user)
         .select_related('client')
         .order_by('-sent_at')[:5]
     )
@@ -157,8 +300,16 @@ def dashboard_view(request):
         'total_reports': total_reports,
         'sent_reports': sent_reports,
         'failed_reports': failed_reports,
-        'efficiency': efficiency,
+        'trend_reports_val': trend_reports_val,
+        'trend_reports_pos': trend_reports_pos,
+        'trend_sent_val': trend_sent_val,
+        'trend_sent_pos': trend_sent_pos,
+        'trend_clients_val': trend_clients_val,
+        'trend_clients_pos': trend_clients_pos,
         'needs_attention': needs_attention,
+        'next_report': next_report,
+        'upcoming_reports': upcoming_reports,
+        'recent_reports': recent_reports,
         'active_nav': 'dashboard',
     }
     return render(request, 'reportai/dashboard.html', context)
@@ -206,29 +357,26 @@ def client_create_view(request):
 def client_profile_view(request, client_id):
     """Perfil individual do cliente com integrações reais e histórico de relatórios."""
     client = get_object_or_404(Client, id=client_id, owner=request.user)
-    
-    # Integração principal de cada canal (first() para exibir no card de status)
+
+    # Uma única query busca todas as integrações; filtra em Python (evita 4 queries separadas)
+    all_integrations = list(client.integrations.all())
     integrations = {
-        'google_ads': client.integrations.filter(channel='google_ads').first(),
-        'ga4': client.integrations.filter(channel='ga4').first(),
-        'meta_ads': client.integrations.filter(channel='meta_ads').first(),
+        'google_ads': next((i for i in all_integrations if i.channel == 'google_ads'), None),
+        'ga4':        next((i for i in all_integrations if i.channel == 'ga4'), None),
+        'meta_ads':   next((i for i in all_integrations if i.channel == 'meta_ads'), None),
     }
-    
+    connected_channels = {i.channel for i in all_integrations if i.status == 'connected'}
+
     # Histórico real de relatórios deste cliente
     recent_logs = (
         ReportLog.objects
         .filter(client=client)
         .order_by('-sent_at')[:20]
     )
-    
+
     # Iniciais do nome do cliente para o avatar
     initials = ''.join(w[0] for w in client.name.split()[:2]).upper()
-    
-    # Canais com integração conectada (para filtrar métricas na aba de métricas)
-    connected_channels = set(
-        client.integrations.filter(status='connected').values_list('channel', flat=True)
-    )
-    
+
     # Métricas agrupadas por plataforma — apenas para canais conectados
     PLATFORM_LABELS = {
         'google_ads': 'Google Ads',
@@ -246,6 +394,9 @@ def client_profile_view(request, client_id):
     
     # Detecta onboarding: ?onboarding=1 abre modal pós-cadastro
     show_onboarding = request.GET.get('onboarding') == '1'
+
+    # Entradas da timeline para a nova aba
+    timeline_entries = client.timeline_entries.all()
     
     context = {
         'client': client,
@@ -255,6 +406,7 @@ def client_profile_view(request, client_id):
         'connected_channels': connected_channels,
         'platforms': platforms,
         'show_onboarding': show_onboarding,
+        'timeline_entries': timeline_entries,
         'active_nav': 'clients',
     }
     return render(request, 'reportai/clients/profile.html', context)
@@ -285,7 +437,8 @@ def client_metrics_config_view(request, client_id):
     client = get_object_or_404(Client, id=client_id, owner=request.user)
 
     if request.method == 'POST':
-        # Processa cada métrica enviada pelo formulário
+        # Coleta alterações e usa bulk_update — 1 UPDATE no lugar de N saves individuais
+        configs_to_update = []
         for config in client.metric_configs.all():
             field_prefix = f"metric_{config.id}"
             config.is_visible = f"{field_prefix}_visible" in request.POST
@@ -296,7 +449,11 @@ def client_metrics_config_view(request, client_id):
                 config.order = int(request.POST.get(f"{field_prefix}_order", config.order))
             except (ValueError, TypeError):
                 pass
-            config.save()
+            configs_to_update.append(config)
+        if configs_to_update:
+            ClientMetricConfig.objects.bulk_update(
+                configs_to_update, ['is_visible', 'display_name', 'order']
+            )
         messages.success(request, 'Configuración de métricas guardada.')
         # Se veio do perfil do cliente, redireciona de volta para a aba de métricas
         next_url = request.POST.get('next', '')
@@ -333,7 +490,7 @@ def api_create_client(request):
         data = json.loads(request.body)
         name = data.get('name', '').strip()
         email = data.get('email', '').strip()
-        phone = data.get('phone', '').strip()
+        phone = _clean_phone(data.get('phone', ''))
         company = data.get('company', '').strip()
         knowledge_level = data.get('knowledge_level', 'leigo')
         if knowledge_level not in ('leigo', 'avancado'):
@@ -341,8 +498,23 @@ def api_create_client(request):
         
         if not name:
             return JsonResponse({'error': 'El nombre del cliente es requerido.'}, status=400)
+        if len(name) > 30:
+            return JsonResponse({'error': 'El nombre del cliente no puede superar los 30 caracteres.'}, status=400)
+        if company and len(company) > 20:
+            return JsonResponse({'error': 'El nombre de la empresa no puede superar los 20 caracteres.'}, status=400)
         
         owner = request.user
+        
+        # Verifica se a agência já aceitou o DPA antes de criar o primeiro cliente
+        is_first_client = not Client.objects.filter(owner=owner).exists()
+        if is_first_client:
+            profile, _ = AgencyProfile.objects.get_or_create(user=owner)
+            if profile.dpa_accepted_at is None:
+                return JsonResponse({
+                    'error': 'dpa_required',
+                    'message': 'Debes aceptar el Acuerdo de Encargo de Tratamiento (DPA) antes de añadir tu primer cliente.',
+                    'dpa_url': reverse('dpa'),
+                }, status=403)
         
         client = Client.objects.create(
             name=name,
@@ -373,30 +545,67 @@ def api_create_client(request):
 
 @login_required
 @require_POST
+def api_accept_dpa(request):
+    """Endpoint para registrar o aceite do DPA pela agência com timestamp."""
+    profile, _ = AgencyProfile.objects.get_or_create(user=request.user)
+    if profile.dpa_accepted_at is None:
+        profile.dpa_accepted_at = timezone.now()
+        profile.legal_version = "1.0"
+        profile.save(update_fields=['dpa_accepted_at', 'legal_version'])
+    return JsonResponse({'success': True, 'dpa_accepted_at': profile.dpa_accepted_at.isoformat()})
+
+
+@login_required
+@require_POST
 def api_update_client(request, client_id):
     """API endpoint to update a client."""
     try:
         client = get_object_or_404(Client, id=client_id, owner=request.user)
         data = json.loads(request.body)
-        
-        name = data.get('name', '').strip()
-        if not name:
-            return JsonResponse({'error': 'El nombre del cliente es requerido.'}, status=400)
-        
-        knowledge_level = data.get('knowledge_level', 'leigo')
-        if knowledge_level not in ('leigo', 'avancado'):
-            knowledge_level = 'leigo'
-        
-        client.name = name
-        client.email = data.get('email', '').strip() or None
-        client.phone = data.get('phone', '').strip() or None
-        client.company = data.get('company', '').strip() or None
-        client.knowledge_level = knowledge_level
+
+        # Campos de texto: só atualiza se vier no payload
+        if 'name' in data:
+            name = data['name'].strip()
+            if not name:
+                return JsonResponse({'error': 'El nombre del cliente es requerido.'}, status=400)
+            if len(name) > 30:
+                return JsonResponse({'error': 'El nombre del cliente no puede superar los 30 caracteres.'}, status=400)
+            client.name = name
+
+        if 'knowledge_level' in data:
+            knowledge_level = data['knowledge_level']
+            if knowledge_level not in ('leigo', 'avancado'):
+                knowledge_level = 'leigo'
+            client.knowledge_level = knowledge_level
+
+        if 'email' in data:
+            client.email = data['email'].strip() or None
+        if 'phone' in data:
+            client.phone = _clean_phone(data['phone']) or None
+        if 'company' in data:
+            company_val = data['company'].strip()
+            if company_val and len(company_val) > 20:
+                return JsonResponse({'error': 'El nombre de la empresa no puede superar los 20 caracteres.'}, status=400)
+            client.company = company_val or None
+
+        # Novos campos de frequência de envio
+        if 'report_frequency' in data:
+            valid_frequencies = [c[0] for c in Client.FREQUENCY_CHOICES]
+            if data['report_frequency'] in valid_frequencies:
+                client.report_frequency = data['report_frequency']
+        if 'report_send_day' in data:
+            try:
+                report_send_day = int(data['report_send_day'])
+                if 0 <= report_send_day <= 28:
+                    client.report_send_day = report_send_day
+            except (ValueError, TypeError):
+                pass
+
         client.save()
         
         return JsonResponse({
             'success': True,
-            'message': f'Cliente "{name}" actualizado correctamente.',
+            'message': f'Cliente "{client.name}" actualizado correctamente.',
             'client': {
                 'id': client.id,
                 'name': client.name,
@@ -448,7 +657,13 @@ def reports_list_view(request):
 def report_generate_view(request):
     """Formulário de geração de relatório com preview."""
     clients = Client.objects.filter(owner=request.user)
-    return render(request, 'reportai/reports/generate.html', {'clients': clients, 'active_nav': 'reports'})
+    # Passa o WhatsApp da agência para o template (usado no botão wa.me)
+    profile, _ = AgencyProfile.objects.get_or_create(user=request.user)
+    return render(request, 'reportai/reports/generate.html', {
+        'clients': clients,
+        'active_nav': 'reports',
+        'agency_whatsapp': profile.whatsapp,
+    })
 
 
 @require_POST
@@ -467,8 +682,16 @@ def api_report_preview(request):
 
     client = get_object_or_404(Client, id=client_id)
 
+    # Parâmetros de período (aceita days ou period_start+period_end para uso futuro com APIs reais)
+    days = data.get('days')
+    period_start = data.get('period_start')
+    period_end = data.get('period_end')
+
+    # Chaves de métricas selecionadas pelos chips — sobrescreve o filtro is_visible do DB
+    selected_metric_keys = data.get('selected_metric_keys')  # {platform: [key1, key2]}
+
     try:
-        metrics_override = data.get('metrics_override')  # dict: {platform: {key: val}}
+        metrics_override = data.get('metrics_override')  # dict legado: {platform: {key: val}}
         if metrics_override and isinstance(metrics_override, dict):
             # Usa os valores editados como current_week; previous_week vem do MOCK
             metrics = {
@@ -477,16 +700,34 @@ def api_report_preview(request):
             }
             data_source = 'override'
         else:
-            # Tenta buscar metricas reais do GA4; se nao houver integracao ativa, usa MOCK automaticamente
-            metrics = get_ga4_metrics(client)
-            data_source = 'ga4_real' if metrics else 'mock'
-        result = generate_report_message(client, metrics=metrics)
+            # Busca métricas reais de GA4 e Google Ads — usa MOCK apenas se nenhum retornar dados
+            ga4_data  = get_ga4_metrics(client)
+            gads_data = get_google_ads_metrics(client)
+
+            if ga4_data or gads_data:
+                metrics = {'current_week': {}, 'previous_week': {}}
+                for week in ('current_week', 'previous_week'):
+                    if ga4_data:
+                        metrics[week].update(ga4_data.get(week, {}))
+                    if gads_data:
+                        metrics[week].update(gads_data.get(week, {}))
+                sources = [s for s, d in (('ga4', ga4_data), ('google_ads', gads_data)) if d]
+                data_source = '+'.join(sources)
+            else:
+                metrics = None
+                data_source = 'mock'
+
+        result = generate_report_message(client, metrics=metrics, selected_keys=selected_metric_keys)
+        # URL do dashboard público do cliente — o JS appenda ao final da mensagem de preview
+        dashboard_url = request.build_absolute_uri(f'/dashboard/{client.dashboard_slug}/')
         return JsonResponse({
             'success': True,
             'message': result['message'],
+            'dashboard_insight': result.get('dashboard_insight', ''),
             'campaign_score': result.get('campaign_score'),
             'score_reason': result.get('score_reason', ''),
             'data_source': data_source,
+            'dashboard_url': dashboard_url,
         })
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
@@ -510,8 +751,37 @@ def api_report_send(request):
 
     client = get_object_or_404(Client, id=client_id)
 
-    # Usa metricas reais do GA4 se disponivel; caso contrario usa MOCK para o snapshot
-    metrics_snapshot = get_ga4_metrics(client) or MOCK_METRICS
+    # Combina GA4 + Google Ads (igual ao api_report_preview) para o snapshot
+    ga4_data  = get_ga4_metrics(client)
+    gads_data = get_google_ads_metrics(client)
+    if ga4_data or gads_data:
+        metrics_snapshot: dict = {'current_week': {}, 'previous_week': {}}
+        for week in ('current_week', 'previous_week'):
+            if ga4_data:
+                metrics_snapshot[week].update(ga4_data.get(week, {}))
+            if gads_data:
+                metrics_snapshot[week].update(gads_data.get(week, {}))
+    else:
+        # Copia rasa do MOCK para não poluir o global entre requisições
+        metrics_snapshot = {**MOCK_METRICS}
+
+    # Métricas escolhidas como destaque no momento de gerar o relatório
+    highlighted = data.get('highlighted_metrics', [])
+    if isinstance(highlighted, list):
+        clean = []
+        for item in highlighted[:6]:
+            if isinstance(item, dict) and 'key' in item and 'platform' in item:
+                clean.append({'key': str(item['key']), 'platform': str(item['platform'])})
+            elif isinstance(item, str):
+                # Retrocompatibilidade: string plana de snapshots antigos
+                clean.append(item)
+        highlighted = clean
+    else:
+        highlighted = []
+    metrics_snapshot['highlighted'] = highlighted
+
+    # Insight do dashboard gerado na etapa de preview e repassado pelo frontend
+    dashboard_insight = str(data.get('dashboard_insight', ''))[:5000]
 
     # Score gerado na etapa de preview e repassado pelo frontend
     campaign_score_raw = data.get('campaign_score')
@@ -524,6 +794,7 @@ def api_report_send(request):
     log = ReportLog(
         client=client,
         message_generated=message,
+        dashboard_insight=dashboard_insight,
         channel_used=client.send_channel,
         metrics_snapshot=metrics_snapshot,
         campaign_score=campaign_score,
@@ -534,29 +805,32 @@ def api_report_send(request):
     email_ok = None
     whatsapp_ok = None
 
+    # O `message` recebido do frontend já contém o link do dashboard (appendado no preview pelo JS).
+    # Não há necessidade de adicionar novamente aqui — evita duplicação.
+
     if client.send_channel in ('email', 'both'):
         if not client.email:
             email_ok = 'failed'
             errors.append('Email: cliente sem e-mail cadastrado.')
         else:
             try:
-                send_report_email(client.email, client.name, message)
+                # Identidade da agência: nome visível como remetente, email como reply-to
+                agency_name = client.owner.first_name or client.owner.username
+                agency_email = client.owner.email
+                send_report_email(
+                    client.email,
+                    client.name,
+                    message,
+                    agency_name=agency_name,
+                    agency_email=agency_email,
+                )
                 email_ok = 'sent'
             except Exception as e:
                 email_ok = 'failed'
                 errors.append(f'Email: {e}')
 
-    if client.send_channel in ('whatsapp', 'both'):
-        if not client.phone:
-            whatsapp_ok = 'failed'
-            errors.append('WhatsApp: cliente sem telefone cadastrado.')
-        else:
-            try:
-                send_report_whatsapp(client.phone, message)
-                whatsapp_ok = 'sent'
-            except Exception as e:
-                whatsapp_ok = 'failed'
-                errors.append(f'WhatsApp: {e}')
+    # WhatsApp é enviado via link wa.me aberto no browser do usuário (frontend).
+    # Não há envio automático pelo backend — nenhuma API de terceiro processa dados aqui.
 
     log.email_status = email_ok
     log.whatsapp_status = whatsapp_ok
@@ -587,8 +861,11 @@ def api_client_report_config(request, client_id):
         'knowledge_level': client.knowledge_level,
         'send_channel': client.send_channel,
         'report_frequency_days': client.report_frequency_days,
+        'report_frequency': client.report_frequency,
+        'report_send_day': client.report_send_day,
         'has_email': bool(client.email),
         'has_phone': bool(client.phone),
+        'phone': client.phone or '',
     })
 
 
@@ -596,27 +873,35 @@ def api_client_report_config(request, client_id):
 @require_GET
 def api_client_metrics(request, client_id):
     """
-    Retorna as métricas visíveis do cliente agrupadas por plataforma.
+    Retorna as métricas do cliente agrupadas por plataforma.
     Usado pelo generate.html para pré-carregar o painel de métricas editáveis.
-    Os valores atuais são preenchidos com MOCK_METRICS (substituídos pelas APIs reais no futuro).
+    Apenas plataformas com IntegrationAccount status='connected' são incluídas.
     """
     client = get_object_or_404(Client, id=client_id, owner=request.user)
-    configs = client.metric_configs.filter(is_visible=True).order_by('platform', 'order')
+
+    # Apenas plataformas que têm integração realmente conectada
+    connected_platforms = set(
+        client.integrations.filter(status='connected').values_list('channel', flat=True)
+    )
+
+    configs = (
+        client.metric_configs
+        .filter(platform__in=connected_platforms)
+        .order_by('platform', 'order')
+    )
 
     data: dict = {}
-    mock_current = MOCK_METRICS.get('current_week', {})
 
     for config in configs:
         p = config.platform
         if p not in data:
             data[p] = []
-        current_val = mock_current.get(p, {}).get(config.metric_key, '')
         data[p].append({
             'id': config.id,
             'metric_key': config.metric_key,
             'display_name': config.display_name,
             'order': config.order,
-            'current_value': current_val,
+            'is_visible': config.is_visible,
         })
 
     return JsonResponse({'metrics': data})
@@ -645,22 +930,28 @@ def integrations_view(request):
     
     if selected_client_id:
         try:
-            selected_client = Client.objects.get(id=selected_client_id)
-            
-            # Agrupar integraciones por canal
+            selected_client = Client.objects.get(id=selected_client_id, owner=request.user)
+
+            # Uma única query busca todas as contas do cliente com prefetch;
+            # agrupa e conta em Python (evita loop de 9 queries)
+            all_accounts = list(
+                IntegrationAccount.objects
+                .filter(client=selected_client)
+                .prefetch_related('selected_campaigns', 'selected_metrics')
+            )
+            accounts_by_channel: dict = {}
+            for acc in all_accounts:
+                accounts_by_channel.setdefault(acc.channel, []).append(acc)
+
             for channel, channel_name in IntegrationAccount.CHANNEL_CHOICES:
-                channel_integrations = IntegrationAccount.objects.filter(
-                    client=selected_client,
-                    channel=channel
-                ).prefetch_related('selected_campaigns', 'selected_metrics')
-                
+                channel_accs = accounts_by_channel.get(channel, [])
                 integrations_by_channel[channel] = {
                     'name': channel_name,
-                    'accounts': channel_integrations,
-                    'count': channel_integrations.filter(status='connected').count(),
-                    'pending_count': channel_integrations.filter(status='pending_selection').count(),
+                    'accounts': channel_accs,
+                    'count': sum(1 for a in channel_accs if a.status == 'connected'),
+                    'pending_count': sum(1 for a in channel_accs if a.status == 'pending_selection'),
                 }
-                
+
         except Client.DoesNotExist:
             messages.error(request, 'Cliente no encontrado.')
     
@@ -938,6 +1229,26 @@ def select_accounts_view(request):
     return render(request, 'reportai/integrations/select_accounts.html', context)
 
 
+def _auto_populate_metric_configs(client, channel):
+    """
+    Cria automaticamente um ClientMetricConfig para cada métrica disponível
+    do canal recém-conectado. Usa get_or_create para ser idempotente —
+    reconectar a mesma conta não duplica nem sobrescreve customizações existentes.
+    """
+    available = SelectedMetric.get_available_metrics(channel)
+    for order, (metric_key, display_name) in enumerate(available):
+        ClientMetricConfig.objects.get_or_create(
+            client=client,
+            platform=channel,
+            metric_key=metric_key,
+            defaults={
+                'display_name': display_name,
+                'is_visible': True,
+                'order': order,
+            },
+        )
+
+
 @require_POST
 def save_selected_accounts(request):
     """
@@ -977,6 +1288,10 @@ def save_selected_accounts(request):
             if not customer_id:
                 continue
 
+            # GA4 não tem etapa de campanhas: conectar direto.
+            # Google Ads e Meta Ads ficam 'pending_selection' até o usuário escolher campanhas.
+            account_status = 'connected' if channel == 'ga4' else 'pending_selection'
+
             _, created = IntegrationAccount.objects.update_or_create(
                 client=client,
                 channel=channel,
@@ -986,7 +1301,7 @@ def save_selected_accounts(request):
                     'login_customer_id': login_customer_id,
                     'account_name': customer_name,
                     'customer_name': customer_name,
-                    'status': 'pending_selection',
+                    'status': account_status,
                     'access_token': oauth_tokens.get('access_token'),
                     'refresh_token': oauth_tokens.get('refresh_token'),
                     'token_expiry': timezone.now() + timedelta(seconds=oauth_tokens.get('expires_in', 3600)),
@@ -997,22 +1312,15 @@ def save_selected_accounts(request):
             )
             if created:
                 created_count += 1
-        
+
+            # Registra automaticamente todas as métricas do canal no ClientMetricConfig
+            _auto_populate_metric_configs(client, channel)
+
         # Clear tokens from session
         if 'oauth_tokens' in request.session:
             del request.session['oauth_tokens']
 
-        # Para GA4 não há etapa de campanhas: redirecionar direto para
-        # seleção de métricas da primeira propriedade recém-criada.
         redirect_url = f'/app/integrations/?client_id={client_id}'
-        if channel == 'ga4' and created_count > 0:
-            first_ga4 = IntegrationAccount.objects.filter(
-                client=client,
-                channel='ga4',
-                status='pending_selection',
-            ).order_by('-id').first()
-            if first_ga4:
-                redirect_url = f'/app/integrations/account/{first_ga4.id}/metrics/'
 
         return JsonResponse({
             'success': True,
@@ -1090,7 +1398,12 @@ def save_selected_campaigns(request, account_id):
                 campaign_type=campaign_data.get('type', ''),
                 is_active=True
             )
-        
+
+        # Marca a conta como conectada após o usuário configurar as campanhas
+        if account.status == 'pending_selection':
+            account.status = 'connected'
+            account.save(update_fields=['status'])
+
         return JsonResponse({
             'success': True,
             'message': f'Se guardaron {len(selected_campaigns)} campañas.',
@@ -1384,6 +1697,56 @@ def save_metrics(request):
 
 
 # ============================================================
+# API — TIMELINE
+# ============================================================
+
+@login_required
+@require_POST
+def api_timeline_create(request, client_id):
+    """Cria uma nova entrada na timeline do cliente."""
+    client = get_object_or_404(Client, id=client_id, owner=request.user)
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'JSON inválido.'}, status=400)
+
+    title = data.get('title', '').strip()
+    if not title:
+        return JsonResponse({'error': 'El título es obligatorio.'}, status=400)
+
+    date_val = data.get('date', '').strip()
+    if not date_val:
+        return JsonResponse({'error': 'La fecha es obligatoria.'}, status=400)
+
+    entry = TimelineEntry.objects.create(
+        client=client,
+        date=date_val,
+        badge_type=data.get('badge_type', 'actualizacion'),
+        badge_color=data.get('badge_color', 'blue'),
+        title=title,
+        description=data.get('description', ''),
+    )
+    return JsonResponse({
+        'success': True,
+        'id': entry.id,
+        'date': str(entry.date),
+        'badge_type': entry.badge_type,
+        'badge_color': entry.badge_color,
+        'title': entry.title,
+        'description': entry.description,
+    })
+
+
+@login_required
+@require_POST
+def api_timeline_delete(request, entry_id):
+    """Deleta uma entrada da timeline do cliente."""
+    entry = get_object_or_404(TimelineEntry, id=entry_id, client__owner=request.user)
+    entry.delete()
+    return JsonResponse({'success': True})
+
+
+# ============================================================
 # DASHBOARD PÚBLICO DO CLIENTE
 # ============================================================
 
@@ -1400,11 +1763,103 @@ def _format_metric_value(metric_key, value):
     return str(int(value))
 
 
+def _build_dashboard_context(client, log) -> dict:
+    """
+    Monta o contexto completo para o template public_dashboard.html.
+    Aceita tanto um ReportLog real quanto um SimpleNamespace (para preview sem salvar).
+    """
+    # Métricas em destaque — lidas do snapshot do relatório
+    highlight_metrics = []
+
+    current_week = {}
+    previous_week = {}
+    if log and log.metrics_snapshot:
+        current_week = log.metrics_snapshot.get('current_week', {})
+        previous_week = log.metrics_snapshot.get('previous_week', {})
+
+    # Lê as chaves destacadas salvas no snapshot
+    highlighted_keys = []
+    if log and log.metrics_snapshot:
+        highlighted_keys = log.metrics_snapshot.get('highlighted', [])
+
+    # Mapeia (platform, metric_key) → config para evitar colisão quando dois platforms
+    # partilham o mesmo metric_key (ex: 'conversions' em google_ads e meta_ads)
+    configs_by_key = {
+        (c.platform, c.metric_key): c
+        for c in ClientMetricConfig.objects.filter(client=client)
+    }
+
+    for item in highlighted_keys:
+        # Suporta tanto objetos {key, platform} (formato novo) como strings planas (legado)
+        if isinstance(item, dict):
+            key = item.get('key', '')
+            platform = item.get('platform', '')
+        else:
+            key = str(item)
+            platform = None
+
+        # Lookup preciso por (platform, key); fallback por key apenas para snapshots antigos
+        config = configs_by_key.get((platform, key)) if platform else None
+        if not config:
+            for (p_iter, k_iter), c_iter in configs_by_key.items():
+                if k_iter == key:
+                    config = c_iter
+                    break
+        if not config:
+            continue
+
+        p = config.platform
+        current_val = current_week.get(p, {}).get(key)
+        # Fallback: procura em todas as plataformas do snapshot (seguro — chaves são únicas)
+        if current_val is None:
+            for plat_data in current_week.values():
+                if isinstance(plat_data, dict) and key in plat_data:
+                    current_val = plat_data[key]
+                    break
+        if current_val is None:
+            current_val = 0.0
+
+        prev_val = previous_week.get(p, {}).get(key)
+        if prev_val is None:
+            for plat_data in previous_week.values():
+                if isinstance(plat_data, dict) and key in plat_data:
+                    prev_val = plat_data[key]
+                    break
+        delta = None
+        if prev_val and prev_val != 0:
+            delta = round((current_val - prev_val) / abs(prev_val) * 100, 1)
+
+        highlight_metrics.append({
+            'display_name': config.display_name,
+            'metric_key': key,
+            'platform': p,
+            'value': current_val,
+            'formatted_value': _format_metric_value(key, current_val),
+            'delta': delta,
+            'delta_abs': round(abs(delta), 1) if delta is not None else None,
+            'delta_class': ('up' if delta > 0 else ('down' if delta < 0 else 'flat')) if delta is not None else '',
+            'delta_arrow': ('▲' if delta > 0 else ('▼' if delta < 0 else '—')) if delta is not None else '',
+        })
+
+    # Timeline manual de ações do cliente
+    timeline_entries = (
+        TimelineEntry.objects
+        .filter(client=client)
+        .order_by('-date')
+    )
+
+    return {
+        'client': client,
+        'latest_log': log,
+        'highlight_metrics': highlight_metrics,
+        'timeline_entries': timeline_entries,
+    }
+
+
 def public_dashboard_view(request, token):
     """
     Dashboard público acessível sem login via token único do cliente.
-    Exibe métricas configuradas pela agência e mensagem do relatório mais recente.
-    O conversor <uuid:token> em core/urls.py garante 404 automático para tokens malformados.
+    Exibe métricas em destaque, insight da IA, score e timeline de ações.
     """
     client = get_object_or_404(Client, dashboard_token=token)
 
@@ -1415,57 +1870,59 @@ def public_dashboard_view(request, token):
         .first()
     )
 
-    # Prepara contexto de métricas a partir das configurações visíveis do cliente
-    PLATFORM_LABELS = {
-        'google_ads': 'Google Ads',
-        'ga4': 'Google Analytics 4',
-        'meta_ads': 'Meta Ads',
-    }
-
-    metrics_by_platform = {}  # {platform: {label, card_metrics, all_metrics}}
-
-    if latest_log and latest_log.metrics_snapshot:
-        current_week = latest_log.metrics_snapshot.get('current_week', {})
-        previous_week = latest_log.metrics_snapshot.get('previous_week', {})
-        visible_configs = client.metric_configs.filter(is_visible=True)
-
-        for config in visible_configs:
-            p = config.platform
-            current_val = current_week.get(p, {}).get(config.metric_key)
-            if current_val is None:
-                continue  # não exibe métricas sem dado no snapshot
-
-            prev_val = previous_week.get(p, {}).get(config.metric_key)
-            delta = None
-            if prev_val and prev_val != 0:
-                delta = round((current_val - prev_val) / abs(prev_val) * 100, 1)
-
-            metric_entry = {
-                'display_name': config.display_name,
-                'metric_key': config.metric_key,
-                'value': current_val,
-                'formatted_value': _format_metric_value(config.metric_key, current_val),
-                'prev_value': prev_val,
-                'delta': delta,
-                'delta_abs': round(abs(delta), 1) if delta is not None else None,
-                'delta_class': ('up' if delta > 0 else ('down' if delta < 0 else 'flat')) if delta is not None else '',
-                'delta_arrow': ('▲' if delta > 0 else ('▼' if delta < 0 else '—')) if delta is not None else '',
-                'order': config.order,
-            }
-
-            if p not in metrics_by_platform:
-                metrics_by_platform[p] = {
-                    'label': PLATFORM_LABELS.get(p, p),
-                    'card_metrics': [],   # métricas de destaque (order=0)
-                    'all_metrics': [],    # todas as métricas para o breakdown
-                }
-            metrics_by_platform[p]['all_metrics'].append(metric_entry)
-            if config.order == 0:
-                metrics_by_platform[p]['card_metrics'].append(metric_entry)
-
-    context = {
-        'client': client,
-        'latest_log': latest_log,
-        'metrics_by_platform': metrics_by_platform,
-    }
+    context = _build_dashboard_context(client, latest_log)
     return render(request, 'reportai/public_dashboard.html', context)
+
+
+def public_dashboard_by_slug(request, slug):
+    """Rota amigável /dashboard/<slug>/; com fallback para UUID (links antigos)."""
+    try:
+        client = Client.objects.get(dashboard_slug=slug)
+    except Client.DoesNotExist:
+        # Fallback: tenta interpretar como UUID para links já enviados
+        try:
+            token = uuid_module.UUID(str(slug))
+            client = get_object_or_404(Client, dashboard_token=token)
+        except (ValueError, AttributeError):
+            raise Http404
+    return public_dashboard_view(request, token=client.dashboard_token)
+
+
+@require_POST
+@login_required
+def api_report_preview_dashboard(request):
+    """
+    Renderiza o template public_dashboard.html com dados provisórios (sem salvar no banco).
+    Permite que a agência visualize como o dashboard do cliente ficará antes de enviar.
+    """
+    try:
+        data = json.loads(request.body)
+    except json.JSONDecodeError:
+        return JsonResponse({'success': False, 'error': 'JSON inválido.'}, status=400)
+
+    client_id = data.get('client_id')
+    if not client_id:
+        return JsonResponse({'success': False, 'error': 'client_id obrigatório.'}, status=400)
+
+    client = get_object_or_404(Client, id=client_id, owner=request.user)
+
+    # Monta snapshot com highlighted e dashboard_insight do payload
+    metrics_snapshot = data.get('metrics_snapshot', {})
+    if not isinstance(metrics_snapshot, dict):
+        metrics_snapshot = {}
+    metrics_snapshot['highlighted'] = data.get('highlighted_metrics', [])
+
+    # Cria um log falso com a interface que o template espera (não persiste no banco)
+    fake_log = SimpleNamespace(
+        client=client,
+        metrics_snapshot=metrics_snapshot,
+        campaign_score=data.get('campaign_score') or 0,
+        score_reason=str(data.get('score_reason', '')),
+        message_generated=str(data.get('message_generated', '')),
+        dashboard_insight=str(data.get('dashboard_insight', '')),
+        sent_at=timezone.now(),
+    )
+
+    context = _build_dashboard_context(client, fake_log)
+    html = render_to_string('reportai/public_dashboard.html', context, request=request)
+    return JsonResponse({'html': html})

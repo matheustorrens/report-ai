@@ -3,6 +3,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
+from django.utils.text import slugify
 import uuid
 
 
@@ -22,6 +23,18 @@ class Client(models.Model):
         ('email', 'Email'),
         ('whatsapp', 'WhatsApp'),
         ('both', 'Email + WhatsApp'),
+    ]
+
+    FREQUENCY_CHOICES = [
+        ('weekly', 'Semanal'),
+        ('biweekly', 'Quincenal'),
+        ('monthly', 'Mensual'),
+        ('quarterly', 'Trimestral'),
+    ]
+
+    WEEKDAY_CHOICES = [
+        (0, 'Lunes'), (1, 'Martes'), (2, 'Miércoles'),
+        (3, 'Jueves'), (4, 'Viernes'), (5, 'Sábado'), (6, 'Domingo'),
     ]
 
     name = models.CharField(max_length=255, verbose_name="Nombre del cliente")
@@ -48,6 +61,22 @@ class Client(models.Model):
         verbose_name="Frecuencia (días)",
         help_text="7 = semanal, 14 = quincenal, 30 = mensual"
     )
+    report_frequency = models.CharField(
+        max_length=20,
+        choices=FREQUENCY_CHOICES,
+        default='weekly',
+        blank=True,
+        null=True,
+        verbose_name="Frecuencia de envío"
+    )
+    report_send_day = models.IntegerField(
+        choices=WEEKDAY_CHOICES,
+        default=0,
+        blank=True,
+        null=True,
+        verbose_name="Día de envío",
+        help_text="Día de envío: 0=Lunes...6=Domingo (mensual/trimestral: día del mes 1-28)"
+    )
     next_report_at = models.DateTimeField(
         blank=True,
         null=True,
@@ -60,6 +89,14 @@ class Client(models.Model):
         editable=False,
         unique=True,
         verbose_name="Token del dashboard público"
+    )
+
+    # URL amigável para o dashboard público (gerada automaticamente a partir do nome)
+    dashboard_slug = models.CharField(
+        max_length=80,
+        unique=True,
+        blank=True,
+        verbose_name="Slug del dashboard"
     )
 
     # Agency user who owns this client
@@ -80,7 +117,24 @@ class Client(models.Model):
     
     def __str__(self):
         return self.name
-    
+
+    def save(self, *args, **kwargs):
+        """Sincroniza report_frequency_days e gera dashboard_slug se necessário."""
+        # Gera slug amigável a partir do nome + 4 chars do UUID do token
+        if not self.dashboard_slug:
+            base = slugify(self.name) or 'cliente'
+            short_id = str(self.dashboard_token)[:4]
+            self.dashboard_slug = f"{base}-{short_id}"
+        freq_map = {
+            'weekly': 7,
+            'biweekly': 14,
+            'monthly': 30,
+            'quarterly': 90,
+        }
+        if self.report_frequency and self.report_frequency in freq_map:
+            self.report_frequency_days = freq_map[self.report_frequency]
+        super().save(*args, **kwargs)
+
     def get_integrations_by_channel(self, channel):
         """Retorna todas las cuentas de integración de un canal específico."""
         return self.integrations.filter(channel=channel, status='connected')
@@ -523,6 +577,13 @@ class ReportLog(models.Model):
         verbose_name="Motivo del score"
     )
 
+    # Insight analítico gerado pela IA para exibição no dashboard (diferente do whatsapp_summary)
+    dashboard_insight = models.TextField(
+        blank=True,
+        default="",
+        verbose_name="Insight del dashboard"
+    )
+
     class Meta:
         verbose_name = "Log de Reporte"
         verbose_name_plural = "Logs de Reportes"
@@ -598,6 +659,11 @@ class ClientMetricConfig(models.Model):
         default=0,
         verbose_name="Orden"
     )
+    # Se True, a métrica aparece nos cards de resumo do dashboard (máx 6 por cliente)
+    is_highlight = models.BooleanField(
+        default=False,
+        verbose_name="Destaque en el dashboard"
+    )
 
     class Meta:
         verbose_name = "Configuración de Métrica"
@@ -630,4 +696,118 @@ def create_metric_configs_for_new_client(sender, instance, created, **kwargs):
     """Signal: cria configurações de métricas padrão ao criar um novo cliente."""
     if created:
         _create_default_metric_configs(instance)
+
+
+# ============================================================
+# AGENCY PROFILE
+# ============================================================
+
+class AgencyProfile(models.Model):
+    """
+    Perfil estendido da agência (User).
+    Armazena dados adicionais que não cabem no model User padrão do Django.
+    """
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='agency_profile',
+        verbose_name="Usuario"
+    )
+    whatsapp = models.CharField(
+        max_length=30,
+        blank=True,
+        default='',
+        verbose_name="WhatsApp",
+        help_text="Número de WhatsApp de la agencia (ej: +34612345678)"
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    # Campos de aceite de documentos legais — registrados com timestamp para audit trail
+    terms_accepted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Aceite dos Termos em"
+    )
+    privacy_accepted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Aceite da Privacidade em"
+    )
+    dpa_accepted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Aceite do DPA em"
+    )
+    legal_version = models.CharField(
+        max_length=20,
+        default="1.0",
+        verbose_name="Versão dos documentos legais aceitos"
+    )
+
+    class Meta:
+        verbose_name = "Perfil de Agencia"
+        verbose_name_plural = "Perfiles de Agencia"
+
+    def __str__(self):
+        return f"Perfil de {self.user.first_name or self.user.username}"
+
+
+# ============================================================
+# TIMELINE DE AÇÕES DO CLIENTE
+# ============================================================
+
+class TimelineEntry(models.Model):
+    """
+    Entradas manuais da timeline do cliente, gerenciadas pela agência.
+    Aparecem no dashboard público para mostrar o histórico de ações/resultados.
+    """
+    BADGE_CHOICES = [
+        ('resultado',     'Resultado'),
+        ('actualizacion', 'Actualización'),
+        ('marco',         'Marco'),
+        ('reunion',       'Reunión'),
+        ('otro',          'Otro'),
+    ]
+
+    COLOR_CHOICES = [
+        ('blue',   'Azul'),
+        ('green',  'Verde'),
+        ('yellow', 'Amarillo'),
+        ('red',    'Rojo'),
+        ('purple', 'Morado'),
+        ('gray',   'Gris'),
+    ]
+
+    client      = models.ForeignKey(
+        Client,
+        on_delete=models.CASCADE,
+        related_name='timeline_entries',
+        verbose_name="Cliente"
+    )
+    date        = models.DateField(verbose_name="Fecha")
+    badge_type  = models.CharField(
+        max_length=20,
+        choices=BADGE_CHOICES,
+        default='actualizacion',
+        verbose_name="Tipo de badge"
+    )
+    badge_color = models.CharField(
+        max_length=10,
+        choices=COLOR_CHOICES,
+        default='blue',
+        verbose_name="Color del badge"
+    )
+    title       = models.CharField(max_length=200, verbose_name="Título")
+    description = models.TextField(blank=True, verbose_name="Descripción")
+    created_at  = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Entrada de Timeline"
+        verbose_name_plural = "Entradas de Timeline"
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.client.name} — {self.date} — {self.title}"
 

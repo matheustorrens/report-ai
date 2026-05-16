@@ -1,0 +1,501 @@
+{% extends 'reportai/base.html' %}
+{% load static %}
+
+{% block title %}Perfil de la Agencia — ReportAI{% endblock %}
+
+{% block page_title %}Configuración{% endblock %}
+
+{% block content %}
+<div class="agency-profile-page">
+
+    {% if messages %}
+        {% for msg in messages %}
+        <div class="alert alert-success" id="profile-alert">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22 4 12 14.01 9 11.01"/>
+            </svg>
+            <span>{{ msg }}</span>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        <span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <!-- Header de perfil -->
+    <div class="card profile-header-card mb-xl">
+        <div class="flex items-center gap-lg">
+            <div class="profile-big-avatar" id="profile-big-avatar">
+                {{ agency_name|slice:":1"|upper }}
+            </div>
+            <div>
+                <h2 class="text-xl font-bold mb-xs" id="profile-display-name">{{ agency_name|default:"Agencia" }}</h2>
+                <p class="text-secondary text-sm">{{ email }}</p>
+                <span class="status-badge success" style="margin-top: 8px; display: inline-block;">Agencia</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="profile-layout">
+
+        <!-- Formulário principal -->
+        <div class="card profile-form-card">
+            <h3 class="card-title mb-lg">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px;">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                    <circle cx="12" cy="7" r="4"/>
+                </svg>
+                Información de la Agencia
+            </h3>
+
+            <form method="post" action="{% url 'reportai:agency_profile' %}">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label class="form-label" for="agency_name">Nombre de la Agencia</label>
+                    <input
+                        type="text"
+                        class="form-input"
+                        id="agency_name"
+                        name="agency_name"
+                        value="{{ agency_name }}"
+                        placeholder="Tu Agencia Digital"
+                        required
+                        maxlength="150"
+                        autocomplete="organization"
+                    >
+                    <p class="form-helper">Este nombre se muestra en la barra lateral.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email</label>
+                    <input
+                        type="email"
+                        class="form-input"
+                        id="email"
+                        name="email"
+                        value="{{ email }}"
+                        placeholder="tu@agencia.com"
+                        required
+                        autocomplete="email"
+                    >
+                    <p class="form-helper">Email principal de la agencia para acceder a la plataforma.</p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="whatsapp">
+                        WhatsApp
+                        <span class="form-label-optional">Opcional</span>
+                    </label>
+                    <div class="input-with-icon">
+                        <svg class="input-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+                        </svg>
+                        <input
+                            type="tel"
+                            class="form-input with-icon"
+                            id="whatsapp"
+                            name="whatsapp"
+                            value="{{ whatsapp }}"
+                            placeholder="+34 61 23456-789"
+                            maxlength="22"
+                            autocomplete="tel"
+                        >
+                    </div>
+                    <div style="margin-top: 4px; min-height: 18px;">
+                        <span id="whatsapp-country" style="font-size: 0.75rem; color: #10b981; display: none;"></span>
+                    </div>
+                </div>
+
+                <div class="profile-form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                            <polyline points="17 21 17 13 7 13 7 21"/>
+                            <polyline points="7 3 7 8 15 8"/>
+                        </svg>
+                        Guardar cambios
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Painel lateral: segurança + logout -->
+        <div class="flex flex-col gap-lg">
+
+            <!-- Segurança -->
+            <div class="card profile-security-card">
+                <h3 class="card-title mb-md">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px;">
+                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                        <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                    </svg>
+                    Seguridad
+                </h3>
+                <div class="flex flex-col gap-md">
+                    <div class="security-item">
+                        <div>
+                            <div class="text-sm font-medium mb-xs">Contraseña</div>
+                            <div class="text-xs text-tertiary">Actualiza tu contraseña de acceso</div>
+                        </div>
+                        <a href="/app/password_change/" class="btn btn-secondary btn-sm">Cambiar</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cerrar sesión -->
+            <div class="card profile-logout-card">
+                <h3 class="card-title mb-md">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="vertical-align:middle; margin-right:8px; color: var(--color-error);">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Sesión
+                </h3>
+                <p class="text-sm text-secondary mb-md">Cierra tu sesión en este dispositivo.</p>
+                <a href="{% url 'reportai:logout' %}" class="btn btn-logout w-full" onclick="return confirm('¿Seguro que quieres cerrar sesión?')">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+                        <polyline points="16 17 21 12 16 7"/>
+                        <line x1="21" y1="12" x2="9" y2="12"/>
+                    </svg>
+                    Cerrar sesión
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ============================================================
+   AGENCY PROFILE PAGE STYLES
+   ============================================================ */
+
+.agency-profile-page {
+    max-width: 860px;
+}
+
+/* Alertas */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 0.875rem;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+.alert-success {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.alert-error {
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Header do perfil */
+.profile-header-card {
+    padding: 28px 32px;
+}
+.profile-big-avatar {
+    width: 72px;
+    height: 72px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, var(--color-primary), #6366f1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.5px;
+    flex-shrink: 0;
+}
+
+/* Layout de 2 colunas */
+.profile-layout {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    align-items: start;
+}
+
+@media (max-width: 768px) {
+    .profile-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Formulário */
+.profile-form-card {
+    padding: 28px 32px;
+}
+
+.form-label-optional {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--color-text-tertiary);
+    background: var(--color-bg-elevated);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    vertical-align: middle;
+}
+
+.form-helper {
+    font-size: 0.75rem;
+    color: var(--color-text-tertiary);
+    margin-top: 5px;
+    margin-bottom: 0;
+}
+
+/* Input com ícone */
+.input-with-icon {
+    position: relative;
+}
+.input-icon {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-tertiary);
+    pointer-events: none;
+}
+.form-input.with-icon {
+    padding-left: 40px;
+}
+
+/* Botão guardar */
+.profile-form-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 28px;
+    padding-top: 20px;
+    border-top: 1px solid var(--color-border);
+}
+
+/* Segurança */
+.profile-security-card {
+    padding: 24px;
+}
+.security-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 0;
+}
+
+/* Logout */
+.profile-logout-card {
+    padding: 24px;
+}
+.btn-logout {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+    background: var(--color-error-bg);
+    color: var(--color-error);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+.btn-logout:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: var(--color-error);
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Atualiza o avatar grande e o nome de exibição dinamicamente conforme o usuário digita
+(function() {
+    var nameInput = document.getElementById('agency_name');
+    var bigAvatar = document.getElementById('profile-big-avatar');
+    var displayName = document.getElementById('profile-display-name');
+
+    // Atualiza iniciais do avatar grande
+    function updateBigAvatar(name) {
+        var words = name.trim().split(/\s+/).filter(Boolean);
+        var initials = words.slice(0, 2).map(function(w) { return w[0].toUpperCase(); }).join('');
+        bigAvatar.textContent = initials || '?';
+    }
+
+    if (nameInput && bigAvatar) {
+        // Inicializa com o valor atual
+        updateBigAvatar(nameInput.value);
+
+        nameInput.addEventListener('input', function() {
+            updateBigAvatar(this.value);
+            if (displayName) {
+                displayName.textContent = this.value || 'Agencia';
+            }
+        });
+    }
+
+    // Auto-dismiss do alerta de sucesso após 4s
+    var alert = document.getElementById('profile-alert');
+    if (alert) {
+        setTimeout(function() {
+            alert.style.transition = 'opacity 0.4s';
+            alert.style.opacity = '0';
+            setTimeout(function() { alert.remove(); }, 400);
+        }, 4000);
+    }
+})();
+</script>
+<script>
+// Utilitários de telefone: formatação, normalização e detecção de país
+(function() {
+    var DDI_MAP = {
+        '1': { name: 'EE.UU. / Canad\u00e1', flag: '\ud83c\uddfa\ud83c\uddf8' }, '7': { name: 'Rusia', flag: '\ud83c\uddf7\ud83c\uddfa' },
+        '20': { name: 'Egipto', flag: '\ud83c\uddea\ud83c\uddec' }, '27': { name: 'Sud\u00e1frica', flag: '\ud83c\uddff\ud83c\udde6' },
+        '30': { name: 'Grecia', flag: '\ud83c\uddec\ud83c\uddf7' }, '31': { name: 'Pa\u00edses Bajos', flag: '\ud83c\uddf3\ud83c\uddf1' },
+        '32': { name: 'B\u00e9lgica', flag: '\ud83c\udde7\ud83c\uddea' }, '33': { name: 'Francia', flag: '\ud83c\uddeb\ud83c\uddf7' },
+        '34': { name: 'Espa\u00f1a', flag: '\ud83c\uddea\ud83c\uddf8' }, '36': { name: 'Hungr\u00eda', flag: '\ud83c\udded\ud83c\uddfa' },
+        '39': { name: 'Italia', flag: '\ud83c\uddee\ud83c\uddf9' }, '40': { name: 'Ruman\u00eda', flag: '\ud83c\uddf7\ud83c\uddf4' },
+        '41': { name: 'Suiza', flag: '\ud83c\udde8\ud83c\udded' }, '43': { name: 'Austria', flag: '\ud83c\udde6\ud83c\uddf9' },
+        '44': { name: 'Reino Unido', flag: '\ud83c\uddec\ud83c\udde7' }, '45': { name: 'Dinamarca', flag: '\ud83c\udde9\ud83c\uddf0' },
+        '46': { name: 'Suecia', flag: '\ud83c\uddf8\ud83c\uddea' }, '47': { name: 'Noruega', flag: '\ud83c\uddf3\ud83c\uddf4' },
+        '48': { name: 'Polonia', flag: '\ud83c\uddf5\ud83c\uddf1' }, '49': { name: 'Alemania', flag: '\ud83c\udde9\ud83c\uddea' },
+        '51': { name: 'Per\u00fa', flag: '\ud83c\uddf5\ud83c\uddea' }, '52': { name: 'M\u00e9xico', flag: '\ud83c\uddf2\ud83c\uddfd' },
+        '53': { name: 'Cuba', flag: '\ud83c\udde8\ud83c\uddfa' }, '54': { name: 'Argentina', flag: '\ud83c\udde6\ud83c\uddf7' },
+        '55': { name: 'Brasil', flag: '\ud83c\udde7\ud83c\uddf7' }, '56': { name: 'Chile', flag: '\ud83c\udde8\ud83c\uddf1' },
+        '57': { name: 'Colombia', flag: '\ud83c\udde8\ud83c\uddf4' }, '58': { name: 'Venezuela', flag: '\ud83c\uddfb\ud83c\uddea' },
+        '60': { name: 'Malasia', flag: '\ud83c\uddf2\ud83c\uddfe' }, '61': { name: 'Australia', flag: '\ud83c\udde6\ud83c\uddfa' },
+        '62': { name: 'Indonesia', flag: '\ud83c\uddee\ud83c\udde9' }, '63': { name: 'Filipinas', flag: '\ud83c\uddf5\ud83c\udded' },
+        '64': { name: 'Nueva Zelanda', flag: '\ud83c\uddf3\ud83c\uddff' }, '65': { name: 'Singapur', flag: '\ud83c\uddf8\ud83c\uddec' },
+        '66': { name: 'Tailandia', flag: '\ud83c\uddf9\ud83c\udded' }, '81': { name: 'Jap\u00f3n', flag: '\ud83c\uddef\ud83c\uddf5' },
+        '82': { name: 'Corea del Sur', flag: '\ud83c\uddf0\ud83c\uddf7' }, '84': { name: 'Vietnam', flag: '\ud83c\uddfb\ud83c\uddf3' },
+        '86': { name: 'China', flag: '\ud83c\udde8\ud83c\uddf3' }, '90': { name: 'Turqu\u00eda', flag: '\ud83c\uddf9\ud83c\uddf7' },
+        '91': { name: 'India', flag: '\ud83c\uddee\ud83c\uddf3' }, '92': { name: 'Pakist\u00e1n', flag: '\ud83c\uddf5\ud83c\uddf0' },
+        '94': { name: 'Sri Lanka', flag: '\ud83c\uddf1\ud83c\uddf0' }, '98': { name: 'Ir\u00e1n', flag: '\ud83c\uddee\ud83c\uddf7' },
+        '212': { name: 'Marruecos', flag: '\ud83c\uddf2\ud83c\udde6' }, '213': { name: 'Argelia', flag: '\ud83c\udde9\ud83c\uddff' },
+        '216': { name: 'T\u00fanez', flag: '\ud83c\uddf9\ud83c\uddf3' }, '218': { name: 'Libia', flag: '\ud83c\uddf1\ud83c\uddfe' },
+        '234': { name: 'Nigeria', flag: '\ud83c\uddf3\ud83c\uddec' }, '351': { name: 'Portugal', flag: '\ud83c\uddf5\ud83c\uddf9' },
+        '352': { name: 'Luxemburgo', flag: '\ud83c\uddf1\ud83c\uddfa' }, '353': { name: 'Irlanda', flag: '\ud83c\uddee\ud83c\uddea' },
+        '354': { name: 'Islandia', flag: '\ud83c\uddee\ud83c\uddf8' }, '355': { name: 'Albania', flag: '\ud83c\udde6\ud83c\uddf1' },
+        '356': { name: 'Malta', flag: '\ud83c\uddf2\ud83c\uddf9' }, '357': { name: 'Chipre', flag: '\ud83c\udde8\ud83c\uddfe' },
+        '358': { name: 'Finlandia', flag: '\ud83c\uddeb\ud83c\uddee' }, '359': { name: 'Bulgaria', flag: '\ud83c\udde7\ud83c\uddec' },
+        '380': { name: 'Ucrania', flag: '\ud83c\uddfa\ud83c\udde6' }, '381': { name: 'Serbia', flag: '\ud83c\uddf7\ud83c\uddf8' },
+        '385': { name: 'Croacia', flag: '\ud83c\udded\ud83c\uddf7' }, '386': { name: 'Eslovenia', flag: '\ud83c\uddf8\ud83c\uddee' },
+        '420': { name: 'Rep\u00fablica Checa', flag: '\ud83c\udde8\ud83c\uddff' }, '421': { name: 'Eslovaquia', flag: '\ud83c\uddf8\ud83c\uddf0' },
+        '506': { name: 'Costa Rica', flag: '\ud83c\udde8\ud83c\uddf7' }, '507': { name: 'Panam\u00e1', flag: '\ud83c\uddf5\ud83c\udde6' },
+        '591': { name: 'Bolivia', flag: '\ud83c\udde7\ud83c\uddf4' }, '593': { name: 'Ecuador', flag: '\ud83c\uddea\ud83c\udde8' },
+        '595': { name: 'Paraguay', flag: '\ud83c\uddf5\ud83c\uddfe' }, '598': { name: 'Uruguay', flag: '\ud83c\uddfa\ud83c\uddfe' },
+        '966': { name: 'Arabia Saudita', flag: '\ud83c\uddf8\ud83c\udde6' }, '971': { name: 'Emiratos \u00c1rabes', flag: '\ud83c\udde6\ud83c\uddea' },
+        '972': { name: 'Israel', flag: '\ud83c\uddee\ud83c\uddf1' },
+    };
+
+    function formatPhone(raw) {
+        var trimmed = (raw || '').trim();
+        if (!trimmed) return '';
+        var startsWithPlus = trimmed.startsWith('+');
+        var digits = trimmed.replace(/\D/g, '');
+        if (startsWithPlus) {
+            if (!digits) return '+';
+            var r = '+' + digits.slice(0, 2);
+            if (digits.length > 2) r += ' ' + digits.slice(2, 4);
+            if (digits.length > 4) {
+                var local = digits.slice(4, 13);
+                r += ' ' + (local.length <= 5 ? local : local.slice(0, 5) + '-' + local.slice(5));
+            }
+            return r;
+        } else {
+            if (!digits) return '';
+            if (digits.length <= 2) return '(' + digits;
+            if (digits.length <= 7) return '(' + digits.slice(0,2) + ') ' + digits.slice(2);
+            return '(' + digits.slice(0,2) + ') ' + digits.slice(2,7) + '-' + digits.slice(7,11);
+        }
+    }
+
+    function normalizePhone(val) {
+        if (!val) return '';
+        var t = (val || '').trim();
+        return t.startsWith('+') ? '+' + t.replace(/\D/g, '') : t.replace(/\D/g, '');
+    }
+
+    function detectCountry(phone, el) {
+        if (!el) return;
+        el.style.display = 'none';
+        var val = (phone || '').trim();
+        if (!val || !val.startsWith('+')) return;
+        var digits = val.replace(/\D/g, '');
+        for (var i = 0; i < [3, 2, 1].length; i++) {
+            var len = [3, 2, 1][i];
+            var code = digits.substring(0, len);
+            if (DDI_MAP[code]) {
+                var c = DDI_MAP[code];
+                el.textContent = c.flag + ' ' + c.name;
+                el.style.display = 'inline';
+                return;
+            }
+        }
+    }
+
+    var input = document.getElementById('whatsapp');
+    var countryEl = document.getElementById('whatsapp-country');
+    if (input) {
+        // Formata valor inicial vindo do servidor
+        if (input.value) {
+            input.value = formatPhone(input.value);
+            detectCountry(input.value, countryEl);
+        }
+        // Formatação em tempo real com preservação de cursor
+        input.addEventListener('input', function() {
+            var rawVal = this.value;
+            var cursorPos = this.selectionStart;
+            var beforeCursor = rawVal.slice(0, cursorPos);
+            var sigBefore = (beforeCursor.startsWith('+') ? 1 : 0) + beforeCursor.replace(/\D/g, '').length;
+            var newVal = formatPhone(rawVal);
+            this.value = newVal;
+            if (newVal !== rawVal) {
+                var sig = 0, newCursor = newVal.length;
+                for (var i = 0; i < newVal.length; i++) {
+                    if (newVal[i] === '+' || /\d/.test(newVal[i])) {
+                        sig++;
+                        if (sig === sigBefore) { newCursor = i + 1; break; }
+                    }
+                }
+                this.setSelectionRange(newCursor, newCursor);
+            }
+            detectCountry(this.value, countryEl);
+        });
+    }
+
+    // Normaliza o n\u00famero antes do POST para garantir formato limpo no banco
+    var form = document.querySelector('.profile-form-card form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            if (input && input.value) input.value = normalizePhone(input.value);
+        });
+    }
+})();
+</script>
+{% endblock %}

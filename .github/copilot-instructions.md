@@ -1,3 +1,5 @@
+## SEMPRE ME RESPONDA EM PORTUGUÊS!!!
+
 # ReportAI — Contexto Global do Projeto
 
 ## O Que é o ReportAI

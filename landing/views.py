@@ -33,3 +33,8 @@ def privacy_policy(request):
 def terms_of_service(request):
     """Terms of Service page."""
     return render(request, 'landing/terms_of_service.html')
+
+
+def dpa(request):
+    """Página pública do Acuerdo de Encargo de Tratamiento (DPA)."""
+    return render(request, 'landing/dpa.html')

@@ -1,0 +1,395 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <title>Acuerdo de Encargo de Tratamiento (DPA) | ReportAI</title>
+    <meta name="description" content="Acuerdo de Encargo de Tratamiento entre ReportAI y sus agencias usuarias, conforme al Artículo 28 del RGPD.">
+    <meta name="robots" content="index, follow">
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="{% static 'img/favicon.svg' %}">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="{% static 'css/styles.css' %}">
+    
+    <style>
+        .legal-page {
+            padding: 120px 0 80px;
+            min-height: 100vh;
+        }
+        
+        .legal-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+        
+        .legal-header {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+        
+        .legal-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 16px;
+            background: linear-gradient(135deg, var(--color-white), var(--color-gray-300));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .legal-updated {
+            color: var(--color-gray-400);
+            font-size: 0.875rem;
+        }
+        
+        .legal-content {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 16px;
+            padding: 48px;
+        }
+        
+        .legal-content h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--color-white);
+            margin: 32px 0 16px;
+        }
+        
+        .legal-content h2:first-child {
+            margin-top: 0;
+        }
+        
+        .legal-content h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-gray-200);
+            margin: 24px 0 12px;
+        }
+        
+        .legal-content p {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+            margin-bottom: 16px;
+        }
+        
+        .legal-content ul, .legal-content ol {
+            color: var(--color-gray-300);
+            line-height: 1.8;
+            margin-bottom: 16px;
+            padding-left: 24px;
+        }
+        
+        .legal-content li {
+            margin-bottom: 8px;
+        }
+        
+        .legal-content a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+        
+        .legal-content a:hover {
+            text-decoration: underline;
+        }
+        
+        .legal-content strong {
+            color: var(--color-white);
+            font-weight: 600;
+        }
+        
+        .back-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--color-gray-400);
+            text-decoration: none;
+            margin-bottom: 32px;
+            transition: color 0.2s;
+        }
+        
+        .back-link:hover {
+            color: var(--color-white);
+        }
+        
+        .back-link svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        @media (max-width: 768px) {
+            .legal-title {
+                font-size: 2rem;
+            }
+            
+            .legal-content {
+                padding: 32px 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" id="nav">
+        <div class="nav__container">
+            <a href="/" class="nav__logo">
+                <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+            </a>
+            <a href="{% url 'home' %}" class="nav__cta btn btn--small">Volver al inicio</a>
+        </div>
+    </nav>
+
+    <main class="legal-page">
+        <div class="legal-container">
+            <a href="{% url 'home' %}" class="back-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5"/>
+                    <path d="M12 19l-7-7 7-7"/>
+                </svg>
+                Volver al inicio
+            </a>
+            
+            <div class="legal-header">
+                <h1 class="legal-title">Acuerdo de Encargo de Tratamiento</h1>
+                <p class="legal-updated">Última actualización: 15 de mayo de 2026 — Versión 1.0</p>
+            </div>
+            
+            <div class="legal-content">
+                <h2>1. Objeto y Ámbito de Aplicación</h2>
+                <p>
+                    El presente Acuerdo de Encargo de Tratamiento ("DPA", por sus siglas en inglés) regula 
+                    las condiciones bajo las cuales <strong>ReportAI</strong> (en adelante, "el Encargado") 
+                    trata datos personales por cuenta de la agencia de marketing usuaria de la plataforma 
+                    (en adelante, "el Responsable"), en el marco de la prestación del servicio de 
+                    automatización de informes de marketing.
+                </p>
+                <p>
+                    Este acuerdo se formaliza de conformidad con el <strong>Artículo 28 del Reglamento (UE) 
+                    2016/679 (RGPD)</strong> y la <strong>Ley Orgánica 3/2018 (LOPDGDD)</strong>.
+                </p>
+                <p>
+                    El Responsable acepta este DPA al incorporar el primer cliente a la plataforma o, en su 
+                    caso, mediante el mecanismo de aceptación habilitado al efecto. La aceptación queda 
+                    registrada junto con la marca temporal correspondiente.
+                </p>
+
+                <h2>2. Identificación de las Partes</h2>
+                <ul>
+                    <li><strong>Responsable del Tratamiento:</strong> La agencia de marketing que ha creado 
+                    una cuenta en ReportAI y gestiona los datos de sus clientes finales a través de la plataforma.</li>
+                    <li><strong>Encargado del Tratamiento:</strong> ReportAI, plataforma SaaS de automatización 
+                    de informes de marketing digital. Contacto: 
+                    <a href="mailto:privacy@getreportai.com">privacy@getreportai.com</a></li>
+                </ul>
+
+                <h2>3. Naturaleza, Finalidad y Duración del Tratamiento</h2>
+                <ul>
+                    <li><strong>Naturaleza:</strong> Almacenamiento, procesamiento y transmisión de datos 
+                    personales de clientes de la agencia para la generación y envío de informes de marketing.</li>
+                    <li><strong>Finalidad:</strong> Prestación del servicio de automatización de informes 
+                    descrito en los <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>.</li>
+                    <li><strong>Duración:</strong> Mientras esté vigente la relación contractual entre el 
+                    Responsable y el Encargado. Una vez terminada, el Encargado eliminará o devolverá los 
+                    datos conforme a la Cláusula 11.</li>
+                </ul>
+
+                <h2>4. Categorías de Datos y Titulares Afectados</h2>
+                <p>El Encargado tratará, por instrucción del Responsable, los siguientes datos:</p>
+                <ul>
+                    <li><strong>Categorías de datos:</strong> Nombre, dirección de correo electrónico, 
+                    número de teléfono, nombre de empresa, métricas de campañas publicitarias, 
+                    tokens de acceso OAuth a plataformas de publicidad.</li>
+                    <li><strong>Categorías de titulares:</strong> Clientes finales de la agencia 
+                    (personas físicas o representantes de personas jurídicas).</li>
+                </ul>
+                <p>No se tratan categorías especiales de datos personales (Art. 9 RGPD).</p>
+
+                <h2>5. Obligaciones del Encargado (ReportAI)</h2>
+                <p>El Encargado se compromete a:</p>
+                <ul>
+                    <li>Tratar los datos personales únicamente según las instrucciones documentadas del 
+                    Responsable y en la medida necesaria para la prestación del servicio.</li>
+                    <li>Garantizar que las personas autorizadas para tratar los datos personales se hayan 
+                    comprometido a respetar la confidencialidad.</li>
+                    <li>Tomar todas las medidas de seguridad técnicas y organizativas apropiadas conforme 
+                    al Artículo 32 del RGPD.</li>
+                    <li>Respetar las condiciones para recurrir a otro encargado del tratamiento 
+                    (subencargado) establecidas en los Artículos 28.2 y 28.4 del RGPD.</li>
+                    <li>Asistir al Responsable, en la medida de lo posible, para responder las solicitudes 
+                    de ejercicio de los derechos de los titulares (Artículos 15 a 22 RGPD).</li>
+                    <li>Ayudar al Responsable a garantizar el cumplimiento de las obligaciones establecidas 
+                    en los Artículos 32 a 36 del RGPD (seguridad, notificación de brechas, evaluaciones 
+                    de impacto).</li>
+                    <li>Suprimir o devolver, a elección del Responsable, todos los datos personales una vez 
+                    finalizada la prestación del servicio, salvo que el Derecho de la Unión Europea o 
+                    español exija la conservación de los datos.</li>
+                    <li>Poner a disposición del Responsable toda la información necesaria para demostrar 
+                    el cumplimiento de las obligaciones del presente artículo.</li>
+                </ul>
+
+                <h2>6. Obligaciones del Responsable (Agencia)</h2>
+                <p>El Responsable se compromete a:</p>
+                <ul>
+                    <li>Disponer de base legal válida bajo el RGPD y la LOPDGDD para cada tratamiento 
+                    de datos de sus clientes finales antes de introducirlos en la plataforma.</li>
+                    <li>Informar a sus clientes finales sobre el tratamiento de sus datos personales, 
+                    incluyendo la participación de ReportAI como encargado del tratamiento.</li>
+                    <li>No utilizar la plataforma para el envío de comunicaciones no solicitadas (spam) 
+                    ni para prospección comercial no autorizada.</li>
+                    <li>Dar instrucciones lícitas al Encargado respecto al tratamiento de datos personales.</li>
+                    <li>Atender los derechos ARCO+ de sus clientes finales.</li>
+                </ul>
+
+                <h2>7. Subencargados del Tratamiento</h2>
+                <p>
+                    El Responsable autoriza expresamente al Encargado a recurrir a los siguientes 
+                    subencargados para la prestación del servicio:
+                </p>
+                <ul>
+                    <li><strong>Railway</strong> — Hosting de la aplicación (EE.UU.)</li>
+                    <li><strong>SendGrid (Twilio)</strong> — Envío y entrega de correo electrónico (EE.UU.). 
+                    Los datos son tratados por SendGrid para fines de entrega y logs operacionales conforme 
+                    a su política y configuración aplicable.</li>
+                    <li><strong>Groq Inc.</strong> — Generación de texto con inteligencia artificial (EE.UU.)</li>
+                    <li><strong>Supabase</strong> — Base de datos PostgreSQL en producción (EE.UU./UE)</li>
+                </ul>
+                <p>
+                    <strong>WhatsApp:</strong> Cuando se utiliza la función de envío por WhatsApp, 
+                    ReportAI únicamente genera un enlace <code>wa.me</code> que el usuario abre en su 
+                    navegador. El envío efectivo es realizado por el propio usuario desde su aplicación 
+                    de WhatsApp, fuera de la plataforma ReportAI. No existe subencargado para esta función.
+                </p>
+                <p>
+                    El Encargado notificará al Responsable cualquier cambio previsto en la incorporación 
+                    o sustitución de subencargados, ofreciendo al Responsable la posibilidad de oponerse 
+                    a dichos cambios.
+                </p>
+
+                <h2>8. Transferencias Internacionales de Datos</h2>
+                <p>
+                    Los subencargados indicados en la Cláusula 7 pueden estar ubicados fuera del Espacio 
+                    Económico Europeo (EEE), principalmente en Estados Unidos. El Encargado verifica que 
+                    existan mecanismos de protección adecuados conforme al Capítulo V del RGPD, tales como 
+                    las Cláusulas Contractuales Tipo (CCT) u otros mecanismos equivalentes cuando resulten 
+                    de aplicación. Se recomienda al Responsable verificar los contratos individuales de 
+                    cada subencargado para confirmar los mecanismos de transferencia aplicables.
+                </p>
+
+                <h2>9. Medidas de Seguridad</h2>
+                <p>El Encargado implementa las siguientes medidas técnicas y organizativas:</p>
+                <ul>
+                    <li>Cifrado en tránsito mediante HTTPS/TLS en todas las comunicaciones.</li>
+                    <li>Almacenamiento seguro de contraseñas mediante hash (no se almacenan en texto plano).</li>
+                    <li>Aislamiento multi-tenant: los datos de una agencia nunca son accesibles por otra.</li>
+                    <li>Tokens OAuth almacenados de forma segura en base de datos con acceso restringido.</li>
+                    <li>Acceso a datos personales restringido al personal técnico autorizado.</li>
+                    <li>Procedimiento de respuesta a incidentes y brechas de seguridad.</li>
+                </ul>
+
+                <h2>10. Notificación de Brechas de Seguridad</h2>
+                <p>
+                    En caso de brecha de seguridad que afecte a datos personales tratados por cuenta del 
+                    Responsable, el Encargado notificará al Responsable sin dilación indebida y, en 
+                    cualquier caso, en un plazo máximo de <strong>48 horas</strong> desde que tenga 
+                    conocimiento de ella, proporcionando la información necesaria para que el Responsable 
+                    pueda cumplir con su obligación de notificación a la AEPD dentro del plazo legal de 
+                    72 horas (Art. 33 RGPD).
+                </p>
+
+                <h2>11. Devolución y Supresión de Datos</h2>
+                <p>
+                    A la terminación de la relación contractual, el Encargado procederá a la supresión 
+                    de todos los datos personales tratados en nombre del Responsable en un plazo de 
+                    <strong>30 días</strong> desde la fecha de terminación, salvo que el Derecho de la 
+                    Unión Europea o español exija la conservación de los datos por un período determinado. 
+                    El Responsable podrá solicitar la exportación de sus datos antes del vencimiento 
+                    de dicho plazo.
+                </p>
+
+                <h2>12. Asistencia al Responsable</h2>
+                <p>
+                    El Encargado asistirá al Responsable, en la medida técnicamente posible, para:
+                </p>
+                <ul>
+                    <li>Responder solicitudes de ejercicio de derechos ARCO+ de los titulares.</li>
+                    <li>Cumplir con las obligaciones en materia de seguridad (Art. 32 RGPD).</li>
+                    <li>Notificar brechas de seguridad a la AEPD (Art. 33 RGPD).</li>
+                    <li>Comunicar brechas a los interesados cuando sea necesario (Art. 34 RGPD).</li>
+                    <li>Realizar evaluaciones de impacto relativas a la protección de datos (Art. 35 RGPD) 
+                    cuando el Responsable lo solicite y sea pertinente.</li>
+                </ul>
+
+                <h2>13. Auditoría y Cumplimiento</h2>
+                <p>
+                    El Encargado pondrá a disposición del Responsable toda la información necesaria para 
+                    demostrar el cumplimiento de las obligaciones establecidas en el presente DPA y en el 
+                    Artículo 28 del RGPD. Las auditorías por parte del Responsable se acordarán con un 
+                    preaviso de al menos 30 días y se realizarán de forma que no perturben las operaciones 
+                    del Encargado.
+                </p>
+
+                <h2>14. Modificaciones del DPA</h2>
+                <p>
+                    El Encargado podrá actualizar este DPA para reflejar cambios normativos, nuevos 
+                    subencargados u otras modificaciones relevantes. Los cambios significativos se 
+                    comunicarán al Responsable con al menos 30 días de antelación por correo electrónico 
+                    o mediante aviso en la plataforma. El uso continuado del servicio tras la entrada 
+                    en vigor de los cambios constituye la aceptación del DPA actualizado.
+                </p>
+
+                <h2>15. Ley Aplicable y Jurisdicción</h2>
+                <p>
+                    El presente DPA se rige por la legislación española y el Derecho de la Unión Europea 
+                    en materia de protección de datos. Para la resolución de controversias derivadas de 
+                    este acuerdo, las partes se someten a los tribunales competentes de España.
+                </p>
+
+                <h2>16. Contacto</h2>
+                <p>Para cualquier consulta relacionada con este DPA o el tratamiento de datos personales:</p>
+                <ul>
+                    <li><strong>Email de privacidad:</strong> <a href="mailto:privacy@getreportai.com">privacy@getreportai.com</a></li>
+                </ul>
+                <p>
+                    Ver también: 
+                    <a href="{% url 'privacy_policy' %}">Política de Privacidad</a> · 
+                    <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>
+                </p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer__content">
+                <div class="footer__brand">
+                    <a href="/" class="footer__logo">
+                        <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
+                    </a>
+                    <p class="footer__tagline">Informes de Google Ads automáticos con IA.</p>
+                </div>
+                
+                <div class="footer__links">
+                    <a href="{% url 'home' %}">Inicio</a>
+                    <a href="{% url 'privacy_policy' %}">Política de Privacidad</a>
+                    <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>
+                    <a href="{% url 'dpa' %}">DPA</a>
+                </div>
+            </div>
+            
+            <div class="footer__bottom">
+                <p class="footer__copy">&copy; 2026 ReportAI. Todos los derechos reservados.</p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

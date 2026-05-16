@@ -160,9 +160,14 @@ SENDGRID_API_KEY = os.environ.get('SENDGRID_API_KEY', '')
 SENDGRID_FROM_EMAIL = os.environ.get('SENDGRID_FROM_EMAIL', 'noreply@cacemirolabs.com')
 SENDGRID_FROM_NAME = os.environ.get('SENDGRID_FROM_NAME', 'ReportAI')
 
-# WAHA — WhatsApp via Docker local
-WAHA_URL = os.environ.get('WAHA_URL', 'http://localhost:3000')
-WAHA_SESSION = os.environ.get('WAHA_SESSION', 'default')
-
 # URL base do projeto (usado para gerar links no relatório)
 BASE_URL = os.environ.get('BASE_URL', 'http://localhost:8000')
+
+# Configurações de segurança para deploy com proxy reverso (Railway, Heroku, etc.)
+# CSRF_TRUSTED_ORIGINS: domínios permitidos para requisições CSRF com HTTPS (Django 4+)
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TRUSTED_ORIGINS', 'http://localhost:8000').split(',')
+# Informa ao Django que o HTTPS é terminado no proxy, não no app
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+
+

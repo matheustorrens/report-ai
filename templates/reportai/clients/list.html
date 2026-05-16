@@ -26,7 +26,7 @@
     <!-- Clients Grid -->
     <div class="clients-grid">
         {% for item in clients_data %}
-        <div class="client-card" data-client-id="{{ item.client.id }}">
+        <div class="client-card" data-client-id="{{ item.client.id }}" onclick="window.location='{% url 'reportai:client_profile' item.client.id %}'" style="cursor:pointer;">
             <div class="client-card-header">
                 <div class="client-avatar">
                     {{ item.client.name|slice:":2"|upper }}
@@ -42,22 +42,22 @@
                     {% endif %}
                 </div>
                 <div class="client-menu">
-                    <button class="btn-icon" onclick="toggleClientMenu({{ item.client.id }})">
+                    <button class="btn-icon" onclick="event.stopPropagation(); toggleClientMenu({{ item.client.id }})">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <circle cx="12" cy="12" r="1"/>
                             <circle cx="12" cy="5" r="1"/>
                             <circle cx="12" cy="19" r="1"/>
                         </svg>
                     </button>
-                    <div class="dropdown-menu" id="menu-{{ item.client.id }}">
-                        <a href="{% url 'reportai:client_profile' item.client.id %}" class="dropdown-item">
+                    <div class="dropdown-menu" id="menu-{{ item.client.id }}" onclick="event.stopPropagation()">
+                        <a href="{% url 'reportai:client_profile' item.client.id %}" class="dropdown-item" onclick="event.stopPropagation()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                                 <circle cx="12" cy="12" r="3"/>
                             </svg>
                             Ver perfil
                         </a>
-                        <a href="{% url 'reportai:integrations' %}?client_id={{ item.client.id }}" class="dropdown-item">
+                        <a href="{% url 'reportai:integrations' %}?client_id={{ item.client.id }}" class="dropdown-item" onclick="event.stopPropagation()">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M12 2L2 7l10 5 10-5-10-5z"/>
                                 <path d="M2 17l10 5 10-5"/>
@@ -65,7 +65,7 @@
                             </svg>
                             Integraciones
                         </a>
-                        <button class="dropdown-item" onclick="openEditClientModal({{ item.client.id }}, '{{ item.client.name|escapejs }}', '{{ item.client.email|default:''|escapejs }}', '{{ item.client.phone|default:''|escapejs }}', '{{ item.client.company|default:''|escapejs }}', '{{ item.client.knowledge_level|default:'leigo' }}')">
+                        <button class="dropdown-item" onclick="event.stopPropagation(); openEditClientModal({{ item.client.id }}, '{{ item.client.name|escapejs }}', '{{ item.client.email|default:''|escapejs }}', '{{ item.client.phone|default:''|escapejs }}', '{{ item.client.company|default:''|escapejs }}', '{{ item.client.knowledge_level|default:'leigo' }}')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                                 <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -73,7 +73,7 @@
                             Editar
                         </button>
                         <div class="dropdown-divider"></div>
-                        <button class="dropdown-item danger" onclick="confirmDeleteClient({{ item.client.id }}, '{{ item.client.name|escapejs }}')">
+                        <button class="dropdown-item danger" onclick="event.stopPropagation(); confirmDeleteClient({{ item.client.id }}, '{{ item.client.name|escapejs }}')">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <polyline points="3 6 5 6 21 6"/>
                                 <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
@@ -135,19 +135,6 @@
                 </div>
             </div>
             
-            <div class="client-card-footer">
-                <a href="{% url 'reportai:integrations' %}?client_id={{ item.client.id }}" class="btn btn-secondary btn-sm">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M12 2L2 7l10 5 10-5-10-5z"/>
-                        <path d="M2 17l10 5 10-5"/>
-                        <path d="M2 12l10 5 10-5"/>
-                    </svg>
-                    Integraciones
-                </a>
-                <a href="{% url 'reportai:client_profile' item.client.id %}" class="btn btn-primary btn-sm">
-                    Ver Perfil
-                </a>
-            </div>
         </div>
         {% endfor %}
     </div>
@@ -195,7 +182,11 @@
             <div class="modal-body" style="padding: 1.5rem;">
                 <div class="form-group" style="margin-bottom: 1.25rem;">
                     <label class="form-label" for="client-name" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Nombre del Cliente *</label>
-                    <input type="text" class="form-input" id="client-name" name="name" placeholder="Ej: Acme Corporation" required style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                    <input type="text" class="form-input" id="client-name" name="name" placeholder="Ej: Acme Corporation" required maxlength="30" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                    <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                        <span id="name-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></span>
+                        <span id="name-counter" style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">0/30</span>
+                    </div>
                 </div>
                 
                 <div class="form-group" style="margin-bottom: 1.25rem;">
@@ -206,20 +197,28 @@
                 <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" for="client-phone" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Teléfono</label>
-                        <input type="tel" class="form-input" id="client-phone" name="phone" placeholder="+34 600 000 000" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                        <input type="tel" class="form-input" id="client-phone" name="phone" placeholder="+34 61 23456-789" maxlength="20" autocomplete="tel" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                        <div style="margin-top: 4px; min-height: 18px;">
+                            <span id="phone-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></span>
+                            <span id="phone-country" style="font-size: 0.75rem; color: #10b981; display: none;"></span>
+                        </div>
                     </div>
                     
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" for="client-company" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Empresa</label>
-                        <input type="text" class="form-input" id="client-company" name="company" placeholder="Nombre de la empresa" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                        <input type="text" class="form-input" id="client-company" name="company" placeholder="Nombre de la empresa" maxlength="20" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <span id="company-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></span>
+                            <span id="company-counter" style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">0/20</span>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="form-group" style="margin-top: 1.25rem; margin-bottom: 0;">
                     <label class="form-label" for="client-knowledge-level" style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Nivel de conocimiento del cliente</label>
                     <select class="form-input" id="client-knowledge-level" name="knowledge_level" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box; cursor: pointer;">
-                        <option value="leigo">Leigo — resumen en lenguaje de negocio</option>
-                        <option value="avancado">Avanzado — métricas técnicas y desglose por plataforma</option>
+                        <option value="leigo">Leigo: resumen en lenguaje de negocio</option>
+                        <option value="avancado">Avanzado: métricas técnicas y desglose por plataforma</option>
                     </select>
                     <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.375rem; margin-bottom: 0;">Determina qué métricas se muestran en el dashboard público del cliente.</p>
                 </div>
@@ -271,6 +270,48 @@
             <button type="button" class="btn btn-secondary" onclick="closeDeleteModal()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Cancelar</button>
             <button type="button" class="btn btn-danger" id="confirm-delete-btn" onclick="deleteClient()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: #ef4444; border: none; color: #fff;">
                 Eliminar Cliente
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- DPA Required Modal -->
+<div class="modal-overlay" id="dpa-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 10000; opacity: 0; visibility: hidden; transition: all 0.2s;">
+    <div class="modal" style="background: #1e1e2d; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 460px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative;">
+        <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h2 class="modal-title" style="font-size: 1.125rem; font-weight: 600; margin: 0; color: #fff;">Acuerdo de Encargo de Tratamiento</h2>
+            <button class="modal-close" onclick="closeDpaModal()" style="background: transparent; border: none; color: #888; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div class="modal-body" style="padding: 1.5rem;">
+            <div style="text-align: center; margin-bottom: 1.25rem; color: #6366f1;">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+            </div>
+            <p style="text-align: center; font-size: 0.95rem; margin-bottom: 0.75rem; color: #e0e0e0; font-weight: 500;">
+                Para añadir tu primer cliente, debes aceptar el Acuerdo de Encargo de Tratamiento (DPA).
+            </p>
+            <p style="text-align: center; font-size: 0.825rem; color: #888; margin-bottom: 1rem;">
+                Este acuerdo establece las responsabilidades de ReportAI como encargado del tratamiento de datos de tus clientes, conforme al Art. 28 del RGPD.
+            </p>
+            <p style="text-align: center; font-size: 0.8rem; color: #aaa;">
+                <a href="/dpa/" target="_blank" rel="noopener" style="color: #6366f1;">Leer el DPA completo</a>
+            </p>
+        </div>
+        <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <button type="button" onclick="closeDpaModal()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Cancelar</button>
+            <button type="button" id="dpa-accept-btn" onclick="acceptDpaAndRetry()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: #6366f1; border: none; color: #fff;">
+                <span id="dpa-accept-text">Aceptar DPA y continuar</span>
+                <span id="dpa-accept-loading" style="display:none;">Aceptando...</span>
             </button>
         </div>
     </div>
@@ -382,10 +423,10 @@
     position: absolute;
     top: 100%;
     right: 0;
-    background: var(--color-bg-raised);
-    border: 1px solid var(--color-border);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-light);
     border-radius: var(--radius-md);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55);
     min-width: 160px;
     padding: 0.5rem;
     display: none;
@@ -627,6 +668,191 @@
 let editingClientId = null;
 let deletingClientId = null;
 
+// Mapa de DDI → país para detecção automática de país pelo telefone
+const DDI_MAP = {
+    '1': { name: 'EE.UU. / Canadá', flag: '🇺🇸' }, '7': { name: 'Rusia', flag: '🇷🇺' },
+    '20': { name: 'Egipto', flag: '🇪🇬' }, '27': { name: 'Sudáfrica', flag: '🇿🇦' },
+    '30': { name: 'Grecia', flag: '🇬🇷' }, '31': { name: 'Países Bajos', flag: '🇳🇱' },
+    '32': { name: 'Bélgica', flag: '🇧🇪' }, '33': { name: 'Francia', flag: '🇫🇷' },
+    '34': { name: 'España', flag: '🇪🇸' }, '36': { name: 'Hungría', flag: '🇭🇺' },
+    '39': { name: 'Italia', flag: '🇮🇹' }, '40': { name: 'Rumanía', flag: '🇷🇴' },
+    '41': { name: 'Suiza', flag: '🇨🇭' }, '43': { name: 'Austria', flag: '🇦🇹' },
+    '44': { name: 'Reino Unido', flag: '🇬🇧' }, '45': { name: 'Dinamarca', flag: '🇩🇰' },
+    '46': { name: 'Suecia', flag: '🇸🇪' }, '47': { name: 'Noruega', flag: '🇳🇴' },
+    '48': { name: 'Polonia', flag: '🇵🇱' }, '49': { name: 'Alemania', flag: '🇩🇪' },
+    '51': { name: 'Perú', flag: '🇵🇪' }, '52': { name: 'México', flag: '🇲🇽' },
+    '53': { name: 'Cuba', flag: '🇨🇺' }, '54': { name: 'Argentina', flag: '🇦🇷' },
+    '55': { name: 'Brasil', flag: '🇧🇷' }, '56': { name: 'Chile', flag: '🇨🇱' },
+    '57': { name: 'Colombia', flag: '🇨🇴' }, '58': { name: 'Venezuela', flag: '🇻🇪' },
+    '60': { name: 'Malasia', flag: '🇲🇾' }, '61': { name: 'Australia', flag: '🇦🇺' },
+    '62': { name: 'Indonesia', flag: '🇮🇩' }, '63': { name: 'Filipinas', flag: '🇵🇭' },
+    '64': { name: 'Nueva Zelanda', flag: '🇳🇿' }, '65': { name: 'Singapur', flag: '🇸🇬' },
+    '66': { name: 'Tailandia', flag: '🇹🇭' }, '81': { name: 'Japón', flag: '🇯🇵' },
+    '82': { name: 'Corea del Sur', flag: '🇰🇷' }, '84': { name: 'Vietnam', flag: '🇻🇳' },
+    '86': { name: 'China', flag: '🇨🇳' }, '90': { name: 'Turquía', flag: '🇹🇷' },
+    '91': { name: 'India', flag: '🇮🇳' }, '92': { name: 'Pakistán', flag: '🇵🇰' },
+    '94': { name: 'Sri Lanka', flag: '🇱🇰' }, '98': { name: 'Irán', flag: '🇮🇷' },
+    '212': { name: 'Marruecos', flag: '🇲🇦' }, '213': { name: 'Argelia', flag: '🇩🇿' },
+    '216': { name: 'Túnez', flag: '🇹🇳' }, '218': { name: 'Libia', flag: '🇱🇾' },
+    '234': { name: 'Nigeria', flag: '🇳🇬' }, '351': { name: 'Portugal', flag: '🇵🇹' },
+    '352': { name: 'Luxemburgo', flag: '🇱🇺' }, '353': { name: 'Irlanda', flag: '🇮🇪' },
+    '354': { name: 'Islandia', flag: '🇮🇸' }, '355': { name: 'Albania', flag: '🇦🇱' },
+    '356': { name: 'Malta', flag: '🇲🇹' }, '357': { name: 'Chipre', flag: '🇨🇾' },
+    '358': { name: 'Finlandia', flag: '🇫🇮' }, '359': { name: 'Bulgaria', flag: '🇧🇬' },
+    '380': { name: 'Ucrania', flag: '🇺🇦' }, '381': { name: 'Serbia', flag: '🇷🇸' },
+    '385': { name: 'Croacia', flag: '🇭🇷' }, '386': { name: 'Eslovenia', flag: '🇸🇮' },
+    '420': { name: 'República Checa', flag: '🇨🇿' }, '421': { name: 'Eslovaquia', flag: '🇸🇰' },
+    '506': { name: 'Costa Rica', flag: '🇨🇷' }, '507': { name: 'Panamá', flag: '🇵🇦' },
+    '591': { name: 'Bolivia', flag: '🇧🇴' }, '593': { name: 'Ecuador', flag: '🇪🇨' },
+    '595': { name: 'Paraguay', flag: '🇵🇾' }, '598': { name: 'Uruguay', flag: '🇺🇾' },
+    '966': { name: 'Arabia Saudita', flag: '🇸🇦' }, '971': { name: 'Emiratos Árabes', flag: '🇦🇪' },
+    '972': { name: 'Israel', flag: '🇮🇱' },
+};
+
+/**
+ * Formata número de telefone conforme digitação.
+ * Com + → internacional: +CC DD NNNNN-NNNN
+ * Sem + → nacional: (DD) NNNNN-NNNN
+ */
+function formatPhone(raw) {
+    var trimmed = (raw || '').trim();
+    if (!trimmed) return '';
+    var startsWithPlus = trimmed.startsWith('+');
+    var digits = trimmed.replace(/\D/g, '');
+    if (startsWithPlus) {
+        if (!digits) return '+';
+        var r = '+' + digits.slice(0, 2);
+        if (digits.length > 2) r += ' ' + digits.slice(2, 4);
+        if (digits.length > 4) {
+            var local = digits.slice(4, 13);
+            r += ' ' + (local.length <= 5 ? local : local.slice(0, 5) + '-' + local.slice(5));
+        }
+        return r;
+    } else {
+        if (!digits) return '';
+        if (digits.length <= 2) return '(' + digits;
+        if (digits.length <= 7) return '(' + digits.slice(0,2) + ') ' + digits.slice(2);
+        return '(' + digits.slice(0,2) + ') ' + digits.slice(2,7) + '-' + digits.slice(7,11);
+    }
+}
+
+/** Normaliza número para armazenamento: remove espaços/traços/parênteses, mantém + */
+function normalizePhone(val) {
+    if (!val) return '';
+    var t = (val || '').trim();
+    return t.startsWith('+') ? '+' + t.replace(/\D/g, '') : t.replace(/\D/g, '');
+}
+
+/** Detecta país a partir do DDI e exibe badge verde */
+function detectPhoneCountry(phone) {
+    const errEl = document.getElementById('phone-error');
+    const countryEl = document.getElementById('phone-country');
+    if (!errEl || !countryEl) return;
+    const val = (phone || '').trim();
+    errEl.style.display = 'none';
+    countryEl.style.display = 'none';
+    if (!val || !val.startsWith('+')) return;
+    const digits = val.replace(/\D/g, '');
+    for (const len of [3, 2, 1]) {
+        const code = digits.substring(0, len);
+        if (DDI_MAP[code]) {
+            const c = DDI_MAP[code];
+            countryEl.textContent = c.flag + ' ' + c.name;
+            countryEl.style.display = 'inline';
+            return;
+        }
+    }
+}
+
+/** Atualiza contadores de caracteres de nome e empresa */
+function updateClientFieldCounters(name, company) {
+    const nc = document.getElementById('name-counter');
+    const cc = document.getElementById('company-counter');
+    if (nc) nc.textContent = (name || '').length + '/30';
+    if (cc) cc.textContent = (company || '').length + '/20';
+}
+
+/** Limpa todos os erros e indicadores de validação */
+function clearClientFormErrors() {
+    ['name-error', 'company-error', 'phone-error', 'phone-country'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    updateClientFieldCounters(
+        (document.getElementById('client-name') || {value: ''}).value,
+        (document.getElementById('client-company') || {value: ''}).value
+    );
+}
+
+/** Valida o formulário de cliente; retorna true se válido */
+function validateClientForm() {
+    let valid = true;
+    const name = document.getElementById('client-name').value.trim();
+    const nameErr = document.getElementById('name-error');
+    if (!name) {
+        if (nameErr) { nameErr.textContent = 'El nombre es requerido.'; nameErr.style.display = 'inline'; }
+        valid = false;
+    } else if (name.length > 30) {
+        if (nameErr) { nameErr.textContent = 'Máximo 30 caracteres.'; nameErr.style.display = 'inline'; }
+        valid = false;
+    } else {
+        if (nameErr) nameErr.style.display = 'none';
+    }
+    const company = document.getElementById('client-company').value.trim();
+    const companyErr = document.getElementById('company-error');
+    if (company.length > 20) {
+        if (companyErr) { companyErr.textContent = 'Máximo 20 caracteres.'; companyErr.style.display = 'inline'; }
+        valid = false;
+    } else {
+        if (companyErr) companyErr.style.display = 'none';
+    }
+    const phone = document.getElementById('client-phone').value.trim();
+    const phoneErr = document.getElementById('phone-error');
+    if (phone) {
+        const digits = phone.replace(/\D/g, '');
+        if (digits.length < 7 || digits.length > 15) {
+            if (phoneErr) { phoneErr.textContent = 'Número inválido (7–15 dígitos).'; phoneErr.style.display = 'inline'; }
+            valid = false;
+        } else {
+            if (phoneErr) phoneErr.style.display = 'none';
+        }
+    } else {
+        if (phoneErr) phoneErr.style.display = 'none';
+    }
+    return valid;
+}
+
+// Listeners em tempo real para os campos da modal
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('client-name');
+    const companyInput = document.getElementById('client-company');
+    const phoneInput = document.getElementById('client-phone');
+    if (nameInput) nameInput.addEventListener('input', function() { updateClientFieldCounters(this.value, (companyInput||{value:''}).value); });
+    if (companyInput) companyInput.addEventListener('input', function() { updateClientFieldCounters((nameInput||{value:''}).value, this.value); });
+    if (phoneInput) {
+        // Formatação em tempo real com preservação de cursor
+        phoneInput.addEventListener('input', function() {
+            var rawVal = this.value;
+            var cursorPos = this.selectionStart;
+            var beforeCursor = rawVal.slice(0, cursorPos);
+            var sigBefore = (beforeCursor.startsWith('+') ? 1 : 0) + beforeCursor.replace(/\D/g, '').length;
+            var newVal = formatPhone(rawVal);
+            this.value = newVal;
+            if (newVal !== rawVal) {
+                var sig = 0, newCursor = newVal.length;
+                for (var i = 0; i < newVal.length; i++) {
+                    if (newVal[i] === '+' || /\d/.test(newVal[i])) {
+                        sig++;
+                        if (sig === sigBefore) { newCursor = i + 1; break; }
+                    }
+                }
+                this.setSelectionRange(newCursor, newCursor);
+            }
+            detectPhoneCountry(this.value);
+        });
+    }
+});
+
 // Close modal when clicking on overlay (but not the modal content)
 document.getElementById('client-modal').addEventListener('click', function(e) {
     if (e.target === this) {
@@ -670,6 +896,7 @@ function openAddClientModal() {
     document.getElementById('submit-text').textContent = 'Crear Cliente';
     document.getElementById('client-form').reset();
     document.getElementById('client-id').value = '';
+    clearClientFormErrors();
     const modal = document.getElementById('client-modal');
     modal.classList.add('active');
     modal.style.opacity = '1';
@@ -684,9 +911,12 @@ function openEditClientModal(id, name, email, phone, company, knowledgeLevel) {
     document.getElementById('client-id').value = id;
     document.getElementById('client-name').value = name;
     document.getElementById('client-email').value = email;
-    document.getElementById('client-phone').value = phone;
+    document.getElementById('client-phone').value = formatPhone(phone);
     document.getElementById('client-company').value = company;
     document.getElementById('client-knowledge-level').value = knowledgeLevel || 'leigo';
+    clearClientFormErrors();
+    updateClientFieldCounters(name, company);
+    detectPhoneCountry(formatPhone(phone));
     const modal = document.getElementById('client-modal');
     modal.classList.add('active');
     modal.style.opacity = '1';
@@ -705,6 +935,7 @@ function closeClientModal() {
     modal.style.opacity = '0';
     modal.style.visibility = 'hidden';
     document.body.style.overflow = '';
+    clearClientFormErrors();
 }
 
 function confirmDeleteClient(id, name) {
@@ -731,9 +962,96 @@ function closeDeleteModal() {
     deletingClientId = null;
 }
 
+// DPA modal
+let pendingClientFormData = null;
+
+function openDpaModal() {
+    const modal = document.getElementById('dpa-modal');
+    modal.classList.add('active');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeDpaModal() {
+    const modal = document.getElementById('dpa-modal');
+    modal.classList.remove('active');
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    document.body.style.overflow = '';
+    pendingClientFormData = null;
+}
+
+async function acceptDpaAndRetry() {
+    const btn = document.getElementById('dpa-accept-btn');
+    const textEl = document.getElementById('dpa-accept-text');
+    const loadingEl = document.getElementById('dpa-accept-loading');
+    btn.disabled = true;
+    textEl.style.display = 'none';
+    loadingEl.style.display = 'inline';
+
+    try {
+        // 1. Registra aceite do DPA
+        const dpaResp = await fetch('/app/api/legal/accept-dpa/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            }
+        });
+        const dpaData = await dpaResp.json();
+        if (!dpaData.success) {
+            alert('No se pudo registrar la aceptación del DPA. Por favor, inténtalo de nuevo.');
+            return;
+        }
+
+        // Salva referência antes de fechar o modal (closeDpaModal anula pendingClientFormData)
+        const savedFormData = pendingClientFormData;
+        closeDpaModal();
+
+        // 2. Si hay datos de cliente pendientes, reintenta la creación automáticamente
+        if (savedFormData) {
+            const retryResp = await fetch('/app/api/clients/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify(savedFormData)
+            });
+            const retryData = await retryResp.json();
+            if (retryData.success) {
+                if (retryData.profile_url) {
+                    window.location.href = retryData.profile_url;
+                } else {
+                    window.location.reload();
+                }
+            } else {
+                alert(retryData.error || 'Error al crear el cliente tras aceptar el DPA.');
+            }
+            pendingClientFormData = null;
+        }
+    } catch (error) {
+        console.error('Error al aceptar DPA:', error);
+        alert('Error de conexión. Por favor, inténtalo de nuevo.');
+    } finally {
+        btn.disabled = false;
+        textEl.style.display = 'inline';
+        loadingEl.style.display = 'none';
+    }
+}
+
+document.getElementById('dpa-modal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDpaModal();
+    }
+});
+
 async function submitClientForm(event) {
     event.preventDefault();
-    
+
+    if (!validateClientForm()) return;
+
     const submitBtn = document.getElementById('submit-btn');
     const submitText = document.getElementById('submit-text');
     const submitLoading = document.getElementById('submit-loading');
@@ -745,7 +1063,7 @@ async function submitClientForm(event) {
     const formData = {
         name: document.getElementById('client-name').value,
         email: document.getElementById('client-email').value,
-        phone: document.getElementById('client-phone').value,
+        phone: normalizePhone(document.getElementById('client-phone').value),
         company: document.getElementById('client-company').value,
         knowledge_level: document.getElementById('client-knowledge-level').value,
     };
@@ -772,6 +1090,11 @@ async function submitClientForm(event) {
             } else {
                 window.location.reload();
             }
+        } else if (data.error === 'dpa_required') {
+            // Bloqueia criação do primeiro cliente até aceitar o DPA
+            pendingClientFormData = formData;
+            closeClientModal();
+            openDpaModal();
         } else {
             alert(data.error || 'Error al guardar el cliente.');
         }

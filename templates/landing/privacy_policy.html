@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -160,143 +160,219 @@
             
             <div class="legal-header">
                 <h1 class="legal-title">Política de Privacidad</h1>
-                <p class="legal-updated">Última actualización: 15 de abril de 2026</p>
+                <p class="legal-updated">Última actualización: 15 de mayo de 2026</p>
             </div>
             
             <div class="legal-content">
-                <h2>1. Introducción</h2>
+                <h2>1. Introducción y Responsable del Tratamiento</h2>
                 <p>
-                    En <strong>ReportAI</strong> ("nosotros", "nuestro" o "la empresa"), nos comprometemos a proteger 
-                    tu privacidad y tus datos personales. Esta Política de Privacidad explica cómo recopilamos, 
-                    usamos, compartimos y protegemos tu información cuando utilizas nuestra plataforma de 
-                    automatización de informes de marketing digital.
+                    En <strong>ReportAI</strong> nos comprometemos a proteger tu privacidad y tus datos personales. 
+                    Esta Política de Privacidad explica cómo tratamos la información cuando utilizas nuestra 
+                    plataforma de automatización de informes de marketing digital.
                 </p>
                 <p>
-                    Al usar ReportAI, aceptas las prácticas descritas en esta política. Si no estás de acuerdo 
-                    con esta política, por favor no utilices nuestros servicios.
+                    <strong>Responsable del tratamiento de los datos de las agencias:</strong> ReportAI (nombre 
+                    comercial del servicio), con dirección de contacto: 
+                    <a href="mailto:privacy@getreportai.com">privacy@getreportai.com</a>.
+                </p>
+                <p>
+                    <strong>Rol dual:</strong> Respecto a los datos de las agencias usuarias (nombre, e-mail, 
+                    contraseña), ReportAI actúa como <strong>Responsable del Tratamiento</strong>. Respecto 
+                    a los datos de los clientes finales de las agencias, ReportAI actúa como 
+                    <strong>Encargado del Tratamiento</strong> por cuenta de la agencia, conforme al 
+                    Artículo 28 del RGPD y al 
+                    <a href="{% url 'dpa' %}">Acuerdo de Encargo de Tratamiento (DPA)</a>.
+                </p>
+                <p>
+                    Esta política se rige por el Reglamento (UE) 2016/679 (RGPD), la Ley Orgánica 3/2018 
+                    de Protección de Datos Personales y Garantía de los Derechos Digitales (LOPDGDD) y 
+                    demás normativa española de protección de datos aplicable.
+                </p>
+
+                <h2>2. Qué Datos Tratamos y con Qué Finalidad</h2>
+                <p>La siguiente tabla resume las finalidades del tratamiento, los datos tratados y la base legal aplicable:</p>
+                <table style="width:100%; border-collapse:collapse; font-size:0.9em; margin: 1rem 0;">
+                    <thead>
+                        <tr style="background:#f0f0f0;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Finalidad</th>
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Datos tratados</th>
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Base legal (RGPD)</th>
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Base legal (LOPDGDD)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Creación y gestión de cuenta de la agencia</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Nombre, e-mail, contraseña (hash)</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 6.1(b) — ejecución de contrato</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 19 — tratamiento de datos de contacto profesional</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Gestión de clientes de la agencia (por instrucción de la agencia)</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Nombre, e-mail, teléfono, empresa del cliente</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 6.1(b) — ejecución de contrato (DPA); base legal declarada por la agencia responsable</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Conforme declare la agencia responsable</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Almacenamiento de tokens OAuth</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Access token, refresh token de Google Ads, GA4, Meta Ads</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 6.1(b) — necesario para la prestación del servicio</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Conforme declare la agencia responsable</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Generación de informes con IA</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Métricas de campañas, nombre del cliente (consultados en tiempo real; no almacenados permanentemente)</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 6.1(b) — ejecución del servicio contratado</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Conforme declare la agencia responsable</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Envío de informes por e-mail</td>
+                            <td style="padding:8px; border:1px solid #ddd;">E-mail y nombre del destinatario, contenido del informe</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 6.1(b) — ejecución del servicio contratado</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Conforme declare la agencia responsable</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Logs de sistema y seguridad</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Dirección IP, timestamps, acciones realizadas</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 6.1(f) — interés legítimo (seguridad operacional)</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Art. 25 — seguridad y mantenimiento de sistemas</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h2>3. Envío por WhatsApp</h2>
+                <p>
+                    Cuando se utiliza la funcionalidad de envío por WhatsApp, ReportAI <strong>únicamente genera 
+                    un enlace <code>wa.me</code></strong> que el usuario abre en su navegador. El envío efectivo 
+                    del mensaje es realizado por el propio usuario desde su aplicación de WhatsApp, fuera de 
+                    la plataforma ReportAI. ReportAI no transmite datos a ninguna API de terceros en este proceso 
+                    ni actúa como intermediario en el envío.
                 </p>
                 
-                <h2>2. Información que Recopilamos</h2>
+                <h2>4. Subencargados del Tratamiento (Subprocesadores)</h2>
+                <p>
+                    Para prestar el servicio, ReportAI utiliza los siguientes subprocesadores, con los que 
+                    mantiene contratos adecuados conforme al Artículo 28 del RGPD:
+                </p>
+                <table style="width:100%; border-collapse:collapse; font-size:0.9em; margin: 1rem 0;">
+                    <thead>
+                        <tr style="background:#f0f0f0;">
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Proveedor</th>
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">Función</th>
+                            <th style="padding:8px; border:1px solid #ddd; text-align:left;">País</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Railway</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Hosting de la aplicación</td>
+                            <td style="padding:8px; border:1px solid #ddd;">EE.UU.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">SendGrid (Twilio)</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Envío y entrega de correo electrónico</td>
+                            <td style="padding:8px; border:1px solid #ddd;">EE.UU.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Groq Inc.</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Generación de texto con inteligencia artificial</td>
+                            <td style="padding:8px; border:1px solid #ddd;">EE.UU.</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:8px; border:1px solid #ddd;">Supabase</td>
+                            <td style="padding:8px; border:1px solid #ddd;">Base de datos PostgreSQL en producción</td>
+                            <td style="padding:8px; border:1px solid #ddd;">EE.UU./UE</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p>
+                    <strong>No vendemos tus datos personales</strong> ni los cedemos a terceros salvo obligación legal.
+                </p>
                 
-                <h3>2.1 Información proporcionada directamente</h3>
+                <h2>5. Transferencias Internacionales de Datos</h2>
+                <p>
+                    Los subprocesadores indicados en la sección anterior pueden estar ubicados fuera del 
+                    Espacio Económico Europeo (EEE), principalmente en Estados Unidos. En estos casos, 
+                    ReportAI verifica que existan mecanismos de protección adecuados conforme al Capítulo V 
+                    del RGPD, como las Cláusulas Contractuales Tipo (CCT) adoptadas por la Comisión Europea 
+                    u otros mecanismos equivalentes cuando resulten de aplicación. Se recomienda a las 
+                    agencias verificar los contratos individuales de cada subprocesador para confirmar 
+                    los mecanismos de transferencia aplicables.
+                </p>
+                
+                <h2>6. Plazos de Conservación</h2>
                 <ul>
-                    <li><strong>Datos de registro:</strong> Nombre, dirección de correo electrónico, contraseña y nombre de la agencia.</li>
-                    <li><strong>Información de facturación:</strong> Datos de pago necesarios para procesar suscripciones.</li>
-                    <li><strong>Datos de clientes:</strong> Información de los clientes de tu agencia que gestionas en la plataforma.</li>
+                    <li><strong>Datos de cuenta de la agencia:</strong> Mientras la cuenta esté activa + 30 días tras la cancelación.</li>
+                    <li><strong>Datos de clientes de la agencia:</strong> Mismo plazo que la cuenta de la agencia.</li>
+                    <li><strong>Tokens OAuth:</strong> Eliminados inmediatamente al desconectar la integración.</li>
+                    <li><strong>Contenido de informes (ReportLog):</strong> 12 meses desde la generación.</li>
+                    <li><strong>Logs de sistema:</strong> 90 días (renovación automática).</li>
+                    <li><strong>Datos de facturación:</strong> Conforme a la obligación legal y fiscal aplicable.</li>
                 </ul>
                 
-                <h3>2.2 Información de integraciones</h3>
-                <p>Cuando conectas plataformas de publicidad, recopilamos:</p>
+                <h2>7. Seguridad de los Datos</h2>
+                <p>Implementamos medidas técnicas y organizativas adecuadas para proteger tus datos, entre ellas:</p>
                 <ul>
-                    <li><strong>Google Ads:</strong> Tokens de acceso OAuth, IDs de cuentas y métricas de campañas seleccionadas.</li>
-                    <li><strong>Google Analytics 4:</strong> Tokens de acceso OAuth, IDs de propiedades y métricas de tráfico seleccionadas.</li>
-                    <li><strong>Meta Ads:</strong> Tokens de acceso, IDs de cuentas publicitarias y métricas de campañas.</li>
+                    <li>Cifrado en tránsito mediante HTTPS/TLS.</li>
+                    <li>Almacenamiento seguro de contraseñas mediante hash.</li>
+                    <li>Aislamiento de datos por agencia (los datos de un usuario nunca son accesibles por otro).</li>
+                    <li>Acceso restringido a datos personales únicamente al personal técnico autorizado.</li>
+                    <li>Procedimiento de respuesta a incidentes y brechas de seguridad.</li>
+                </ul>
+                
+                <h2>8. Tus Derechos (ARCO+ y LOPDGDD)</h2>
+                <p>Como titular de datos, tienes los siguientes derechos reconocidos por el RGPD y la LOPDGDD:</p>
+                <ul>
+                    <li><strong>Acceso (Art. 15 RGPD):</strong> Obtener confirmación de si tratamos tus datos y una copia de los mismos.</li>
+                    <li><strong>Rectificación (Art. 16 RGPD):</strong> Corregir datos inexactos o incompletos.</li>
+                    <li><strong>Supresión (Art. 17 RGPD):</strong> Solicitar la eliminación de tus datos ("derecho al olvido").</li>
+                    <li><strong>Portabilidad (Art. 20 RGPD):</strong> Recibir tus datos en un formato estructurado y legible por máquina.</li>
+                    <li><strong>Oposición (Art. 21 RGPD):</strong> Oponerte al tratamiento basado en interés legítimo.</li>
+                    <li><strong>Limitación (Art. 18 RGPD):</strong> Solicitar la restricción del tratamiento en determinadas circunstancias.</li>
                 </ul>
                 <p>
-                    <strong>Importante:</strong> Solo accedemos a los datos que necesitamos para generar los informes. 
-                    No almacenamos datos de campañas de forma permanente; los consultamos en tiempo real cuando 
-                    generas un informe.
+                    Para ejercer estos derechos, envía tu solicitud a 
+                    <a href="mailto:privacy@getreportai.com">privacy@getreportai.com</a>. 
+                    Responderemos en el plazo de 30 días (prorrogable otros 60 días en casos complejos).
                 </p>
-                
-                <h3>2.3 Información recopilada automáticamente</h3>
-                <ul>
-                    <li>Dirección IP y ubicación aproximada</li>
-                    <li>Tipo de navegador y dispositivo</li>
-                    <li>Páginas visitadas y acciones realizadas en la plataforma</li>
-                    <li>Fecha y hora de acceso</li>
-                </ul>
-                
-                <h2>3. Cómo Usamos tu Información</h2>
-                <p>Utilizamos la información recopilada para:</p>
-                <ul>
-                    <li>Proporcionar y mantener nuestros servicios de generación de informes</li>
-                    <li>Procesar transacciones y enviar notificaciones relacionadas</li>
-                    <li>Personalizar tu experiencia y mejorar la plataforma</li>
-                    <li>Comunicarnos contigo sobre actualizaciones, soporte técnico y marketing (con tu consentimiento)</li>
-                    <li>Detectar y prevenir fraudes o actividades maliciosas</li>
-                    <li>Cumplir con obligaciones legales</li>
-                </ul>
-                
-                <h2>4. Cómo Compartimos tu Información</h2>
-                <p><strong>No vendemos tus datos personales.</strong> Podemos compartir información en los siguientes casos:</p>
-                <ul>
-                    <li><strong>Proveedores de servicios:</strong> Con empresas que nos ayudan a operar (procesadores de pago, servicios de hosting, etc.), bajo estrictos acuerdos de confidencialidad.</li>
-                    <li><strong>APIs de terceros:</strong> Para conectar con Google Ads, GA4 y Meta Ads, compartimos tokens de autorización con estas plataformas.</li>
-                    <li><strong>Requisitos legales:</strong> Cuando sea requerido por ley o para proteger nuestros derechos.</li>
-                    <li><strong>Transferencias empresariales:</strong> En caso de fusión, adquisición o venta de activos.</li>
-                </ul>
-                
-                <h2>5. Seguridad de los Datos</h2>
-                <p>Implementamos medidas de seguridad técnicas y organizativas para proteger tu información:</p>
-                <ul>
-                    <li>Encriptación de datos en tránsito (HTTPS/TLS) y en reposo</li>
-                    <li>Almacenamiento seguro de tokens OAuth con encriptación</li>
-                    <li>Acceso restringido a datos personales solo a empleados autorizados</li>
-                    <li>Auditorías de seguridad regulares</li>
-                    <li>Política de retención de datos limitada</li>
-                </ul>
-                
-                <h2>6. Tus Derechos (RGPD)</h2>
-                <p>Si te encuentras en el Espacio Económico Europeo, tienes los siguientes derechos:</p>
-                <ul>
-                    <li><strong>Acceso:</strong> Solicitar una copia de tus datos personales.</li>
-                    <li><strong>Rectificación:</strong> Corregir datos inexactos o incompletos.</li>
-                    <li><strong>Eliminación:</strong> Solicitar la eliminación de tus datos ("derecho al olvido").</li>
-                    <li><strong>Portabilidad:</strong> Recibir tus datos en un formato estructurado.</li>
-                    <li><strong>Oposición:</strong> Oponerte al procesamiento de tus datos para ciertos fines.</li>
-                    <li><strong>Limitación:</strong> Solicitar la restricción del procesamiento.</li>
-                </ul>
-                <p>Para ejercer estos derechos, contáctanos en <a href="mailto:privacidad@reportai.io">privacidad@reportai.io</a>.</p>
-                
-                <h2>7. Retención de Datos</h2>
                 <p>
-                    Conservamos tus datos mientras tu cuenta esté activa o según sea necesario para proporcionarte 
-                    servicios. Después de la eliminación de tu cuenta, retenemos ciertos datos durante un período 
-                    limitado para cumplir con obligaciones legales y resolver disputas.
+                    Tienes derecho a presentar una reclamación ante la 
+                    <strong>Agencia Española de Protección de Datos (AEPD)</strong> en 
+                    <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer">www.aepd.es</a> 
+                    si consideras que el tratamiento de tus datos no se ajusta a la normativa aplicable.
                 </p>
-                <ul>
-                    <li>Datos de cuenta: Hasta 30 días después de la eliminación de la cuenta</li>
-                    <li>Logs de actividad: 90 días</li>
-                    <li>Datos de facturación: 7 años (requisito fiscal)</li>
-                </ul>
                 
-                <h2>8. Cookies</h2>
+                <h2>9. Cookies</h2>
                 <p>Utilizamos cookies esenciales para el funcionamiento de la plataforma:</p>
                 <ul>
-                    <li><strong>Cookies de sesión:</strong> Para mantener tu sesión iniciada.</li>
-                    <li><strong>Cookies de preferencias:</strong> Para recordar tu configuración.</li>
-                    <li><strong>Cookies analíticas:</strong> Para entender cómo se usa la plataforma (solo con tu consentimiento).</li>
+                    <li><strong>Cookies de sesión:</strong> Para mantener tu sesión iniciada (necesarias para el servicio).</li>
+                    <li><strong>Cookies CSRF:</strong> Para la seguridad de los formularios.</li>
                 </ul>
-                
-                <h2>9. Transferencias Internacionales</h2>
-                <p>
-                    Tus datos pueden transferirse y procesarse en países fuera del EEE. En tales casos, 
-                    garantizamos que se apliquen salvaguardias adecuadas, como Cláusulas Contractuales Tipo 
-                    aprobadas por la Comisión Europea.
-                </p>
+                <p>No utilizamos cookies de rastreo publicitario ni cedemos datos a plataformas de publicidad en línea.</p>
                 
                 <h2>10. Menores de Edad</h2>
                 <p>
                     ReportAI no está dirigido a menores de 18 años. No recopilamos intencionadamente información 
-                    de menores. Si descubrimos que hemos recopilado datos de un menor, los eliminaremos de inmediato.
+                    de menores. Si detectamos que hemos recibido datos de un menor sin consentimiento parental 
+                    válido, los eliminaremos de inmediato.
                 </p>
                 
                 <h2>11. Cambios en esta Política</h2>
                 <p>
-                    Podemos actualizar esta Política de Privacidad ocasionalmente. Te notificaremos cualquier 
-                    cambio significativo por correo electrónico o mediante un aviso en la plataforma. 
-                    La fecha de "última actualización" en la parte superior indica cuándo se revisó por última vez.
+                    Podemos actualizar esta Política de Privacidad cuando sea necesario. Los cambios 
+                    significativos se notificarán por correo electrónico o mediante aviso en la plataforma 
+                    con al menos 30 días de antelación. La fecha de "última actualización" indica la revisión 
+                    más reciente.
                 </p>
                 
                 <h2>12. Contacto</h2>
-                <p>Si tienes preguntas sobre esta Política de Privacidad o sobre el tratamiento de tus datos, contáctanos:</p>
+                <p>Para cualquier consulta sobre el tratamiento de tus datos personales o para ejercer tus derechos:</p>
                 <ul>
-                    <li><strong>Email:</strong> <a href="mailto:contato@cacemirolabs.com">privacidad@reportai.io</a></li>
-                    <li><strong>Dirección:</strong> ReportAI, Madrid, España</li>
+                    <li><strong>Email de privacidad:</strong> <a href="mailto:privacy@getreportai.com">privacy@getreportai.com</a></li>
                 </ul>
                 <p>
-                    También puedes presentar una reclamación ante la autoridad de protección de datos de tu país 
-                    si consideras que no hemos manejado tu información correctamente.
+                    También puedes consultar nuestro <a href="{% url 'dpa' %}">Acuerdo de Encargo de Tratamiento (DPA)</a> 
+                    para más información sobre cómo tratamos los datos de los clientes finales de las agencias.
                 </p>
             </div>
         </div>
@@ -316,8 +392,7 @@
                 <div class="footer__links">
                     <a href="{% url 'home' %}">Inicio</a>
                     <a href="{% url 'privacy_policy' %}">Política de Privacidad</a>
-                    <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>
-                </div>
+                    <a href="{% url 'terms_of_service' %}">Términos de Servicio</a>                    <a href="{% url 'dpa' %}">DPA</a>                </div>
             </div>
             
             <div class="footer__bottom">

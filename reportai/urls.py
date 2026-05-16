@@ -11,6 +11,7 @@ urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('onboarding/', views.onboarding_view, name='onboarding'),
     path('logout/', views.logout_view, name='logout'),
+    path('profile/', views.agency_profile_view, name='agency_profile'),
     
     # ============================================================
     # DASHBOARD
@@ -30,6 +31,7 @@ urlpatterns = [
     path('api/clients/<int:client_id>/', views.api_update_client, name='api_update_client'),
     path('api/clients/<int:client_id>/delete/', views.api_delete_client, name='api_delete_client'),
     path('api/clients/<int:client_id>/metrics/', views.api_client_metrics, name='api_client_metrics'),
+    path('api/legal/accept-dpa/', views.api_accept_dpa, name='api_accept_dpa'),
     
     # ============================================================
     # REPORTS
@@ -37,6 +39,7 @@ urlpatterns = [
     path('reports/', views.reports_list_view, name='reports'),
     path('reports/generate/', views.report_generate_view, name='report_generate'),
     path('api/reports/preview/', views.api_report_preview, name='api_report_preview'),
+    path('api/reports/preview-dashboard/', views.api_report_preview_dashboard, name='api_report_preview_dashboard'),
     path('api/reports/send/', views.api_report_send, name='api_report_send'),
     path('api/clients/<int:client_id>/report-config/', views.api_client_report_config, name='api_client_report_config'),
     
@@ -90,4 +93,10 @@ urlpatterns = [
     # ============================================================
     path('oauth/disconnect/<str:integration_type>/<int:client_id>/', views.oauth_disconnect, name='oauth_disconnect'),
     path('api/metrics/save/', views.save_metrics, name='save_metrics_legacy'),
+
+    # ============================================================
+    # API - DASHBOARD
+    # ============================================================
+    path('api/clients/<int:client_id>/timeline/', views.api_timeline_create, name='api_timeline_create'),
+    path('api/timeline/<int:entry_id>/delete/', views.api_timeline_delete, name='api_timeline_delete'),
 ]

@@ -512,8 +512,8 @@ async function saveSelectedCampaigns() {
         const data = await response.json();
         
         if (data.success) {
-            // Redirect to metrics selection
-            window.location.href = '/app/integrations/account/{{ account.id }}/metrics/';
+            // Redirect to integrations page
+            window.location.href = '/app/integrations/?client_id={{ client.id }}';
         } else {
             alert(data.error || 'Error al guardar las campañas.');
             saveBtn.disabled = false;

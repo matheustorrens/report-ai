@@ -91,10 +91,9 @@
                         {% endif %}
                     </td>
                     <td>
-                        <button class="btn btn-ghost btn-sm" onclick="showMessage(this)"
-                            data-message="{{ log.message_generated|escapejs }}">
-                            Ver mensaje
-                        </button>
+                        <a href="/dashboard/{{ log.client.dashboard_slug }}/" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+                            Ver dashboard
+                        </a>
                     </td>
                 </tr>
                 {% empty %}

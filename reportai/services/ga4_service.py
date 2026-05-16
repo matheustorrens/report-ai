@@ -10,8 +10,12 @@ from reportai.google_services import fetch_ga4_metrics
 
 logger = logging.getLogger(__name__)
 
-# Chaves de metricas solicitadas a GA4 Data API
-GA4_METRIC_KEYS = ['sessions', 'users', 'bounce_rate', 'session_duration']
+# Todas as chaves de métricas GA4 suportadas (correspondem a SelectedMetric.GA4_METRICS)
+GA4_METRIC_KEYS = [
+    'sessions', 'users', 'new_users', 'pageviews', 'bounce_rate',
+    'session_duration', 'pages_per_session', 'engaged_sessions',
+    'engagement_rate', 'events', 'conversions', 'revenue',
+]
 
 
 def _date_range(weeks_back: int) -> tuple[str, str]:
@@ -65,14 +69,9 @@ def get_weekly_metrics(client) -> dict | None:
         previous_raw = {'totals': {}}
 
     def _build_ga4_dict(totals: dict) -> dict:
-        """Normaliza totals do fetch_ga4_metrics para o formato do MOCK_METRICS."""
-        return {
-            'sessions': int(totals.get('sessions', 0)),
-            'users': int(totals.get('users', 0)),
-            'bounce_rate': round(float(totals.get('bounce_rate', 0)), 1),
-            # fetch_ga4_metrics usa chave 'session_duration'; mock usa 'avg_session_duration'
-            'avg_session_duration': int(totals.get('session_duration', 0)),
-        }
+        """Passa todos os totais do fetch_ga4_metrics sem renomear — as chaves já
+        correspondem exatamente aos metric_key do ClientMetricConfig."""
+        return dict(totals)
 
     return {
         'current_week': {

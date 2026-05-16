@@ -22,11 +22,13 @@
             </div>
             <div class="kpi-value" id="kpi-reports">{{ total_reports }}</div>
             <div class="kpi-label">Reportes Enviados</div>
-            <div class="kpi-trend positive" id="trend-reports">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 15l-6-6-6 6"/>
-                </svg>
-                0%
+            <div class="kpi-trend {% if trend_reports_pos %}positive{% else %}negative{% endif %}" id="trend-reports">
+                {% if trend_reports_pos %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                {% else %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                {% endif %}
+                {{ trend_reports_val }}%
             </div>
         </div>
         
@@ -39,11 +41,13 @@
             </div>
             <div class="kpi-value" id="kpi-time">{{ sent_reports|default:0 }}</div>
             <div class="kpi-label">Reportes Entregados</div>
-            <div class="kpi-trend positive" id="trend-time">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 15l-6-6-6 6"/>
-                </svg>
-                0%
+            <div class="kpi-trend {% if trend_sent_pos %}positive{% else %}negative{% endif %}" id="trend-time">
+                {% if trend_sent_pos %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                {% else %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                {% endif %}
+                {{ trend_sent_val }}%
             </div>
         </div>
         
@@ -58,82 +62,96 @@
             </div>
             <div class="kpi-value" id="kpi-clients">{{ total_clients }}</div>
             <div class="kpi-label">Clientes Activos</div>
-            <div class="kpi-trend positive" id="trend-clients">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 15l-6-6-6 6"/>
-                </svg>
-                0%
+            <div class="kpi-trend {% if trend_clients_pos %}positive{% else %}negative{% endif %}" id="trend-clients">
+                {% if trend_clients_pos %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                {% else %}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                {% endif %}
+                {{ trend_clients_val }}%
             </div>
         </div>
         
         <div class="kpi-card efficiency">
             <div class="kpi-icon">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
-                    <polyline points="22 4 12 14.01 9 11.01"/>
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                    <line x1="16" y1="2" x2="16" y2="6"/>
+                    <line x1="8" y1="2" x2="8" y2="6"/>
+                    <line x1="3" y1="10" x2="21" y2="10"/>
                 </svg>
             </div>
-            <div class="kpi-value" id="kpi-efficiency">{{ efficiency }}%</div>
-            <div class="kpi-label">Eficiencia de Entrega</div>
-            <div class="kpi-trend positive" id="trend-efficiency">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 15l-6-6-6 6"/>
-                </svg>
-                0%
-            </div>
+            {% if next_report %}
+            <div class="kpi-value" style="font-size: 1rem; line-height: 1.3;">{{ next_report.client.name }}</div>
+            <div class="kpi-label">Próximo Envío · {{ next_report.date|date:"d/m" }}</div>
+            {% else %}
+            <div class="kpi-value" style="font-size: 0.875rem;">Sin envíos</div>
+            <div class="kpi-label">Próximo Envío</div>
+            {% endif %}
         </div>
     </div>
     
     <!-- Main Content Grid -->
     <div class="grid-2" style="grid-template-columns: 2fr 1fr;">
-        <!-- Chart Section -->
+        <!-- Últimos Reportes -->
         <div class="chart-container">
             <div class="chart-header">
                 <div>
-                    <h3 class="chart-title">Manual vs ReportAI</h3>
-                    <p class="text-sm text-tertiary mt-xs">Horas dedicadas a reportes por semana</p>
-                </div>
-                <div class="chart-legend">
-                    <div class="chart-legend-item">
-                        <span class="chart-legend-dot manual"></span>
-                        <span>Manual</span>
-                    </div>
-                    <div class="chart-legend-item">
-                        <span class="chart-legend-dot reportai"></span>
-                        <span>ReportAI</span>
-                    </div>
+                    <h3 class="chart-title">Últimos Reportes</h3>
                 </div>
             </div>
-            <div class="chart-area">
-                <canvas id="comparison-chart"></canvas>
+            <div>
+                {% for log in recent_reports %}
+                <a href="{% url 'public_dashboard' log.client.dashboard_token %}" target="_blank" style="padding: 0.875rem 1rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: 0.75rem; text-decoration: none; color: inherit; cursor: pointer; transition: background .15s;" onmouseover="this.style.background='rgba(255,255,255,0.03)'" onmouseout="this.style.background='transparent'">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--color-primary), #6366f1); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; flex-shrink: 0;">{{ log.client.name|slice:":2"|upper }}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ log.client.name }}</div>
+                        <div class="text-xs text-tertiary">{{ log.sent_at|date:"d/m H:i" }}</div>
+                    </div>
+                    {% if log.status == 'sent' %}
+                    <span class="status-badge success">Enviado</span>
+                    {% elif log.status == 'partial' %}
+                    <span class="status-badge warning">Parcial</span>
+                    {% elif log.status == 'failed' %}
+                    <span class="status-badge error">Fallido</span>
+                    {% else %}
+                    <span class="status-badge">Pendiente</span>
+                    {% endif %}
+                </a>
+                {% empty %}
+                <div class="empty-state" style="padding: 3rem 2rem;">
+                    <p class="text-sm text-tertiary">Sin reportes enviados aún.</p>
+                </div>
+                {% endfor %}
             </div>
         </div>
         
-        <!-- Needs Review Panel -->
+        <!-- Próximos Reportes -->
         <div class="review-panel">
             <div class="review-panel-header">
                 <div class="review-panel-title">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <circle cx="12" cy="12" r="10"/>
-                        <path d="M12 8v4"/>
-                        <path d="M12 16h.01"/>
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
                     </svg>
-                    Necesita Revisión
+                    Próximos Reportes
                 </div>
-                <span class="review-panel-badge">{{ needs_attention|length }}</span>
+                <span class="review-panel-badge">{{ upcoming_reports|length }}</span>
             </div>
-            <div id="pending-reviews-list">
-                {% for log in needs_attention %}
-                <div style="padding: 0.875rem 1rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; justify-content: space-between;">
-                    <div>
-                        <div class="text-sm font-medium">{{ log.client.name }}</div>
-                        <div class="text-xs text-tertiary">Reporte #{{ log.id }} · {{ log.sent_at|date:"d M" }}</div>
+            <div>
+                {% for item in upcoming_reports %}
+                <div style="padding: 0.875rem 1rem; border-bottom: 1px solid var(--color-border); display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 36px; height: 36px; border-radius: 8px; background: linear-gradient(135deg, var(--color-primary), #6366f1); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; flex-shrink: 0;">{{ item.client.name|slice:":2"|upper }}</div>
+                    <div style="flex: 1; min-width: 0;">
+                        <div class="text-sm font-medium" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ item.client.name }}</div>
+                        <div class="text-xs text-tertiary">{{ item.date|date:"d/m" }}</div>
                     </div>
-                    <span class="status-badge error">Fallido</span>
                 </div>
                 {% empty %}
                 <div class="empty-state" style="padding: 2rem;">
-                    <p class="text-sm text-tertiary">Todo en orden — sin fallos recientes.</p>
+                    <p class="text-sm text-tertiary">Sin reportes programados.</p>
                 </div>
                 {% endfor %}
             </div>

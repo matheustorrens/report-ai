@@ -32,7 +32,7 @@
                 </div>
             </div>
             <div class="flex gap-sm">
-                <button class="btn btn-secondary">
+                <button class="btn btn-secondary" onclick="openEditClientModal({{ client.id }}, '{{ client.name|escapejs }}', '{{ client.email|default:''|escapejs }}', '{{ client.phone|default:''|escapejs }}', '{{ client.company|default:''|escapejs }}', '{{ client.knowledge_level|default:'leigo' }}')">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
                         <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
@@ -142,6 +142,30 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Configuración de Reportes -->
+            <div class="card">
+                <h3 class="card-title mb-md">Configuración de Reportes</h3>
+                <div class="flex flex-col gap-md">
+                    <div class="form-group mb-0">
+                        <label class="form-label" for="profile-freq">Frecuencia de Envío</label>
+                        <select class="form-select" id="profile-freq">
+                            <option value="">Seleccionar...</option>
+                            <option value="weekly" {% if client.report_frequency == 'weekly' %}selected{% endif %}>Semanal</option>
+                            <option value="biweekly" {% if client.report_frequency == 'biweekly' %}selected{% endif %}>Quincenal</option>
+                            <option value="monthly" {% if client.report_frequency == 'monthly' %}selected{% endif %}>Mensual</option>
+                            <option value="quarterly" {% if client.report_frequency == 'quarterly' %}selected{% endif %}>Trimestral</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-0" id="profile-day-group" style="display:{% if client.report_frequency %}block{% else %}none{% endif %};">
+                        <label class="form-label" for="profile-day">Día de Envío</label>
+                        <select class="form-select" id="profile-day">
+                        </select>
+                    </div>
+                    <button class="btn btn-primary btn-sm" id="profile-freq-save">Guardar</button>
+                    <p class="text-xs text-tertiary" id="profile-freq-msg" style="display:none; margin:0;"></p>
+                </div>
+            </div>
         </div>
 
         <!-- Main Content Area with Tabs -->
@@ -162,6 +186,13 @@
                         <line x1="6" y1="20" x2="6" y2="14"/>
                     </svg>
                     Métricas
+                </button>
+                <button class="profile-tab" data-tab="timeline">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <polyline points="12 6 12 12 16 14"/>
+                    </svg>
+                    Timeline
                 </button>
             </div>
 
@@ -217,7 +248,7 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <a href="{% url 'reportai:reports' %}" class="btn btn-ghost btn-sm">Ver</a>
+                                    <a href="{% url 'public_dashboard' log.client.dashboard_token %}" target="_blank" class="btn btn-ghost btn-sm">Ver Dashboard</a>
                                 </td>
                             </tr>
                             {% empty %}
@@ -259,40 +290,57 @@
                 </div>
 
                 {% else %}
-                <!-- Formulario de métricas por plataforma -->
-                <form method="post" action="{% url 'reportai:client_metrics_config' client.id %}">
+                <!-- Formulario de métricas — badges por canal -->
+                <form method="post" action="{% url 'reportai:client_metrics_config' client.id %}" id="metrics-badges-form">
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.path }}?tab=metrics">
-                    <div class="flex flex-col gap-xl">
+
+                    <!-- Inputs ocultos — guardam o estado de cada métrica para o POST -->
+                    {% for platform_key, platform_data in platforms.items %}
+                        {% for config in platform_data.metrics %}
+                        <input type="checkbox" id="chk_{{ config.id }}" name="metric_{{ config.id }}_visible" {% if config.is_visible %}checked{% endif %} style="display:none;">
+                        <input type="text"     id="txt_{{ config.id }}" name="metric_{{ config.id }}_name"    value="{{ config.display_name }}" maxlength="80" style="display:none;">
+                        {% endfor %}
+                    {% endfor %}
+
+                    <!-- Tabs de canal -->
+                    <div class="metric-channel-tabs">
                         {% for platform_key, platform_data in platforms.items %}
-                        <div>
-                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.875rem;">
-                                <h4 style="font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary); margin: 0;">{{ platform_data.label }}</h4>
-                                <span style="font-size: 0.7rem; padding: 2px 10px; border-radius: 999px; background: rgba(255,255,255,0.06); color: var(--color-text-tertiary);">{{ platform_data.metrics|length }} métricas</span>
-                            </div>
-                            <div class="metrics-table">
-                                <div class="metrics-row metrics-header">
-                                    <span>Visible</span>
-                                    <span>Nombre en el dashboard</span>
-                                    <span>Orden</span>
-                                    <span>Clave</span>
-                                </div>
-                                {% for config in platform_data.metrics %}
-                                <div class="metrics-row">
-                                    <label style="display: flex; align-items: center; cursor: pointer;">
-                                        <input type="checkbox" name="metric_{{ config.id }}_visible" {% if config.is_visible %}checked{% endif %} style="width: 16px; height: 16px; accent-color: var(--color-primary); cursor: pointer;">
-                                    </label>
-                                    <input type="text" name="metric_{{ config.id }}_name" value="{{ config.display_name }}" class="form-input-inline" placeholder="Nombre visible" maxlength="80">
-                                    <input type="number" name="metric_{{ config.id }}_order" value="{{ config.order }}" class="form-input-inline form-input-order" min="0" max="99">
-                                    <code style="font-size: 0.75rem; color: var(--color-text-tertiary); background: rgba(255,255,255,0.04); padding: 3px 8px; border-radius: 4px;">{{ config.metric_key }}</code>
-                                </div>
-                                {% endfor %}
-                            </div>
-                        </div>
-                        {% empty %}
-                        <p style="color: var(--color-text-tertiary); font-size: 0.875rem;">No hay métricas configuradas para las plataformas conectadas.</p>
+                        <button type="button"
+                                class="metric-channel-tab {% if forloop.first %}active{% endif %}"
+                                data-channel="{{ platform_key }}">
+                            {{ platform_data.label }}
+                            <span class="channel-tab-count">{{ platform_data.metrics|length }}</span>
+                        </button>
                         {% endfor %}
                     </div>
+
+                    <!-- Panels de badges por canal -->
+                    {% for platform_key, platform_data in platforms.items %}
+                    <div class="metric-channel-panel" id="channel-panel-{{ platform_key }}" {% if not forloop.first %}style="display:none;"{% endif %}>
+                        {% if platform_data.metrics %}
+                        <div class="metrics-chips-profile">
+                            {% for config in platform_data.metrics %}
+                            <div class="metric-chip-profile {% if config.is_visible %}selected{% endif %}"
+                                 data-id="{{ config.id }}"
+                                 title="{{ config.metric_key }}">
+                                <span class="chip-label">{{ config.display_name }}</span>
+                                <button type="button" class="chip-edit-btn" data-id="{{ config.id }}" title="Editar nombre">
+                                    <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        {% else %}
+                        <p style="color: var(--color-text-tertiary); font-size: 0.875rem; padding: 0.5rem 0;">No hay métricas configuradas para esta plataforma.</p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <!-- Acciones -->
                     <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; align-items: center;">
                         <button type="submit" class="btn btn-primary btn-sm">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -314,7 +362,194 @@
                 {% endif %}
 
             </div>
+
+            <!-- Tab: Timeline -->
+            <div class="profile-tab-panel" id="tab-timeline" style="padding: 1.25rem 0;">
+
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.25rem;">
+                    <p style="margin: 0; font-size: 0.875rem; color: var(--color-text-secondary);">
+                        Registra acciones, resultados y hitos importantes para este cliente.
+                    </p>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="openTimelineModal()">
+                        ＋ Añadir Entrada
+                    </button>
+                </div>
+
+                <!-- Lista de entradas -->
+                <div id="timeline-list">
+                    {% for entry in timeline_entries %}
+                    <div class="tl-item" data-entry-id="{{ entry.id }}">
+                        <div class="tl-date">
+                            <span class="tl-day">{{ entry.date|date:"d" }}</span>
+                            <span class="tl-month">{{ entry.date|date:"M" }}</span>
+                        </div>
+                        <div class="tl-connector"><span class="tl-dot tl-dot--{{ entry.badge_color }}"></span></div>
+                        <div class="tl-content">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                <span class="tl-badge tl-badge--{{ entry.badge_color }}">{{ entry.get_badge_type_display }}</span>
+                                <span class="tl-title">{{ entry.title }}</span>
+                            </div>
+                            {% if entry.description %}
+                            <div class="tl-desc-toggle" style="cursor: pointer; margin-top: 4px; font-size: 0.8rem; color: var(--color-text-tertiary);" onclick="toggleDesc(this)">
+                                ▸ Ver descripción
+                            </div>
+                            <div class="tl-desc" style="display: none; margin-top: 6px; font-size: 0.875rem; color: var(--color-text-secondary); line-height: 1.6; white-space: pre-wrap;">{{ entry.description }}</div>
+                            {% endif %}
+                        </div>
+                        <button type="button" class="tl-delete-btn" onclick="deleteTimelineEntry({{ entry.id }}, this)" title="Eliminar">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                            </svg>
+                        </button>
+                    </div>
+                    {% empty %}
+                    <div id="timeline-empty" style="text-align: center; padding: 3rem 1.5rem; color: var(--color-text-tertiary);">
+                        <p style="margin-bottom: 0.5rem; font-size: 0.9375rem; color: var(--color-text-secondary);">Aún no hay entradas en la timeline.</p>
+                        <p style="font-size: 0.875rem;">Añade la primera usando el botón de arriba.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+
+            </div>
+
         </div>
+    </div>
+</div>
+
+<!-- Modal: Añadir entrada de Timeline -->
+<div id="timeline-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999;">
+    <div style="background: #1e1e2d; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px rgba(0,0,0,0.5);">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h2 style="font-size: 1.125rem; font-weight: 600; margin: 0; color: #fff;">Añadir Entrada</h2>
+            <button onclick="closeTimelineModal()" style="background: transparent; border: none; color: #888; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <div style="padding: 1.5rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.4rem; color: #e0e0e0;">Fecha *</label>
+                <input type="date" id="tl-date" style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; font-size: 0.9rem; box-sizing: border-box;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.4rem; color: #e0e0e0;">Tipo</label>
+                <select id="tl-badge-type" style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; font-size: 0.9rem; box-sizing: border-box; cursor: pointer;">
+                    <option value="resultado">Resultado</option>
+                    <option value="actualizacion" selected>Actualización</option>
+                    <option value="marco">Marco</option>
+                    <option value="reunion">Reunión</option>
+                    <option value="otro">Otro</option>
+                </select>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.4rem; color: #e0e0e0;">Color</label>
+                <div style="display: flex; gap: 8px;">
+                    {% for color_val, color_label in timeline_color_choices %}
+                    <label style="cursor: pointer;" title="{{ color_label }}">
+                        <input type="radio" name="tl-color" value="{{ color_val }}" {% if color_val == 'blue' %}checked{% endif %} style="display: none;">
+                        <span class="tl-color-swatch tl-swatch--{{ color_val }}"></span>
+                    </label>
+                    {% empty %}
+                    <label title="Azul"><input type="radio" name="tl-color" value="blue" checked style="display:none;"><span class="tl-color-swatch tl-swatch--blue"></span></label>
+                    <label title="Verde"><input type="radio" name="tl-color" value="green" style="display:none;"><span class="tl-color-swatch tl-swatch--green"></span></label>
+                    <label title="Amarillo"><input type="radio" name="tl-color" value="yellow" style="display:none;"><span class="tl-color-swatch tl-swatch--yellow"></span></label>
+                    <label title="Rojo"><input type="radio" name="tl-color" value="red" style="display:none;"><span class="tl-color-swatch tl-swatch--red"></span></label>
+                    <label title="Morado"><input type="radio" name="tl-color" value="purple" style="display:none;"><span class="tl-color-swatch tl-swatch--purple"></span></label>
+                    <label title="Gris"><input type="radio" name="tl-color" value="gray" style="display:none;"><span class="tl-color-swatch tl-swatch--gray"></span></label>
+                    {% endfor %}
+                </div>
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.4rem; color: #e0e0e0;">Título *</label>
+                <input type="text" id="tl-title" maxlength="200" placeholder="Ej: Lanzamiento de campaña de verano" style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; font-size: 0.9rem; box-sizing: border-box;">
+            </div>
+            <div>
+                <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.4rem; color: #e0e0e0;">Descripción <span style="color: var(--color-text-tertiary); font-weight: 400;">(opcional)</span></label>
+                <textarea id="tl-description" rows="3" placeholder="Detalla el contexto o resultado..." style="width: 100%; padding: 0.625rem 0.875rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; font-size: 0.9rem; box-sizing: border-box; resize: vertical; font-family: inherit;"></textarea>
+            </div>
+            <p id="tl-modal-error" style="color: #ef4444; font-size: 0.8125rem; margin: 0; display: none;"></p>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <button type="button" onclick="closeTimelineModal()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Cancelar</button>
+            <button type="button" id="tl-save-btn" onclick="submitTimelineEntry()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: #0075ff; border: none; color: #fff;">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de confirmação de exclusão da timeline -->
+<div id="tl-confirm-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);align-items:center;justify-content:center;z-index:10001;">
+    <div style="background:#1e1e2d;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:28px 24px;max-width:360px;width:90%;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.5);">
+        <p style="font-size:0.9375rem;font-weight:600;color:#e6eaed;margin-bottom:20px;">¿Eliminar esta entrada de la timeline?</p>
+        <div style="display:flex;gap:10px;justify-content:center;">
+            <button id="tl-confirm-cancel" type="button" style="flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.2);background:none;color:#9ca3af;cursor:pointer;font-size:0.875rem;font-weight:500;">Cancelar</button>
+            <button id="tl-confirm-ok" type="button" style="flex:1;padding:10px;border-radius:8px;border:none;background:#ef4444;color:#fff;cursor:pointer;font-size:0.875rem;font-weight:600;">Eliminar</button>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal-overlay" id="client-modal" style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 9999; opacity: 0; visibility: hidden; transition: all 0.2s;">
+    <div class="modal" style="background: #1e1e2d; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; width: 100%; max-width: 480px; box-shadow: 0 25px 50px rgba(0,0,0,0.5); position: relative;">
+        <div class="modal-header" style="display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 1.5rem; border-bottom: 1px solid rgba(255,255,255,0.1);">
+            <h2 class="modal-title" style="font-size: 1.125rem; font-weight: 600; margin: 0; color: #fff;">Editar Cliente</h2>
+            <button onclick="closeClientModal()" style="background: transparent; border: none; color: #888; cursor: pointer; padding: 0.5rem; border-radius: 6px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"/>
+                    <line x1="6" y1="6" x2="18" y2="18"/>
+                </svg>
+            </button>
+        </div>
+        <form id="client-form" onsubmit="submitClientForm(event)">
+            <input type="hidden" id="client-id" value="">
+            <div class="modal-body" style="padding: 1.5rem;">
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Nombre del Cliente *</label>
+                    <input type="text" id="client-name" name="name" placeholder="Ej: Acme Corporation" required maxlength="30" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                    <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                        <span id="name-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></span>
+                        <span id="name-counter" style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">0/30</span>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 1.25rem;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Email</label>
+                    <input type="email" id="client-email" name="email" placeholder="contacto@empresa.com" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Teléfono</label>
+                        <input type="tel" id="client-phone" name="phone" placeholder="+34 600 000 000" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                        <div style="margin-top: 4px; min-height: 18px;">
+                            <span id="phone-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></span>
+                            <span id="phone-country" style="font-size: 0.75rem; color: #10b981; display: none;"></span>
+                        </div>
+                    </div>
+                    <div>
+                        <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Empresa</label>
+                        <input type="text" id="client-company" name="company" placeholder="Nombre de la empresa" maxlength="20" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box;">
+                        <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                            <span id="company-error" style="font-size: 0.75rem; color: #ef4444; display: none;"></span>
+                            <span id="company-counter" style="font-size: 0.75rem; color: #6b7280; margin-left: auto;">0/20</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                    <label style="display: block; font-size: 0.875rem; font-weight: 500; margin-bottom: 0.5rem; color: #e0e0e0;">Nivel de conocimiento del cliente</label>
+                    <select id="client-knowledge-level" name="knowledge_level" style="width: 100%; padding: 0.75rem 1rem; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; background: #0d0d14; color: #fff; box-sizing: border-box; cursor: pointer;">
+                        <option value="leigo">Leigo: resumen en lenguaje de negocio</option>
+                        <option value="avancado">Avanzado: métricas técnicas y desglose por plataforma</option>
+                    </select>
+                    <p style="font-size: 0.75rem; color: #6b7280; margin-top: 0.375rem; margin-bottom: 0;">Determina qué métricas se muestran en el dashboard público del cliente.</p>
+                </div>
+            </div>
+            <div style="display: flex; justify-content: flex-end; gap: 0.75rem; padding: 1.25rem 1.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+                <button type="button" onclick="closeClientModal()" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e0e0e0;">Cancelar</button>
+                <button type="submit" id="submit-btn" style="padding: 0.625rem 1.25rem; border-radius: 8px; font-size: 0.875rem; font-weight: 500; cursor: pointer; background: #0075ff; border: none; color: #fff;">
+                    <span id="submit-text">Guardar Cambios</span>
+                    <span id="submit-loading" style="display: none;">Guardando...</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -367,39 +602,151 @@
 .profile-tab-panel { display: none; }
 .profile-tab-panel.active { display: block; }
 
-/* Métricas inline (reutilizado de metrics_config.html) */
-.metrics-table { display: flex; flex-direction: column; gap: 0; }
-.metrics-row {
-    display: grid;
-    grid-template-columns: 52px 1fr 72px 120px;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.625rem 0;
-    border-bottom: 1px solid var(--color-border);
+/* Badges de métricas no perfil do cliente */
+.metric-channel-tabs {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 1.25rem;
 }
-.metrics-row:last-child { border-bottom: none; }
-.metrics-header {
+.metric-channel-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1.5px solid var(--color-border);
+    border-radius: 8px;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    font-weight: 500;
+    padding: 6px 14px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.metric-channel-tab:hover { color: var(--color-text-primary); border-color: rgba(255,255,255,0.2); }
+.metric-channel-tab.active {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: rgba(99,102,241,0.12);
+}
+.channel-tab-count {
     font-size: 0.7rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+    background: rgba(255,255,255,0.08);
+    border-radius: 999px;
+    padding: 1px 6px;
     color: var(--color-text-tertiary);
 }
-.form-input-inline {
-    background: var(--color-bg-elevated);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
+.metrics-chips-profile {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 4px 0;
+}
+.metric-chip-profile {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 6px 10px 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid var(--color-border);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-size: 0.8125rem;
+    cursor: pointer;
+    transition: border-color 0.18s, background 0.18s, color 0.18s;
+    user-select: none;
+}
+.metric-chip-profile:hover { border-color: rgba(255,255,255,0.22); color: var(--color-text-primary); }
+.metric-chip-profile.selected {
+    border-color: var(--color-primary);
+    background: rgba(99,102,241,0.14);
+    color: var(--color-text-primary);
+}
+.chip-label { line-height: 1; }
+.chip-edit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    color: var(--color-text-tertiary);
+    opacity: 0.5;
+    transition: opacity 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+.metric-chip-profile:hover .chip-edit-btn,
+.chip-edit-btn:hover { opacity: 1; color: var(--color-text-secondary); }
+.chip-inline-input {
+    background: none;
+    border: none;
+    border-bottom: 1.5px solid var(--color-primary);
     color: var(--color-text-primary);
     font-size: 0.8125rem;
-    padding: 5px 10px;
-    width: 100%;
-    transition: border-color 0.2s;
-}
-.form-input-inline:focus {
+    width: 90px;
+    padding: 0 2px;
     outline: none;
-    border-color: var(--color-primary);
 }
-.form-input-order { width: 60px; text-align: center; }
+
+/* ─── TIMELINE ─── */
+.tl-item {
+    display: grid;
+    grid-template-columns: 44px 28px 1fr 32px;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+}
+.tl-item:last-child { border-bottom: none; }
+.tl-date { text-align: center; flex-shrink: 0; }
+.tl-day { display: block; font-size: 1.125rem; font-weight: 700; color: var(--color-text-primary); line-height: 1; }
+.tl-month { display: block; font-size: 0.7rem; text-transform: uppercase; color: var(--color-text-tertiary); letter-spacing: 0.06em; margin-top: 2px; }
+.tl-connector { display: flex; flex-direction: column; align-items: center; padding-top: 4px; }
+.tl-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+}
+.tl-dot--blue   { background: #3b82f6; box-shadow: 0 0 6px rgba(59,130,246,0.5); }
+.tl-dot--green  { background: #10b981; box-shadow: 0 0 6px rgba(16,185,129,0.5); }
+.tl-dot--yellow { background: #f59e0b; box-shadow: 0 0 6px rgba(245,158,11,0.5); }
+.tl-dot--red    { background: #ef4444; box-shadow: 0 0 6px rgba(239,68,68,0.5); }
+.tl-dot--purple { background: #8b5cf6; box-shadow: 0 0 6px rgba(139,92,246,0.5); }
+.tl-dot--gray   { background: #6b7280; box-shadow: 0 0 6px rgba(107,114,128,0.4); }
+.tl-content { min-width: 0; }
+.tl-title { font-size: 0.875rem; font-weight: 600; color: var(--color-text-primary); }
+.tl-badge {
+    display: inline-block;
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.04em;
+    padding: 2px 8px; border-radius: 999px;
+    text-transform: uppercase; white-space: nowrap;
+}
+.tl-badge--blue   { background: rgba(59,130,246,0.15);  color: #60a5fa; }
+.tl-badge--green  { background: rgba(16,185,129,0.15);  color: #34d399; }
+.tl-badge--yellow { background: rgba(245,158,11,0.15);  color: #fbbf24; }
+.tl-badge--red    { background: rgba(239,68,68,0.15);   color: #f87171; }
+.tl-badge--purple { background: rgba(139,92,246,0.15);  color: #a78bfa; }
+.tl-badge--gray   { background: rgba(107,114,128,0.15); color: #9ca3af; }
+.tl-delete-btn {
+    background: none; border: none; cursor: pointer;
+    color: var(--color-text-tertiary); padding: 4px;
+    border-radius: 4px; opacity: 0.5; transition: opacity 0.15s, color 0.15s;
+    align-self: flex-start; margin-top: 2px;
+}
+.tl-delete-btn:hover { opacity: 1; color: #ef4444; }
+
+/* Swatches do color picker no modal de timeline */
+.tl-color-swatch {
+    display: block; width: 24px; height: 24px; border-radius: 50%;
+    border: 2px solid transparent; transition: border-color 0.15s, transform 0.15s; cursor: pointer;
+}
+input[type="radio"][name="tl-color"]:checked + .tl-color-swatch { border-color: #fff; transform: scale(1.2); }
+.tl-swatch--blue   { background: #3b82f6; }
+.tl-swatch--green  { background: #10b981; }
+.tl-swatch--yellow { background: #f59e0b; }
+.tl-swatch--red    { background: #ef4444; }
+.tl-swatch--purple { background: #8b5cf6; }
+.tl-swatch--gray   { background: #6b7280; }
 </style>
 
 <script>
@@ -411,6 +758,98 @@ document.querySelectorAll('.profile-tab').forEach(tab => {
         document.getElementById('tab-' + tab.dataset.tab).classList.add('active');
     });
 });
+
+// Configuración de frecuencia de envío en el perfil
+(function () {
+    const freqSelect = document.getElementById('profile-freq');
+    const dayGroup = document.getElementById('profile-day-group');
+    const daySelect = document.getElementById('profile-day');
+    const saveBtn = document.getElementById('profile-freq-save');
+    const msgEl = document.getElementById('profile-freq-msg');
+
+    const WEEKDAYS = [
+        [0, 'Lunes'], [1, 'Martes'], [2, 'Miércoles'],
+        [3, 'Jueves'], [4, 'Viernes'], [5, 'Sábado'], [6, 'Domingo'],
+    ];
+
+    function buildDayOptions(freq, currentDay) {
+        daySelect.innerHTML = '';
+        const useWeekdays = (freq === 'weekly' || freq === 'biweekly');
+        if (useWeekdays) {
+            WEEKDAYS.forEach(([val, label]) => {
+                const opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = label;
+                if (val === currentDay) opt.selected = true;
+                daySelect.appendChild(opt);
+            });
+        } else {
+            for (let d = 1; d <= 28; d++) {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = `Día ${d}`;
+                if (d === currentDay) opt.selected = true;
+                daySelect.appendChild(opt);
+            }
+        }
+    }
+
+    // Inicializar com os valores atuais do cliente
+    const initialFreq = '{{ client.report_frequency|default:"" }}';
+    const initialDay = {{ client.report_send_day|default:"0" }};
+    if (initialFreq) {
+        buildDayOptions(initialFreq, initialDay);
+        dayGroup.style.display = 'block';
+    }
+
+    freqSelect.addEventListener('change', function () {
+        const freq = this.value;
+        if (freq) {
+            buildDayOptions(freq, null);
+            dayGroup.style.display = 'block';
+        } else {
+            dayGroup.style.display = 'none';
+        }
+    });
+
+    saveBtn.addEventListener('click', async function () {
+        const freq = freqSelect.value;
+        const day = parseInt(daySelect.value);
+        if (!freq) { return; }
+        saveBtn.disabled = true;
+        saveBtn.textContent = 'Guardando...';
+        try {
+            const resp = await fetch('{% url "reportai:api_update_client" client.id %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}',
+                },
+                body: JSON.stringify({
+                    name: '{{ client.name|escapejs }}',
+                    report_frequency: freq,
+                    report_send_day: day,
+                }),
+            });
+            const data = await resp.json();
+            msgEl.style.display = 'block';
+            if (data.success) {
+                msgEl.style.color = 'var(--color-success, #10b981)';
+                msgEl.textContent = 'Configuración guardada correctamente.';
+            } else {
+                msgEl.style.color = 'var(--color-error, #ef4444)';
+                msgEl.textContent = data.error || 'Error al guardar.';
+            }
+        } catch (e) {
+            msgEl.style.display = 'block';
+            msgEl.style.color = 'var(--color-error, #ef4444)';
+            msgEl.textContent = 'Error de red.';
+        }
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+        setTimeout(() => { msgEl.style.display = 'none'; }, 3000);
+    });
+})();
 
 // Modal de onboarding (abre se ?onboarding=1)
 {% if show_onboarding %}
@@ -451,5 +890,425 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 })();
+
+// Badges de métricas — toggle de visibilidade ao clicar no badge
+document.addEventListener('click', function(e) {
+    const chip = e.target.closest('.metric-chip-profile');
+    if (!chip) return;
+    // Ignorar se o clique foi no botão de lápis ou em um input inline ativo
+    if (e.target.closest('.chip-edit-btn')) return;
+    if (chip.querySelector('.chip-inline-input')) return;
+    chip.classList.toggle('selected');
+    const chk = document.getElementById('chk_' + chip.dataset.id);
+    if (chk) chk.checked = chip.classList.contains('selected');
+});
+
+// Edição inline do nome do badge ao clicar no ícone de lápis
+document.addEventListener('click', function(e) {
+    const btn = e.target.closest('.chip-edit-btn');
+    if (!btn) return;
+    e.stopPropagation();
+    const chip = btn.closest('.metric-chip-profile');
+    const id   = btn.dataset.id;
+    const label = chip.querySelector('.chip-label');
+    // Se já há um input ativo neste badge, ignorar
+    if (chip.querySelector('.chip-inline-input')) return;
+    const currentName = document.getElementById('txt_' + id).value;
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.maxLength = 80;
+    input.value = currentName;
+    input.className = 'chip-inline-input';
+    label.style.display = 'none';
+    chip.insertBefore(input, btn);
+    input.focus();
+    input.select();
+    function commitEdit() {
+        const newName = input.value.trim() || currentName;
+        document.getElementById('txt_' + id).value = newName;
+        label.textContent = newName;
+        label.style.display = '';
+        input.remove();
+    }
+    input.addEventListener('keydown', function(ev) {
+        if (ev.key === 'Enter')  { ev.preventDefault(); commitEdit(); }
+        if (ev.key === 'Escape') { label.style.display = ''; input.remove(); }
+    });
+    input.addEventListener('blur', commitEdit);
+});
+
+// Tabs de canal no painel de métricas do perfil
+document.querySelectorAll('.metric-channel-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() {
+        document.querySelectorAll('.metric-channel-tab').forEach(function(t) { t.classList.remove('active'); });
+        document.querySelectorAll('.metric-channel-panel').forEach(function(p) { p.style.display = 'none'; });
+        this.classList.add('active');
+        var panel = document.getElementById('channel-panel-' + this.dataset.channel);
+        if (panel) panel.style.display = '';
+    });
+});
+
+// Mapa de DDI → país para detecção automática de país pelo telefone
+const DDI_MAP = {
+    '1': { name: 'EE.UU. / Canadá', flag: '🇺🇸' }, '7': { name: 'Rusia', flag: '🇷🇺' },
+    '20': { name: 'Egipto', flag: '🇪🇬' }, '27': { name: 'Sudáfrica', flag: '🇿🇦' },
+    '30': { name: 'Grecia', flag: '🇬🇷' }, '31': { name: 'Países Bajos', flag: '🇳🇱' },
+    '32': { name: 'Bélgica', flag: '🇧🇪' }, '33': { name: 'Francia', flag: '🇫🇷' },
+    '34': { name: 'España', flag: '🇪🇸' }, '36': { name: 'Hungría', flag: '🇭🇺' },
+    '39': { name: 'Italia', flag: '🇮🇹' }, '40': { name: 'Rumanía', flag: '🇷🇴' },
+    '41': { name: 'Suiza', flag: '🇨🇭' }, '43': { name: 'Austria', flag: '🇦🇹' },
+    '44': { name: 'Reino Unido', flag: '🇬🇧' }, '45': { name: 'Dinamarca', flag: '🇩🇰' },
+    '46': { name: 'Suecia', flag: '🇸🇪' }, '47': { name: 'Noruega', flag: '🇳🇴' },
+    '48': { name: 'Polonia', flag: '🇵🇱' }, '49': { name: 'Alemania', flag: '🇩🇪' },
+    '51': { name: 'Perú', flag: '🇵🇪' }, '52': { name: 'México', flag: '🇲🇽' },
+    '53': { name: 'Cuba', flag: '🇨🇺' }, '54': { name: 'Argentina', flag: '🇦🇷' },
+    '55': { name: 'Brasil', flag: '🇧🇷' }, '56': { name: 'Chile', flag: '🇨🇱' },
+    '57': { name: 'Colombia', flag: '🇨🇴' }, '58': { name: 'Venezuela', flag: '🇻🇪' },
+    '60': { name: 'Malasia', flag: '🇲🇾' }, '61': { name: 'Australia', flag: '🇦🇺' },
+    '62': { name: 'Indonesia', flag: '🇮🇩' }, '63': { name: 'Filipinas', flag: '🇵🇭' },
+    '64': { name: 'Nueva Zelanda', flag: '🇳🇿' }, '65': { name: 'Singapur', flag: '🇸🇬' },
+    '66': { name: 'Tailandia', flag: '🇹🇭' }, '81': { name: 'Japón', flag: '🇯🇵' },
+    '82': { name: 'Corea del Sur', flag: '🇰🇷' }, '84': { name: 'Vietnam', flag: '🇻🇳' },
+    '86': { name: 'China', flag: '🇨🇳' }, '90': { name: 'Turquía', flag: '🇹🇷' },
+    '91': { name: 'India', flag: '🇮🇳' }, '92': { name: 'Pakistán', flag: '🇵🇰' },
+    '94': { name: 'Sri Lanka', flag: '🇱🇰' }, '98': { name: 'Irán', flag: '🇮🇷' },
+    '212': { name: 'Marruecos', flag: '🇲🇦' }, '213': { name: 'Argelia', flag: '🇩🇿' },
+    '216': { name: 'Túnez', flag: '🇹🇳' }, '218': { name: 'Libia', flag: '🇱🇾' },
+    '234': { name: 'Nigeria', flag: '🇳🇬' }, '351': { name: 'Portugal', flag: '🇵🇹' },
+    '352': { name: 'Luxemburgo', flag: '🇱🇺' }, '353': { name: 'Irlanda', flag: '🇮🇪' },
+    '354': { name: 'Islandia', flag: '🇮🇸' }, '355': { name: 'Albania', flag: '🇦🇱' },
+    '356': { name: 'Malta', flag: '🇲🇹' }, '357': { name: 'Chipre', flag: '🇨🇾' },
+    '358': { name: 'Finlandia', flag: '🇫🇮' }, '359': { name: 'Bulgaria', flag: '🇧🇬' },
+    '380': { name: 'Ucrania', flag: '🇺🇦' }, '381': { name: 'Serbia', flag: '🇷🇸' },
+    '385': { name: 'Croacia', flag: '🇭🇷' }, '386': { name: 'Eslovenia', flag: '🇸🇮' },
+    '420': { name: 'República Checa', flag: '🇨🇿' }, '421': { name: 'Eslovaquia', flag: '🇸🇰' },
+    '506': { name: 'Costa Rica', flag: '🇨🇷' }, '507': { name: 'Panamá', flag: '🇵🇦' },
+    '591': { name: 'Bolivia', flag: '🇧🇴' }, '593': { name: 'Ecuador', flag: '🇪🇨' },
+    '595': { name: 'Paraguay', flag: '🇵🇾' }, '598': { name: 'Uruguay', flag: '🇺🇾' },
+    '966': { name: 'Arabia Saudita', flag: '🇸🇦' }, '971': { name: 'Emiratos Árabes', flag: '🇦🇪' },
+    '972': { name: 'Israel', flag: '🇮🇱' },
+};
+
+function detectPhoneCountry(phone) {
+    const errEl = document.getElementById('phone-error');
+    const countryEl = document.getElementById('phone-country');
+    if (!errEl || !countryEl) return;
+    const val = (phone || '').trim();
+    errEl.style.display = 'none';
+    countryEl.style.display = 'none';
+    if (!val || !val.startsWith('+')) return;
+    const digits = val.replace(/\D/g, '');
+    for (const len of [3, 2, 1]) {
+        const code = digits.substring(0, len);
+        if (DDI_MAP[code]) {
+            const c = DDI_MAP[code];
+            countryEl.textContent = c.flag + ' ' + c.name;
+            countryEl.style.display = 'inline';
+            return;
+        }
+    }
+}
+
+function updateClientFieldCounters(name, company) {
+    const nc = document.getElementById('name-counter');
+    const cc = document.getElementById('company-counter');
+    if (nc) nc.textContent = (name || '').length + '/30';
+    if (cc) cc.textContent = (company || '').length + '/20';
+}
+
+function clearClientFormErrors() {
+    ['name-error', 'company-error', 'phone-error', 'phone-country'].forEach(function(id) {
+        const el = document.getElementById(id);
+        if (el) el.style.display = 'none';
+    });
+    updateClientFieldCounters(
+        (document.getElementById('client-name') || {value: ''}).value,
+        (document.getElementById('client-company') || {value: ''}).value
+    );
+}
+
+function validateClientForm() {
+    let valid = true;
+    const name = document.getElementById('client-name').value.trim();
+    const nameErr = document.getElementById('name-error');
+    if (!name) {
+        if (nameErr) { nameErr.textContent = 'El nombre es requerido.'; nameErr.style.display = 'inline'; }
+        valid = false;
+    } else if (name.length > 30) {
+        if (nameErr) { nameErr.textContent = 'Máximo 30 caracteres.'; nameErr.style.display = 'inline'; }
+        valid = false;
+    } else {
+        if (nameErr) nameErr.style.display = 'none';
+    }
+    const company = document.getElementById('client-company').value.trim();
+    const companyErr = document.getElementById('company-error');
+    if (company.length > 20) {
+        if (companyErr) { companyErr.textContent = 'Máximo 20 caracteres.'; companyErr.style.display = 'inline'; }
+        valid = false;
+    } else {
+        if (companyErr) companyErr.style.display = 'none';
+    }
+    const phone = document.getElementById('client-phone').value.trim();
+    const phoneErr = document.getElementById('phone-error');
+    if (phone) {
+        const digits = phone.replace(/\D/g, '');
+        if (digits.length < 7 || digits.length > 15) {
+            if (phoneErr) { phoneErr.textContent = 'Número inválido (7–15 dígitos).'; phoneErr.style.display = 'inline'; }
+            valid = false;
+        } else {
+            if (phoneErr) phoneErr.style.display = 'none';
+        }
+    } else {
+        if (phoneErr) phoneErr.style.display = 'none';
+    }
+    return valid;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const nameInput = document.getElementById('client-name');
+    const companyInput = document.getElementById('client-company');
+    const phoneInput = document.getElementById('client-phone');
+    if (nameInput) nameInput.addEventListener('input', function() { updateClientFieldCounters(this.value, (companyInput||{value:''}).value); });
+    if (companyInput) companyInput.addEventListener('input', function() { updateClientFieldCounters((nameInput||{value:''}).value, this.value); });
+    if (phoneInput) phoneInput.addEventListener('input', function() { detectPhoneCountry(this.value); });
+});
+
+// Modal de edición del cliente
+document.getElementById('client-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeClientModal();
+});
+
+function openEditClientModal(id, name, email, phone, company, knowledgeLevel) {
+    document.getElementById('client-id').value = id;
+    document.getElementById('client-name').value = name;
+    document.getElementById('client-email').value = email;
+    document.getElementById('client-phone').value = phone;
+    document.getElementById('client-company').value = company;
+    document.getElementById('client-knowledge-level').value = knowledgeLevel || 'leigo';
+    clearClientFormErrors();
+    updateClientFieldCounters(name, company);
+    detectPhoneCountry(phone);
+    const modal = document.getElementById('client-modal');
+    modal.style.opacity = '1';
+    modal.style.visibility = 'visible';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeClientModal() {
+    const modal = document.getElementById('client-modal');
+    modal.style.opacity = '0';
+    modal.style.visibility = 'hidden';
+    document.body.style.overflow = '';
+    clearClientFormErrors();
+}
+
+async function submitClientForm(event) {
+    event.preventDefault();
+    if (!validateClientForm()) return;
+    const submitBtn = document.getElementById('submit-btn');
+    const submitText = document.getElementById('submit-text');
+    const submitLoading = document.getElementById('submit-loading');
+    submitBtn.disabled = true;
+    submitText.style.display = 'none';
+    submitLoading.style.display = 'inline';
+    const clientId = document.getElementById('client-id').value;
+    const formData = {
+        name: document.getElementById('client-name').value,
+        email: document.getElementById('client-email').value,
+        phone: document.getElementById('client-phone').value,
+        company: document.getElementById('client-company').value,
+        knowledge_level: document.getElementById('client-knowledge-level').value,
+    };
+    try {
+        const response = await fetch(`/app/api/clients/${clientId}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify(formData)
+        });
+        const data = await response.json();
+        if (data.success) {
+            window.location.reload();
+        } else {
+            alert(data.error || 'Error al guardar el cliente.');
+        }
+    } catch (error) {
+        alert('Error de conexión. Por favor, intenta de nuevo.');
+    } finally {
+        submitBtn.disabled = false;
+        submitText.style.display = 'inline';
+        submitLoading.style.display = 'none';
+    }
+}
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ─── TIMELINE ───
+function toggleDesc(toggleEl) {
+    const desc = toggleEl.nextElementSibling;
+    const open = desc.style.display !== 'none';
+    desc.style.display = open ? 'none' : 'block';
+    toggleEl.textContent = open ? '▸ Ver descripción' : '▴ Ocultar descripción';
+}
+
+function openTimelineModal() {
+    // Pré-preenche a data com hoje
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('tl-date').value = today;
+    document.getElementById('tl-title').value = '';
+    document.getElementById('tl-description').value = '';
+    document.getElementById('tl-badge-type').value = 'actualizacion';
+    const firstColor = document.querySelector('input[name="tl-color"][value="blue"]');
+    if (firstColor) firstColor.checked = true;
+    document.getElementById('tl-modal-error').style.display = 'none';
+    const modal = document.getElementById('timeline-modal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeTimelineModal() {
+    document.getElementById('timeline-modal').style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+document.getElementById('timeline-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeTimelineModal();
+});
+
+async function submitTimelineEntry() {
+    const date = document.getElementById('tl-date').value;
+    const title = document.getElementById('tl-title').value.trim();
+    const badge_type = document.getElementById('tl-badge-type').value;
+    const badge_color = document.querySelector('input[name="tl-color"]:checked')?.value || 'blue';
+    const description = document.getElementById('tl-description').value.trim();
+    const errEl = document.getElementById('tl-modal-error');
+
+    if (!date || !title) {
+        errEl.textContent = 'La fecha y el título son obligatorios.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const saveBtn = document.getElementById('tl-save-btn');
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Guardando...';
+    errEl.style.display = 'none';
+
+    try {
+        const resp = await fetch('{% url "reportai:api_timeline_create" client.id %}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ date, title, badge_type, badge_color, description }),
+        });
+        const data = await resp.json();
+        if (!data.success) {
+            errEl.textContent = data.error || 'Error al guardar.';
+            errEl.style.display = 'block';
+            return;
+        }
+        closeTimelineModal();
+        // Inserir o novo item na lista sem recarregar
+        const emptyEl = document.getElementById('timeline-empty');
+        if (emptyEl) emptyEl.remove();
+
+        const BADGE_LABELS = {
+            resultado: 'Resultado', actualizacion: 'Actualización',
+            marco: 'Marco', reunion: 'Reunión', otro: 'Otro'
+        };
+        const dateObj = new Date(data.date + 'T00:00:00');
+        const day = String(dateObj.getDate()).padStart(2, '0');
+        const month = dateObj.toLocaleString('es-ES', { month: 'short' }).replace('.', '');
+
+        const html = `
+        <div class="tl-item" data-entry-id="${data.id}">
+            <div class="tl-date">
+                <span class="tl-day">${day}</span>
+                <span class="tl-month">${month}</span>
+            </div>
+            <div class="tl-connector"><span class="tl-dot tl-dot--${data.badge_color}"></span></div>
+            <div class="tl-content">
+                <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+                    <span class="tl-badge tl-badge--${data.badge_color}">${BADGE_LABELS[data.badge_type] || data.badge_type}</span>
+                    <span class="tl-title">${escapeHtml(data.title)}</span>
+                </div>
+                ${data.description ? `
+                <div class="tl-desc-toggle" style="cursor:pointer;margin-top:4px;font-size:0.8rem;color:var(--color-text-tertiary);" onclick="toggleDesc(this)">▸ Ver descripción</div>
+                <div class="tl-desc" style="display:none;margin-top:6px;font-size:0.875rem;color:var(--color-text-secondary);line-height:1.6;white-space:pre-wrap;">${escapeHtml(data.description)}</div>
+                ` : ''}
+            </div>
+            <button type="button" class="tl-delete-btn" onclick="deleteTimelineEntry(${data.id}, this)" title="Eliminar">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+            </button>
+        </div>`;
+        document.getElementById('timeline-list').insertAdjacentHTML('afterbegin', html);
+    } catch (e) {
+        errEl.textContent = 'Error de red.';
+        errEl.style.display = 'block';
+    } finally {
+        saveBtn.disabled = false;
+        saveBtn.textContent = 'Guardar';
+    }
+}
+
+let _pendingDeleteEntryId = null;
+let _pendingDeleteBtn = null;
+
+function deleteTimelineEntry(entryId, btn) {
+    _pendingDeleteEntryId = entryId;
+    _pendingDeleteBtn = btn;
+    const modal = document.getElementById('tl-confirm-modal');
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('tl-confirm-cancel').addEventListener('click', function() {
+    document.getElementById('tl-confirm-modal').style.display = 'none';
+    document.body.style.overflow = '';
+    _pendingDeleteEntryId = null;
+    _pendingDeleteBtn = null;
+});
+
+document.getElementById('tl-confirm-ok').addEventListener('click', async function() {
+    if (!_pendingDeleteEntryId) return;
+    const entryId = _pendingDeleteEntryId;
+    const btn = _pendingDeleteBtn;
+    document.getElementById('tl-confirm-modal').style.display = 'none';
+    document.body.style.overflow = '';
+    _pendingDeleteEntryId = null;
+    _pendingDeleteBtn = null;
+    try {
+        const resp = await fetch(`/app/api/timeline/${entryId}/delete/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+        });
+        const data = await resp.json();
+        if (data.success) {
+            const item = btn.closest('.tl-item');
+            item.remove();
+            if (document.querySelectorAll('.tl-item').length === 0) {
+                document.getElementById('timeline-list').innerHTML =
+                    '<div id="timeline-empty" style="text-align:center;padding:3rem 1.5rem;color:var(--color-text-tertiary);"><p style="margin-bottom:0.5rem;font-size:0.9375rem;color:var(--color-text-secondary);">Aún no hay entradas en la timeline.</p><p style="font-size:0.875rem;">Añade la primera usando el botón de arriba.</p></div>';
+            }
+        }
+    } catch (e) {}
+});
+
+function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
 </script>
 {% endblock %}

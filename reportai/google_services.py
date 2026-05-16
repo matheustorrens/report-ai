@@ -78,7 +78,12 @@ def get_valid_access_token(account) -> str | None:
     return account.access_token
 
 
-def get_account_type(customer_id: str, refresh_token: str, access_token: str | None = None) -> dict:
+def get_account_type(
+    customer_id: str,
+    refresh_token: str,
+    access_token: str | None = None,
+    login_customer_id: str | None = None,
+) -> dict:
     """
     Identifica se um customer_id é conta manager (MCC) ou operacional.
     Retorna: {id, is_manager, descriptive_name}
@@ -100,6 +105,11 @@ def get_account_type(customer_id: str, refresh_token: str, access_token: str | N
         'developer-token': developer_token,
         'Content-Type': 'application/json',
     }
+
+    # Com token pendente, login-customer-id é obrigatório para acessar
+    # qualquer conta que não seja a própria. Passa quando disponível.
+    if login_customer_id:
+        headers['login-customer-id'] = str(login_customer_id).replace('-', '')
 
     query = """
         SELECT
@@ -239,7 +249,14 @@ def discover_customer_hierarchy(refresh_token: str) -> tuple[list[dict], str | N
 
     for resource_name in resource_names:
         customer_id = resource_name.split('/')[-1].replace('-', '')
-        account_info = get_account_type(customer_id, refresh_token, access_token=access_token)
+
+        # Primeira tentativa: sem login_customer_id (conta direta do usuário OAuth)
+        account_info = get_account_type(
+            customer_id,
+            refresh_token,
+            access_token=access_token,
+            login_customer_id=None,
+        )
 
         discovered[customer_id] = {
             'id': customer_id,
@@ -260,17 +277,28 @@ def discover_customer_hierarchy(refresh_token: str) -> tuple[list[dict], str | N
                 if child_id == customer_id:
                     continue
 
-                # Se a conta já for acessível diretamente, mantemos sem login_customer_id.
                 existing = discovered.get(child_id)
                 if existing and not existing.get('is_manager', False):
+                    # Conta já descoberta diretamente — adiciona login_customer_id
+                    # para garantir acesso correto com token pendente
+                    if not existing.get('login_customer_id'):
+                        existing['login_customer_id'] = customer_id
                     continue
+
+                # Passa o MCC pai como login_customer_id — obrigatório com token pendente
+                child_info = get_account_type(
+                    child_id,
+                    refresh_token,
+                    access_token=access_token,
+                    login_customer_id=customer_id,
+                )
 
                 discovered[child_id] = {
                     'id': child_id,
                     'customer_id': child_id,
-                    'name': child.get('name') or child_id,
-                    'customer_name': child.get('name') or child_id,
-                    'is_manager': child.get('is_manager', False),
+                    'name': child_info.get('descriptive_name') or child.get('name') or child_id,
+                    'customer_name': child_info.get('descriptive_name') or child.get('name') or child_id,
+                    'is_manager': child_info.get('is_manager', False),
                     'login_customer_id': customer_id,
                     'type': 'MANAGED_ACCOUNT',
                     'currency': '',

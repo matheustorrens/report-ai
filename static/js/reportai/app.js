@@ -13,9 +13,9 @@
  * Set to false when integrating with real APIs
  */
 const REPORTAI_CONFIG = {
-    useMockData: true,  // Toggle this to switch between mock and real data
-    mockDelay: 500,     // Simulated API delay in milliseconds
-    debug: true         // Enable console logging
+    useMockData: false, // Toggle this to switch between mock and real data
+    mockDelay: 0,       // Simulated API delay in milliseconds
+    debug: false        // Enable console logging
 };
 
 // Export config for other modules
@@ -259,8 +259,10 @@ class DataService {
         if (REPORTAI_CONFIG.useMockData) {
             return this._getMockData(endpoint);
         }
-        // TODO: Implement real API calls
-        return fetch(`/api/${endpoint}`).then(res => res.json());
+        // Chamada real à API — retorna null se endpoint não existir ou falhar
+        return fetch(`/api/${endpoint}`)
+            .then(res => res.ok ? res.json() : null)
+            .catch(() => null);
     }
 
     static _getMockData(endpoint) {

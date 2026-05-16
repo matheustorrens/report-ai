@@ -16,6 +16,124 @@
 {% endblock %}
 
 {% block content %}
+<style>
+.metrics-platform-group { margin-bottom: 20px; }
+.metrics-platform-label {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    margin-bottom: 10px;
+}
+.metrics-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.metric-chip {
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.10);
+    background: transparent;
+    color: #9ca3af;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    line-height: 1;
+}
+.metric-chip:hover {
+    border-color: rgba(255,255,255,0.25);
+    color: #e6eaed;
+}
+.metric-chip.selected {
+    background: rgba(0,117,255,0.15);
+    border-color: #0075ff;
+    color: #ffffff;
+}
+.custom-date-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.custom-date-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+.custom-date-input {
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    color: var(--color-text-primary);
+    font-size: 0.8125rem;
+    padding: 6px 10px;
+    color-scheme: dark;
+}
+.preview-tab { outline: none; }
+.preview-tab.active {
+    border-bottom-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    font-weight: 600 !important;
+}
+.preview-tab:not(.active) {
+    border-bottom-color: transparent !important;
+    color: var(--color-text-secondary) !important;
+    font-weight: 500 !important;
+}
+/* Modo de selección de métricas destacadas */
+.chips-selection-mode .metric-chip { position: relative; padding-right: 2rem; }
+.chips-selection-mode .metric-chip::after {
+    content: '';
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    background: transparent;
+    transition: all 0.15s;
+}
+.chips-selection-mode .metric-chip.highlighted::after {
+    border-color: var(--color-primary);
+    background: var(--color-primary) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") no-repeat center;
+}
+.chips-selection-mode .metric-chip.max-reached:not(.highlighted) {
+    opacity: 0.4;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+/* Chip destacado para o dashboard = dourado */
+.metric-chip.highlighted {
+    background: rgba(245, 158, 11, 0.15);
+    border-color: #F59E0B;
+    color: #FDE68A;
+}
+
+/* Botão WhatsApp */
+.btn-whatsapp {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 16px;
+    background: #25d366;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+.btn-whatsapp:hover { background: #1ebe5d; }
+.btn-whatsapp:active { transform: scale(0.97); }
+.btn-whatsapp:disabled { background: #1a7a3d; opacity: 0.5; cursor: not-allowed; }
+</style>
 <div class="generate-report-page">
     <div class="grid-2" style="grid-template-columns: 1fr 1.5fr;">
         <!-- Configuration Panel -->
@@ -40,10 +158,7 @@
                         {% endfor %}
                     </select>
                 </div>
-                <!-- Resumen config del cliente (cargado via AJAX) -->
-                <div id="client-config-summary" style="display: none; margin-top: 0.75rem; padding: 0.75rem; background: var(--color-bg-elevated); border-radius: var(--radius-sm); font-size: 0.8125rem; color: var(--color-text-secondary);">
-                    <span id="config-channel"></span> · <span id="config-level"></span>
-                </div>
+
             </div>
 
             <!-- Step 2: Select Period -->
@@ -61,6 +176,17 @@
                         <button class="btn btn-secondary period-btn active" data-period="7">7 días</button>
                         <button class="btn btn-ghost period-btn" data-period="14">14 días</button>
                         <button class="btn btn-ghost period-btn" data-period="30">30 días</button>
+                        <button class="btn btn-ghost period-btn" data-period="custom" id="btn-custom-period">Personalizado</button>
+                    </div>
+                    <div id="custom-period-inputs" style="display:none; margin-top:4px; gap:12px; align-items:flex-end;">
+                        <div class="custom-date-group">
+                            <label class="custom-date-label">Inicio</label>
+                            <input type="date" id="period_start" name="period_start" class="custom-date-input">
+                        </div>
+                        <div class="custom-date-group">
+                            <label class="custom-date-label">Fin</label>
+                            <input type="date" id="period_end" name="period_end" class="custom-date-input">
+                        </div>
                     </div>
                     <p class="text-xs text-tertiary" style="margin: 0;">Los datos mockeados se usarán hasta conectar las APIs reales.</p>
                 </div>
@@ -74,10 +200,16 @@
                             <span style="width: 24px; height: 24px; border-radius: 50%; background: var(--color-primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600;">3</span>
                             Métricas (editables)
                         </h3>
-                        <p class="card-subtitle" style="margin-top: 4px; font-size: 0.78rem;">Edita los valores antes de generar. No se guardan en el perfil del cliente.</p>
+                        <p class="card-subtitle" style="margin-top: 4px; font-size: 0.78rem;">Las métricas vienen del perfil del cliente. Los cambios aquí son solo para esta generación.</p>
                     </div>
                 </div>
                 <div id="metrics-panel-content"></div>
+                <!-- Barra do modo de seleção de métricas destacadas -->
+                <div id="selection-mode-bar" style="display:none; align-items:center; justify-content:space-between; gap:0.75rem; margin-top:1rem; padding:0.75rem 1rem; background:rgba(0,117,255,0.08); border-radius:8px; border:1px solid rgba(0,117,255,0.2);">
+                    <span id="highlights-counter" style="font-size:0.8125rem; color:var(--color-text-secondary);">0 / 6 seleccionadas</span>
+                    <button id="confirm-highlights-btn" class="btn btn-primary btn-sm">Confirmar selección</button>
+                </div>
+                <button id="select-highlights-btn" type="button" style="margin-top:0.875rem; width:100%; padding:0.5rem; border:1px dashed rgba(255,255,255,0.15); border-radius:8px; background:none; color:var(--color-text-tertiary); font-size:0.8rem; cursor:pointer; transition:border-color .15s, color .15s;" onmouseover="this.style.borderColor='rgba(0,117,255,0.4)';this.style.color='var(--color-text-secondary)'" onmouseout="this.style.borderColor='rgba(255,255,255,0.15)';this.style.color='var(--color-text-tertiary)'">&#9734; Seleccionar métricas destacadas</button>
             </div>
 
             <!-- Generate Button -->
@@ -94,7 +226,6 @@
             <div class="card-header">
                 <div>
                     <h3 class="card-title">Vista Previa del Mensaje</h3>
-                    <p class="card-subtitle">Generado por Groq AI · Llama 3.3 70B</p>
                 </div>
             </div>
 
@@ -129,6 +260,15 @@
 
             <!-- Report Preview Content -->
             <div id="preview-content" style="display: none;">
+
+                <!-- Abas de preview — visíveis apenas após geração (controladas por setPreviewState) -->
+                <div id="preview-tabs" style="display:none; gap: 0; margin-bottom: 1.25rem; border-bottom: 1px solid var(--color-border);">
+                    <button id="tab-message" class="preview-tab active" style="flex:1; padding: 0.625rem 1rem; background: none; border: none; border-bottom: 2px solid transparent; color: var(--color-primary); font-size: 0.875rem; font-weight: 600; cursor: pointer; transition: color .15s, border-color .15s;">Vista Previa del Mensaje</button>
+                    <button id="tab-dashboard" class="preview-tab" style="flex:1; padding: 0.625rem 1rem; background: none; border: none; border-bottom: 2px solid transparent; color: var(--color-text-secondary); font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: color .15s, border-color .15s;">Previa del Dashboard</button>
+                </div>
+
+                <!-- Tab 1: contenido del mensaje (wrapper para controlar visibilidad por tab) -->
+                <div id="message-preview-container">
                 <!-- Mensagem do Groq -->
                 <div style="background: var(--color-bg-elevated); border-radius: var(--radius-md); padding: 1.5rem; margin-bottom: 1.25rem;">
                     <p class="text-xs text-tertiary" style="margin-bottom: 0.5rem;">MENSAJE QUE RECIBIRÁ EL CLIENTE</p>
@@ -148,13 +288,19 @@
                 <div id="send-alerts" style="margin-bottom: 1rem;"></div>
 
                 <!-- Acciones -->
-                <div class="flex gap-md">
+                <div class="flex gap-sm flex-wrap">
                     <button class="btn btn-primary flex-1" id="send-report-btn">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="22" y1="2" x2="11" y2="13"/>
                             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
                         </svg>
                         Enviar Reporte
+                    </button>
+                    <button class="btn btn-whatsapp" id="whatsapp-btn" title="Enviar por WhatsApp al cliente">
+                        <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
+                        </svg>
+                        Enviar en WhatsApp
                     </button>
                     <button class="btn btn-secondary" id="edit-report-btn">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -163,6 +309,12 @@
                         </svg>
                         Editar
                     </button>
+                    <button class="btn btn-ghost" id="copy-msg-btn" title="Copiar mensaje completo">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" id="copy-icon">
+                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                        </svg>
+                    </button>
                     <button class="btn btn-ghost" id="regenerate-btn" title="Regenerar mensaje">
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <polyline points="1 4 1 10 7 10"/>
@@ -170,6 +322,13 @@
                         </svg>
                     </button>
                 </div>
+                </div><!-- /message-preview-container -->
+
+                <!-- Tab 2: dashboard renderizado en iframe -->
+                <div id="dashboard-preview-container" style="display:none; overflow-y:auto; border-radius: var(--radius-md); border: 1px solid var(--color-border);">
+                    <iframe id="dashboard-preview-frame" srcdoc="" style="width:100%; height:600px; border:none; display:block;"></iframe>
+                </div>
+
             </div>
 
             <!-- Success State -->
@@ -192,25 +351,79 @@
         </div>
     </div>
 </div>
-
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const csrfToken = '{{ csrf_token }}';
+    const agencyWhatsapp = '{{ agency_whatsapp|escapejs }}';
     let currentMessage = '';
+    let currentClientPhone = '';
     let currentCampaignScore = null;
     let currentScoreReason = '';
+    let currentDashboardInsight = '';
+    let dashboardPreviewLoaded = false;
 
-    // --- Pre-seleccionar cliente desde URL (?client=ID) ---
-    const urlParams = new URLSearchParams(window.location.search);
-    const clientParam = urlParams.get('client');
-    if (clientParam) {
-        const select = document.getElementById('report-client');
-        if (select) {
-            select.value = clientParam;
-            // Disparar evento change para cargar la configuración del cliente
-            select.dispatchEvent(new Event('change'));
-        }
+    // --- Seleção de métricas destacadas (modo iPhone) ---
+    const MAX_HIGHLIGHTS = 6;
+    const highlightedMetrics = [];
+    let selectionMode = false;
+
+    function updateHighlightsCounter() {
+        const counter = document.getElementById('highlights-counter');
+        if (counter) counter.textContent = `${highlightedMetrics.length} / ${MAX_HIGHLIGHTS} seleccionadas`;
     }
+
+    function updateMaxReached() {
+        const chips = document.querySelectorAll('#metrics-panel-content .metric-chip');
+        const atMax = highlightedMetrics.length >= MAX_HIGHLIGHTS;
+        chips.forEach(function(chip) {
+            if (atMax && !chip.classList.contains('highlighted')) {
+                chip.classList.add('max-reached');
+            } else {
+                chip.classList.remove('max-reached');
+            }
+        });
+    }
+
+    function enterSelectionMode() {
+        selectionMode = true;
+        const content = document.getElementById('metrics-panel-content');
+        const bar = document.getElementById('selection-mode-bar');
+        const btn = document.getElementById('select-highlights-btn');
+        if (content) content.classList.add('chips-selection-mode');
+        if (bar) bar.style.display = 'flex';
+        if (btn) btn.style.display = 'none';
+        // Restaurar .highlighted em chips já selecionados
+        if (content) {
+            content.querySelectorAll('.metric-chip').forEach(function(chip) {
+                const already = highlightedMetrics.some(function(m) {
+                    return m.key === chip.dataset.key && m.platform === chip.dataset.platform;
+                });
+                chip.classList.toggle('highlighted', already);
+            });
+        }
+        updateHighlightsCounter();
+        updateMaxReached();
+    }
+
+    function exitSelectionMode() {
+        selectionMode = false;
+        const content = document.getElementById('metrics-panel-content');
+        const bar = document.getElementById('selection-mode-bar');
+        const btn = document.getElementById('select-highlights-btn');
+        if (content) {
+            content.classList.remove('chips-selection-mode');
+            content.querySelectorAll('.metric-chip').forEach(function(c) {
+                c.classList.remove('max-reached');
+            });
+        }
+        if (bar) bar.style.display = 'none';
+        if (btn) btn.style.display = '';
+    }
+
+    document.addEventListener('click', function(e) {
+        if (e.target.closest('#select-highlights-btn')) { enterSelectionMode(); return; }
+        if (e.target.closest('#confirm-highlights-btn')) { exitSelectionMode(); return; }
+    });
 
     // --- Period buttons ---
     document.querySelectorAll('.period-btn').forEach(btn => {
@@ -221,91 +434,179 @@ document.addEventListener('DOMContentLoaded', function () {
             });
             btn.classList.add('active', 'btn-secondary');
             btn.classList.remove('btn-ghost');
+            const customInputs = document.getElementById('custom-period-inputs');
+            if (btn.dataset.period === 'custom') {
+                customInputs.style.display = 'flex';
+            } else {
+                customInputs.style.display = 'none';
+            }
         });
     });
 
-    // --- Load client config on change ---
-    document.getElementById('report-client').addEventListener('change', async function () {
-        const clientId = this.value;
-        const summary = document.getElementById('client-config-summary');
+    // --- Seleciona período automaticamente com base na frequência do cliente ---
+    function selectPeriodByFrequency(freq) {
+        const periodMap = {
+            'weekly': '7',
+            'biweekly': '14',
+            'monthly': '30',
+            'quarterly': '30',
+        };
+        const target = periodMap[freq];
+        if (!target) return;
+        document.querySelectorAll('.period-btn').forEach(b => {
+            b.classList.remove('active', 'btn-secondary');
+            b.classList.add('btn-ghost');
+        });
+        const btn = document.querySelector(`.period-btn[data-period="${target}"]`);
+        if (btn) {
+            btn.classList.add('active', 'btn-secondary');
+            btn.classList.remove('btn-ghost');
+            document.getElementById('custom-period-inputs').style.display = 'none';
+        }
+    }
+
+    // --- Carrega métricas do cliente como chips selecionáveis ---
+    function loadClientMetrics(clientId) {
         const metricsPanel = document.getElementById('metrics-panel');
         if (!clientId) {
-            summary.style.display = 'none';
             metricsPanel.style.display = 'none';
             return;
         }
-
-        // Carrega configuração básica do cliente
-        try {
-            const resp = await fetch(`/app/api/clients/${clientId}/report-config/`);
-            if (resp.ok) {
-                const data = await resp.json();
-                const channelLabels = { email: 'Email', whatsapp: 'WhatsApp', both: 'Email + WhatsApp' };
-                const levelLabels = { leigo: 'Lenguaje de negocio', avancado: 'Términos técnicos' };
-                document.getElementById('config-channel').textContent = channelLabels[data.send_channel] || data.send_channel;
-                document.getElementById('config-level').textContent = levelLabels[data.knowledge_level] || data.knowledge_level;
-                summary.style.display = 'block';
-            }
-        } catch (e) { /* silencioso */ }
-
-        // Carrega métricas visíveis do cliente para o painel editável
-        try {
-            const resp = await fetch(`/app/api/clients/${clientId}/metrics/`);
-            if (!resp.ok) throw new Error('no metrics');
-            const data = await resp.json();
-            const platformLabels = { google_ads: 'Google Ads', ga4: 'GA4', meta_ads: 'Meta Ads' };
-            const platforms = data.metrics;
-            const platformKeys = Object.keys(platforms);
-
-            if (platformKeys.length === 0) {
-                metricsPanel.style.display = 'none';
-                return;
-            }
-
-            let html = '';
-            for (const platform of platformKeys) {
-                html += `<div style="margin-bottom: 1rem;">`;
-                html += `<p style="font-size: 0.75rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-bottom: 0.5rem;">${platformLabels[platform] || platform}</p>`;
-                html += `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
-                for (const metric of platforms[platform]) {
-                    html += `<div style="display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.75rem;">`;
-                    html += `<label style="font-size: 0.8125rem; color: var(--color-text-secondary);">${metric.display_name}</label>`;
-                    html += `<input type="number" step="any" class="metric-override-input" data-platform="${platform}" data-key="${metric.metric_key}" value="${metric.current_value}" style="width: 100px; background: var(--color-bg-elevated); border: 1px solid var(--color-border); border-radius: 6px; color: var(--color-text-primary); font-size: 0.8125rem; padding: 4px 8px; text-align: right;">`;
-                    html += `</div>`;
+        fetch(`/app/api/clients/${clientId}/metrics/`)
+            .then(resp => { if (!resp.ok) throw new Error('no metrics'); return resp.json(); })
+            .then(data => {
+                const platformLabels = { google_ads: 'Google Ads', ga4: 'GA4', meta_ads: 'Meta Ads' };
+                const platforms = data.metrics;
+                const platformKeys = Object.keys(platforms);
+                if (platformKeys.length === 0) { metricsPanel.style.display = 'none'; return; }
+                let html = '';
+                const STAR_SVG = ``;
+                for (const platform of platformKeys) {
+                    html += `<div class="metrics-platform-group">`;
+                    html += `<span class="metrics-platform-label">${platformLabels[platform] || platform}</span>`;
+                    html += `<div class="metrics-chips">`;
+                    for (const metric of platforms[platform]) {
+                        const sel = metric.is_visible ? ' selected' : '';
+                        html += `<button type="button" class="metric-chip${sel}" data-platform="${platform}" data-key="${metric.metric_key}">${metric.display_name}</button>`;
+                    }
+                    html += `</div></div>`;
                 }
-                html += `</div></div>`;
-            }
+                document.getElementById('metrics-panel-content').innerHTML = html;
+                metricsPanel.style.display = 'block';
+                // Resetar destaques e modo de seleção ao trocar cliente
+                highlightedMetrics.length = 0;
+                exitSelectionMode();
+            })
+            .catch(() => { metricsPanel.style.display = 'none'; });
+    }
 
-            document.getElementById('metrics-panel-content').innerHTML = html;
-            metricsPanel.style.display = 'block';
-        } catch (e) {
-            metricsPanel.style.display = 'none';
+    // --- Toggle chip ao clicar ---
+    document.addEventListener('click', e => {
+        if (e.target.classList.contains('metric-chip')) {
+            if (selectionMode) {
+                const chip = e.target;
+                const key = chip.dataset.key;
+                const platform = chip.dataset.platform;
+                if (chip.classList.contains('highlighted')) {
+                    chip.classList.remove('highlighted');
+                    const idx = highlightedMetrics.findIndex(m => m.key === key && m.platform === platform);
+                    if (idx > -1) highlightedMetrics.splice(idx, 1);
+                } else if (highlightedMetrics.length < MAX_HIGHLIGHTS) {
+                    chip.classList.add('highlighted');
+                    highlightedMetrics.push({ key, platform });
+                }
+                updateHighlightsCounter();
+                updateMaxReached();
+            } else {
+                const wasSelected = e.target.classList.contains('selected');
+                e.target.classList.toggle('selected');
+                // Se desselecionou a métrica, removê-la também dos destaques
+                if (wasSelected) {
+                    const key = e.target.dataset.key;
+                    const platform = e.target.dataset.platform;
+                    const idx = highlightedMetrics.findIndex(m => m.key === key && m.platform === platform);
+                    if (idx > -1) {
+                        highlightedMetrics.splice(idx, 1);
+                        e.target.classList.remove('highlighted');
+                    }
+                }
+            }
         }
     });
 
+    // --- Registrar listener de change ANTES de pré-selecionar via URL ---
+    const clientSelect = document.getElementById('report-client');
+    clientSelect.addEventListener('change', function () {
+        const cid = this.value;
+        loadClientMetrics(cid);
+        currentClientPhone = '';
+        if (cid) {
+            fetch(`/app/api/clients/${cid}/report-config/`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.report_frequency) selectPeriodByFrequency(d.report_frequency);
+                    currentClientPhone = d.phone || '';
+                })
+                .catch(() => {});
+        }
+    });
+
+    // Pré-selecionar cliente se vier via URL (?client=ID)
+    const urlParams = new URLSearchParams(window.location.search);
+    const clientParam = urlParams.get('client');
+    if (clientParam) {
+        clientSelect.value = clientParam;
+        if (clientSelect.value) {
+            loadClientMetrics(clientParam);
+            fetch(`/app/api/clients/${clientParam}/report-config/`)
+                .then(r => r.json())
+                .then(d => {
+                    if (d.report_frequency) selectPeriodByFrequency(d.report_frequency);
+                    currentClientPhone = d.phone || '';
+                })
+                .catch(() => {});
+        }
+    }
+
+    // --- Coleta chaves das métricas selecionadas pelos chips ---
+    function getSelectedMetrics() {
+        const selected = {};
+        document.querySelectorAll('.metric-chip.selected').forEach(chip => {
+            const platform = chip.dataset.platform;
+            const key = chip.dataset.key;
+            if (!selected[platform]) selected[platform] = [];
+            selected[platform].push(key);
+        });
+        return selected;
+    }
+
+    // --- Monta payload de período ---
+    function getPeriodPayload() {
+        const customInputs = document.getElementById('custom-period-inputs');
+        if (customInputs.style.display !== 'none') {
+            const start = document.getElementById('period_start').value;
+            const end = document.getElementById('period_end').value;
+            if (start && end) return { period_start: start, period_end: end };
+        }
+        const activeBtn = document.querySelector('.period-btn.active');
+        const days = activeBtn && activeBtn.dataset.period !== 'custom'
+            ? parseInt(activeBtn.dataset.period) : 7;
+        return { days };
+    }
+
     // --- Generate preview ---
     async function generatePreview() {
-        const clientId = document.getElementById('report-client').value;
+        const clientId = clientSelect.value;
         if (!clientId) { alert('Por favor selecciona un cliente.'); return; }
 
         setPreviewState('loading');
 
-        // Coleta métricas editadas do painel (se visível)
-        const metricsOverride = {};
-        document.querySelectorAll('.metric-override-input').forEach(input => {
-            const platform = input.dataset.platform;
-            const key = input.dataset.key;
-            const val = parseFloat(input.value);
-            if (!isNaN(val)) {
-                if (!metricsOverride[platform]) metricsOverride[platform] = {};
-                metricsOverride[platform][key] = val;
-            }
-        });
-
-        const payload = { client_id: clientId };
-        if (Object.keys(metricsOverride).length > 0) {
-            payload.metrics_override = metricsOverride;
+        const selectedKeys = getSelectedMetrics();
+        const payload = { client_id: clientId, ...getPeriodPayload() };
+        if (Object.keys(selectedKeys).length > 0) {
+            payload.selected_metric_keys = selectedKeys;
         }
+        payload.highlighted_metrics = [...highlightedMetrics];
 
         try {
             const resp = await fetch('/app/api/reports/preview/', {
@@ -316,9 +617,14 @@ document.addEventListener('DOMContentLoaded', function () {
             const data = await resp.json();
             if (!data.success) throw new Error(data.error || 'Error desconocido');
 
-            currentMessage = data.message;
+            // Appenda o link do dashboard ao final da mensagem (visível no preview e no envio)
+            currentMessage = data.dashboard_url
+                ? data.message + '\n\n🔗 Ver tu dashboard: ' + data.dashboard_url
+                : data.message;
             currentCampaignScore = data.campaign_score ?? null;
             currentScoreReason = data.score_reason || '';
+            currentDashboardInsight = data.dashboard_insight || '';
+            dashboardPreviewLoaded = false;
             document.getElementById('message-text').textContent = currentMessage;
             document.getElementById('send-alerts').innerHTML = '';
             setPreviewState('content');
@@ -330,8 +636,44 @@ document.addEventListener('DOMContentLoaded', function () {
 
     document.getElementById('generate-btn').addEventListener('click', generatePreview);
     document.getElementById('regenerate-btn').addEventListener('click', generatePreview);
+    // --- WhatsApp button ---
+    document.getElementById('whatsapp-btn').addEventListener('click', () => {
+        if (!currentMessage) return;
+        if (!currentClientPhone) {
+            alert('Este cliente no tiene n\u00famero de tel\u00e9fono registrado. A\u00f1\u00e1delo en su perfil para usar esta funci\u00f3n.');
+            return;
+        }
+        // Limpa o número: mantém apenas dígitos e o + inicial
+        const phone = currentClientPhone.replace(/[^\d+]/g, '');
+        const url = `https://wa.me/${phone}?text=${encodeURIComponent(currentMessage)}`;
+        window.open(url, '_blank', 'noopener,noreferrer');
+    });
 
-    // --- Edit message ---
+    // --- Copy message button ---
+    document.getElementById('copy-msg-btn').addEventListener('click', () => {
+        if (!currentMessage) return;
+        navigator.clipboard.writeText(currentMessage).then(() => {
+            const btn = document.getElementById('copy-msg-btn');
+            const icon = document.getElementById('copy-icon');
+            // Feedback visual: troca ícone por checkmark por 2s
+            icon.innerHTML = '<polyline points="20 6 9 17 4 12"/>';
+            btn.style.color = 'var(--color-success)';
+            setTimeout(() => {
+                icon.innerHTML = '<rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>';
+                btn.style.color = '';
+            }, 2000);
+        }).catch(() => {
+            // Fallback para browsers sem suporte a clipboard API
+            const ta = document.createElement('textarea');
+            ta.value = currentMessage;
+            ta.style.position = 'fixed';
+            ta.style.opacity = '0';
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+        });
+    });
     document.getElementById('edit-report-btn').addEventListener('click', () => {
         document.getElementById('message-edit').value = currentMessage;
         document.getElementById('message-text').parentElement.style.display = 'none';
@@ -350,7 +692,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- Send report ---
     document.getElementById('send-report-btn').addEventListener('click', async () => {
-        const clientId = document.getElementById('report-client').value;
+        const clientId = clientSelect.value;
         if (!clientId || !currentMessage) return;
 
         const btn = document.getElementById('send-report-btn');
@@ -364,8 +706,10 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: JSON.stringify({
                     client_id: clientId,
                     message: currentMessage,
+                    dashboard_insight: currentDashboardInsight,
                     campaign_score: currentCampaignScore,
                     score_reason: currentScoreReason,
+                    highlighted_metrics: [...highlightedMetrics],
                 }),
             });
             const data = await resp.json();
@@ -390,10 +734,55 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // --- New report button ---
     document.getElementById('new-report-btn').addEventListener('click', () => {
-        document.getElementById('report-client').value = '';
-        document.getElementById('client-config-summary').style.display = 'none';
+        clientSelect.value = '';
+        document.getElementById('metrics-panel').style.display = 'none';
         currentMessage = '';
         setPreviewState('empty');
+    });
+
+    // --- Tab switching ---
+    function setActiveTab(tab) {
+        const isMessage = tab === 'message';
+        document.getElementById('message-preview-container').style.display = isMessage ? '' : 'none';
+        document.getElementById('dashboard-preview-container').style.display = isMessage ? 'none' : '';
+        document.getElementById('tab-message').classList.toggle('active', isMessage);
+        document.getElementById('tab-dashboard').classList.toggle('active', !isMessage);
+        document.getElementById('send-report-btn').style.display = isMessage ? '' : 'none';
+    }
+
+    function loadDashboardPreview() {
+        if (dashboardPreviewLoaded) return;
+        dashboardPreviewLoaded = true;
+        const clientId = clientSelect.value;
+        const selectedKeys = getSelectedMetrics();
+        // Reconstrói metrics_snapshot parcial com as métricas disponíveis no frontend
+        // (o servidor usará apenas para construir o contexto de highlights)
+        fetch('/app/api/reports/preview-dashboard/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrfToken },
+            body: JSON.stringify({
+                client_id: clientId,
+                metrics_snapshot: {},
+                dashboard_insight: currentDashboardInsight,
+                campaign_score: currentCampaignScore,
+                score_reason: currentScoreReason,
+                message_generated: currentMessage,
+                highlighted_metrics: [...highlightedMetrics],
+            }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.html) {
+                document.getElementById('dashboard-preview-frame').srcdoc = data.html;
+            }
+        })
+        .catch(() => { dashboardPreviewLoaded = false; });
+    }
+
+    document.getElementById('tab-message').addEventListener('click', () => setActiveTab('message'));
+    document.getElementById('tab-dashboard').addEventListener('click', () => {
+        setActiveTab('dashboard');
+        loadDashboardPreview();
     });
 
     // --- Helpers ---
@@ -402,6 +791,12 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('preview-loading').style.display = state === 'loading' ? 'flex' : 'none';
         document.getElementById('preview-content').style.display = state === 'content' ? 'block' : 'none';
         document.getElementById('send-success').style.display    = state === 'success' ? 'block' : 'none';
+        // Abas só visíveis quando há conteúdo gerado
+        document.getElementById('preview-tabs').style.display = state === 'content' ? 'flex' : 'none';
+        if (state !== 'content') {
+            // Reseta para Tab 1 sempre que sai do estado de conteúdo
+            setActiveTab('message');
+        }
     }
 
     function showAlerts(messages, type) {

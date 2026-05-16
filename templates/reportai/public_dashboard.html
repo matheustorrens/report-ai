@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ client.name }} — Reporte de Campañas</title>
+    <title>{{ client.name }} — Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -221,128 +221,296 @@
             color: var(--color-text-tertiary);
         }
         .pd-footer a { color: var(--color-primary); text-decoration: none; }
+
+        /* ─── Score SVG ─── */
+        .pd-score-insight {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .pd-score-svg-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 28px 20px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 14px;
+        }
+        .pd-score-svg-wrap { position: relative; width: 120px; height: 120px; }
+        .pd-score-svg { transform: rotate(-90deg); }
+        .pd-score-track { fill: none; stroke: rgba(255,255,255,0.07); stroke-width: 8; }
+        .pd-score-fill  { fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1.2s ease; }
+        .pd-score-overlay {
+            position: absolute; top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 2rem; font-weight: 700; line-height: 1;
+        }
+        .pd-score-unit-label {
+            font-size: 0.7rem; font-weight: 600; letter-spacing: 0.07em;
+            text-transform: uppercase; color: var(--color-text-tertiary);
+        }
+
+        /* ─── Insight ─── */
+        .pd-insight-card {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 22px;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        .pd-insight-head { display: flex; align-items: center; gap: 8px; }
+        .pd-insight-icon {
+            width: 28px; height: 28px;
+            background: rgba(139,92,246,0.15);
+            border-radius: 7px;
+            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        }
+        .pd-insight-title { font-size: 0.8125rem; font-weight: 600; color: var(--color-text-secondary); }
+        .pd-insight-text {
+            font-size: 0.875rem; line-height: 1.75;
+            color: var(--color-text-secondary);
+            white-space: pre-wrap; overflow-y: auto; max-height: 240px;
+        }
+
+        /* ─── Métricas 3×2 ─── */
+        .pd-metrics-grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        /* ─── Timeline pública ─── */
+        .pd-tl-year {
+            font-size: 0.7rem; font-weight: 700;
+            letter-spacing: 0.12em; text-transform: uppercase;
+            color: var(--color-text-tertiary);
+            padding: 8px 0 4px;
+            border-bottom: 1px solid var(--color-border);
+            margin-bottom: 4px;
+        }
+        .pd-tl-item {
+            display: grid; grid-template-columns: 52px 20px 1fr;
+            gap: 12px; padding: 14px 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+        .pd-tl-item:last-of-type { border-bottom: none; }
+        .pd-tl-date { text-align: center; padding-top: 2px; }
+        .pd-tl-day   { font-size: 1.25rem; font-weight: 700; color: var(--color-text-primary); line-height: 1; }
+        .pd-tl-month { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--color-text-tertiary); margin-top: 2px; }
+        .pd-tl-line-col { display: flex; flex-direction: column; align-items: center; padding-top: 5px; }
+        .pd-tl-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+        .pd-tl-dot--blue   { background: #3b82f6; box-shadow: 0 0 8px rgba(59,130,246,0.5); }
+        .pd-tl-dot--green  { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+        .pd-tl-dot--yellow { background: #f59e0b; box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+        .pd-tl-dot--red    { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+        .pd-tl-dot--purple { background: #8b5cf6; box-shadow: 0 0 8px rgba(139,92,246,0.5); }
+        .pd-tl-dot--gray   { background: #6b7280; }
+        .pd-tl-content { min-width: 0; }
+        .pd-tl-meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+        .pd-tl-badge {
+            display: inline-block; font-size: 0.65rem; font-weight: 700;
+            letter-spacing: 0.05em; padding: 2px 8px; border-radius: 999px; text-transform: uppercase;
+        }
+        .pd-tl-badge--blue   { background: rgba(59,130,246,0.15);  color: #60a5fa; }
+        .pd-tl-badge--green  { background: rgba(16,185,129,0.15);  color: #34d399; }
+        .pd-tl-badge--yellow { background: rgba(245,158,11,0.15);  color: #fbbf24; }
+        .pd-tl-badge--red    { background: rgba(239,68,68,0.15);   color: #f87171; }
+        .pd-tl-badge--purple { background: rgba(139,92,246,0.15);  color: #a78bfa; }
+        .pd-tl-badge--gray   { background: rgba(107,114,128,0.15); color: #9ca3af; }
+        .pd-tl-title { font-size: 0.9rem; font-weight: 600; color: var(--color-text-primary); }
+        .pd-tl-toggle {
+            font-size: 0.8rem; color: var(--color-text-tertiary);
+            cursor: pointer; margin-top: 6px; user-select: none; display: inline-block;
+        }
+        .pd-tl-toggle:hover { color: var(--color-text-secondary); }
+        .pd-tl-desc {
+            display: none; font-size: 0.875rem; line-height: 1.7;
+            color: var(--color-text-secondary); margin-top: 8px; white-space: pre-wrap;
+        }
+        .pd-tl-empty {
+            background: var(--color-bg-card);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius);
+            padding: 32px 20px; text-align: center;
+            color: var(--color-text-tertiary); font-size: 0.875rem;
+        }
+        @media (max-width: 520px) {
+            .pd-score-insight { grid-template-columns: 1fr; }
+            .pd-metrics-grid-3 { grid-template-columns: repeat(2, 1fr); }
+        }
     </style>
 </head>
 <body>
 
 <div class="pd-wrapper">
 
-    <!-- Header -->
-    <header class="pd-header">
-        <div class="pd-brand">
-            <div class="pd-brand-dot"></div>
-            <span class="pd-brand-name">ReportAI</span>
+    <!-- ─── HEADER ─── -->
+    <header style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:36px;flex-wrap:wrap;">
+        <div style="display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#0075ff 0%,#6366f1 100%);display:flex;align-items:center;justify-content:center;font-size:0.875rem;font-weight:700;color:#fff;flex-shrink:0;">
+                {{ client.owner.username|upper|slice:":2" }}
+            </div>
+            <span style="font-size:0.8rem;color:var(--color-text-tertiary);font-weight:500;">{{ client.owner.get_full_name|default:client.owner.username }}</span>
         </div>
-        <h1 class="pd-client-name">{{ client.name }}</h1>
-        {% if latest_log %}
-        <p class="pd-report-date">Semana del {{ latest_log.sent_at|date:"d \d\e F, Y" }}</p>
-        {% endif %}
+        <div style="text-align:right;">
+            <h1 class="pd-client-name">{{ client.name }}</h1>
+            {% if latest_log %}
+            <p class="pd-report-date">Última actualización: {{ latest_log.sent_at|date:"d/m/Y H:i" }}</p>
+            {% else %}
+            <p class="pd-report-date">Aún sin reportes</p>
+            {% endif %}
+        </div>
     </header>
 
     {% if not latest_log %}
-    <!-- Estado vacío: sin reportes todavía -->
     <div class="pd-empty">
         <div class="pd-empty-icon">📊</div>
         <div class="pd-empty-title">Todavía no hay reportes</div>
         <div class="pd-empty-body">Tu agencia enviará el primer reporte en breve.</div>
     </div>
-
     {% else %}
 
-    <!-- Score de campaña -->
-    {% if latest_log.campaign_score is not None %}
-    {% with score=latest_log.campaign_score %}
-    <div class="pd-score-card">
-        <div class="pd-score-number {% if score >= 80 %}green{% elif score >= 60 %}yellow{% elif score >= 40 %}orange{% else %}red{% endif %}">{{ score }}</div>
-        <div class="pd-score-details">
-            <div class="pd-score-label">Puntuación de campaña</div>
-            <div class="pd-score-bar-track">
-                <div class="pd-score-bar {% if score >= 80 %}green{% elif score >= 60 %}yellow{% elif score >= 40 %}orange{% else %}red{% endif %}" style="width: {{ score }}%;"></div>
+    <!-- ─── SCORE + INSIGHT ─── -->
+    <p class="pd-section-title">Resumen del período</p>
+    <div class="pd-score-insight">
+
+        <!-- Score SVG circular -->
+        <div class="pd-score-svg-card">
+            {% if latest_log.campaign_score is not None %}
+            {% with score=latest_log.campaign_score %}
+            <div class="pd-score-svg-wrap">
+                <svg class="pd-score-svg" width="120" height="120" viewBox="0 0 120 120">
+                    <circle class="pd-score-track" cx="60" cy="60" r="52"/>
+                    <circle class="pd-score-fill"
+                            id="score-fill"
+                            cx="60" cy="60" r="52"
+                            stroke="{% if score >= 71 %}#22c55e{% elif score >= 41 %}#f59e0b{% else %}#ef4444{% endif %}"
+                            stroke-dasharray="326.7"
+                            stroke-dashoffset="326.7"/>
+                </svg>
+                <span class="pd-score-overlay" style="color:{% if score >= 71 %}#22c55e{% elif score >= 41 %}#f59e0b{% else %}#ef4444{% endif %};">{{ score }}</span>
             </div>
-            {% if latest_log.score_reason %}
-            <div class="pd-score-context">{{ latest_log.score_reason }}</div>
+            {% endwith %}
+            {% else %}
+            <div class="pd-score-svg-wrap">
+                <svg class="pd-score-svg" width="120" height="120" viewBox="0 0 120 120">
+                    <circle class="pd-score-track" cx="60" cy="60" r="52"/>
+                </svg>
+                <span class="pd-score-overlay" style="color:var(--color-text-tertiary);font-size:1.75rem;">—</span>
+            </div>
+            {% endif %}
+            <span class="pd-score-unit-label">Puntuación de Campaña</span>
+        </div>
+
+        <!-- Insight IA -->
+        <div class="pd-insight-card">
+            <div class="pd-insight-head">
+                <div class="pd-insight-icon">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a78bfa" stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                </div>
+                <span class="pd-insight-title">Resumen del período</span>
+            </div>
+            {% if latest_log.message_generated %}
+            <p class="pd-insight-text">{{ latest_log.dashboard_insight|default:latest_log.message_generated }}</p>
+            {% else %}
+            <p class="pd-insight-text" style="color:var(--color-text-tertiary);font-style:italic;">El análisis estará disponible tras el próximo reporte.</p>
             {% endif %}
         </div>
     </div>
-    {% endwith %}
-    {% endif %}
 
-    <!-- Cards de métricas destacadas (order=0 por plataforma) -->
-    {% if metrics_by_platform %}
-    <p class="pd-section-title" style="margin-bottom: 12px;">Esta semana</p>
-    <div class="pd-metrics-grid" style="margin-bottom: 28px;">
-        {% for platform_key, platform_data in metrics_by_platform.items %}
-        {% for metric in platform_data.card_metrics %}
+    <!-- ─── MÉTRICAS DESTAQUE ─── -->
+    <p class="pd-section-title">Esta semana</p>
+    {% if highlight_metrics %}
+    <div class="pd-metrics-grid-3">
+        {% for metric in highlight_metrics %}
         <div class="pd-metric-card">
             <div class="pd-metric-label">{{ metric.display_name }}</div>
             <div class="pd-metric-value">{{ metric.formatted_value }}</div>
             {% if metric.delta is not None %}
             <span class="pd-metric-delta {{ metric.delta_class }}">
-                {{ metric.delta_arrow }} {{ metric.delta_abs }}% vs semana anterior
+                {{ metric.delta_arrow }} {{ metric.delta_abs }}% vs sem. anterior
             </span>
-            {% endif %}
-        </div>
-        {% endfor %}
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- Mensaje de IA -->
-    {% if latest_log.message_generated %}
-    <p class="pd-section-title">Análisis de tu agencia</p>
-    <div class="pd-message-card">
-        <p class="pd-message-text">{{ latest_log.message_generated }}</p>
-    </div>
-    {% endif %}
-
-    <!-- Desglose por plataforma — tabs -->
-    {% if metrics_by_platform %}
-    <div class="pd-breakdown">
-        <p class="pd-section-title">Desglose por plataforma</p>
-
-        <!-- Navegação de tabs -->
-        <div class="pd-tabs">
-            {% for platform_key, platform_data in metrics_by_platform.items %}
-            {% if forloop.first %}
-            <button class="pd-tab active" data-platform="{{ platform_key }}">{{ platform_data.label }}</button>
             {% else %}
-            <button class="pd-tab" data-platform="{{ platform_key }}">{{ platform_data.label }}</button>
+            <span class="pd-metric-delta flat">— Sin comparativa</span>
             {% endif %}
-            {% endfor %}
-        </div>
-
-        <!-- Painéis de conteúdo -->
-        {% for platform_key, platform_data in metrics_by_platform.items %}
-        <div class="pd-tab-panel {% if forloop.first %}active{% endif %}" data-platform="{{ platform_key }}"
-             style="background: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--radius); padding: 16px;">
-            {% for metric in platform_data.all_metrics %}
-            <div class="pd-kpi-row">
-                <span class="pd-kpi-key">{{ metric.display_name }}</span>
-                <span class="pd-kpi-value">{{ metric.formatted_value }}</span>
-            </div>
-            {% endfor %}
         </div>
         {% endfor %}
+    </div>
+    {% else %}
+    <div class="pd-empty" style="margin-bottom:28px;">
+        <div class="pd-empty-body">La agencia aún no configuró las métricas de resumen.</div>
     </div>
     {% endif %}
 
     {% endif %}{# end if latest_log #}
 
-    <footer class="pd-footer">
-        Reporte generado por <a href="https://getreportai.com" target="_blank">ReportAI</a>
+    <!-- ─── TIMELINE ─── -->
+    <p class="pd-section-title">Timeline de Acciones</p>
+    {% if timeline_entries %}
+    {% regroup timeline_entries by date.year as entries_by_year %}
+    {% for year_group in entries_by_year %}
+    <div class="pd-tl-year">{{ year_group.grouper }}</div>
+    {% for entry in year_group.list %}
+    <div class="pd-tl-item">
+        <div class="pd-tl-date">
+            <div class="pd-tl-day">{{ entry.date|date:"d" }}</div>
+            <div class="pd-tl-month">{{ entry.date|date:"M" }}</div>
+        </div>
+        <div class="pd-tl-line-col">
+            <span class="pd-tl-dot pd-tl-dot--{{ entry.badge_color }}"></span>
+        </div>
+        <div class="pd-tl-content">
+            <div class="pd-tl-meta">
+                <span class="pd-tl-badge pd-tl-badge--{{ entry.badge_color }}">{{ entry.get_badge_type_display }}</span>
+                <span class="pd-tl-title">{{ entry.title }}</span>
+            </div>
+            {% if entry.description %}
+            <span class="pd-tl-toggle" onclick="toggleTlDesc(this)">▸ Ver descripción</span>
+            <div class="pd-tl-desc">{{ entry.description }}</div>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+    {% endfor %}
+    {% else %}
+    <div class="pd-tl-empty">
+        Aún no hay entradas en la timeline.
+    </div>
+    {% endif %}
+
+    <footer class="pd-footer" style="margin-top:48px;">
+        Reporte generado por <a href="https://getreportai.com" target="_blank" rel="noopener">ReportAI</a>
     </footer>
 
 </div>
 
 <script>
-document.querySelectorAll('.pd-tab').forEach(tab => {
-    tab.addEventListener('click', () => {
-        document.querySelectorAll('.pd-tab, .pd-tab-panel').forEach(el => el.classList.remove('active'));
-        tab.classList.add('active');
-        const panel = document.querySelector('.pd-tab-panel[data-platform="' + tab.dataset.platform + '"]');
-        if (panel) panel.classList.add('active');
-    });
-});
+// Animar score SVG
+(function() {
+    const fill = document.getElementById('score-fill');
+    if (!fill) return;
+    const circumference = 326.7;
+    {% if latest_log and latest_log.campaign_score is not None %}
+    const score = {{ latest_log.campaign_score }};
+    {% else %}
+    const score = 0;
+    {% endif %}
+    const offset = circumference - (score / 100) * circumference;
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+        fill.style.strokeDashoffset = offset;
+    }));
+})();
+
+function toggleTlDesc(el) {
+    const desc = el.nextElementSibling;
+    const open = desc.style.display !== 'none';
+    desc.style.display = open ? 'none' : 'block';
+    el.textContent = open ? '▸ Ver descripción' : '▴ Ocultar descripción';
+}
 </script>
 
 </body>

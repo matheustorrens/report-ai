@@ -80,14 +80,19 @@
                     
                     <label class="form-checkbox">
                         <input type="checkbox" name="terms" required>
-                        <span class="text-sm text-secondary">Acepto los <a href="#" class="text-accent">términos de servicio</a> y la <a href="#" class="text-accent">política de privacidad</a></span>
+                        <span class="text-sm text-secondary">He leído y acepto los <a href="{% url 'terms_of_service' %}" class="text-accent" target="_blank" rel="noopener">Términos de Servicio</a> y la <a href="{% url 'privacy_policy' %}" class="text-accent" target="_blank" rel="noopener">Política de Privacidad</a></span>
+                    </label>
+                    
+                    <label class="form-checkbox">
+                        <input type="checkbox" name="legitimate_use" required>
+                        <span class="text-sm text-secondary">Declaro que utilizaré ReportAI exclusivamente con clientes reales de mi agencia, que dispongo de base legal para los datos que introduzca, y que no usaré el servicio para envíos no solicitados ni prospección no autorizada.</span>
                     </label>
                     
                     <button type="submit" class="btn btn-primary btn-lg w-full">
                         Crear Cuenta
                     </button>
                     
-                    <div class="auth-divider">o continúa con</div>
+                    <!-- <div class="auth-divider">o continúa con</div>
                     
                     <div class="auth-social">
                         <button type="button" class="auth-social-btn">
@@ -106,7 +111,7 @@
                             GitHub
                         </button>
                     </div>
-                </form>
+                </form> -->
                 
                 <p class="auth-footer">
                     ¿Ya tienes cuenta? <a href="{% url 'reportai:login' %}">Iniciar sesión</a>
