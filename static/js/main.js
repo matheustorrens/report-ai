@@ -38,7 +38,7 @@ function initTypewriter() {
     const typewriterEl = document.getElementById('typewriter');
     if (!typewriterEl) return;
     
-    const platforms = ['Google Ads', 'Meta Ads', 'Google Analytics'];
+    const platforms = ['Google Search', 'Google Ads', 'Google Analytics'];
     let platformIndex = 0;
     let charIndex = 0;
     let isDeleting = false;

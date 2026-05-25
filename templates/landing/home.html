@@ -6,24 +6,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
     <!-- SEO Meta Tags -->
-    <title>Automatizar Informes de Google Ads, Meta Ads y GA4 con IA | ReportAI</title>
-    <meta name="description" content="Genera informes automáticos de Google Ads, Meta Ads y Google Analytics para tus clientes en minutos. ReportAI automatiza informes con IA para agencias de marketing digital.">
-    <meta name="keywords" content="automatizar informes google ads, informe google ads automático, automatizar informes con ia, informe semanal clientes agencia, plantilla informe google ads, informe meta ads, informe ga4">
+    <title>Automatizar Informes de Google Search, Google Ads y GA4 con IA | ReportAI</title>
+    <meta name="description" content="Genera informes automáticos de Google Search, Google Ads y Google Analytics para tus clientes en minutos. ReportAI automatiza informes con IA para agencias de marketing digital.">
+    <meta name="keywords" content="automatizar informes google ads, informe google ads automático, automatizar informes con ia, informe semanal clientes agencia, plantilla informe google ads, informe google search, informe ga4">
     <meta name="robots" content="index, follow">
     <meta name="author" content="ReportAI">
     
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://reportai.io/">
-    <meta property="og:title" content="Automatizar Informes de Google Ads, Meta Ads y GA4 con IA | ReportAI">
-    <meta property="og:description" content="Genera informes automáticos de Google Ads, Meta Ads y Google Analytics para tus clientes en minutos. Deja de perder horas copiando datos manualmente.">
+    <meta property="og:title" content="Automatizar Informes de Google Search, Google Ads y GA4 con IA | ReportAI">
+    <meta property="og:description" content="Genera informes automáticos de Google Search, Google Ads y Google Analytics para tus clientes en minutos. Deja de perder horas copiando datos manualmente.">
     <meta property="og:image" content="{% static 'img/og-image.png' %}">
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://reportai.io/">
-    <meta property="twitter:title" content="Automatizar Informes de Google Ads, Meta Ads y GA4 con IA | ReportAI">
-    <meta property="twitter:description" content="Genera informes automáticos de Google Ads, Meta Ads y Google Analytics para tus clientes en minutos. Deja de perder horas copiando datos manualmente.">
+    <meta property="twitter:title" content="Automatizar Informes de Google Search, Google Ads y GA4 con IA | ReportAI">
+    <meta property="twitter:description" content="Genera informes automáticos de Google Search, Google Ads y Google Analytics para tus clientes en minutos. Deja de perder horas copiando datos manualmente.">
     
     <!-- Canonical -->
     <link rel="canonical" href="https://reportai.io/">
@@ -47,7 +47,7 @@
         "name": "ReportAI",
         "applicationCategory": "BusinessApplication",
         "operatingSystem": "Web",
-        "description": "Plataforma de automatización de informes de Google Ads, Meta Ads y Google Analytics con inteligencia artificial para agencias de marketing digital",
+        "description": "Plataforma de automatización de informes de Google Search, Google Ads y Google Analytics con inteligencia artificial para agencias de marketing digital",
         "offers": {
             "@type": "Offer",
             "price": "0",
@@ -69,7 +69,7 @@
             <a href="/" class="nav__logo">
                 <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI">
             </a>
-            <a href="#waitlist" class="nav__cta btn btn--small">Acceso Anticipado</a>
+            <a href="{% url 'reportai:register' %}" class="nav__cta btn btn--small">Acceder a la demo</a>
         </div>
     </nav>
 
@@ -94,41 +94,30 @@
                     
                     <!-- H2 con palabra-chave: informe google ads automático -->
                     <h2 class="hero__subtitle">
-                        Genera tu <strong>informe automático</strong> de Meta Ads, Google Ads y GA4 en minutos, no horas. ReportAI usa IA para crear reportes que tus clientes realmente entienden.
+                        Genera tu <strong>informe automático</strong> de Google Search, Google Ads y GA4 en minutos, no horas. ReportAI usa IA para crear reportes que tus clientes realmente entienden.
                     </h2>
                     
-                    <!-- Hero CTA + Progress Bar -->
+                    <!-- Hero CTA -->
                     <div class="hero__cta-box">
-                        <div class="hero__cta-offer-badge">
-                            <span>💸</span>
-                            <span>50% descuento de por vida al lanzar</span>
-                        </div>
-                        <a href="#waitlist" class="btn btn--primary btn--large btn--glow">
-                            <span>Reservar Acceso Anticipado</span>
+                        <a href="{% url 'reportai:register' %}" class="btn btn--primary btn--large btn--glow">
+                            <span>Acceder a la demo privada</span>
                             <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
                         </a>
-                        <div class="hero__cta-progress">
-                            <div class="hero__cta-progress-bar">
-                                <div class="hero__cta-progress-fill"></div>
-                            </div>
-                            <p class="hero__cta-progress-text">
-                                <span class="hero__cta-progress-number"><span id="hero-counter">97</span>/{{ spots_total }}</span>
-                                <span class="hero__cta-progress-label">plazas reservadas — <strong class="text-warning">Solo quedan {{ spots_total|add:"-97" }}</strong></span>
-                            </p>
-                        </div>
+                        <p class="hero__cta-note">Sin tarjeta de crédito. Acceso inmediato.</p>
                     </div>
                     
                     <!-- Plataformas soportadas -->
                     <div class="hero__platforms">
                         <span class="hero__platforms-label">Integraciones disponibles:</span>
                         <div class="hero__platforms-icons">
-                            <span class="hero__platform" title="Meta Ads">
+                            <span class="hero__platform" title="Google Search">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                                    <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/>
+                                    <circle cx="11" cy="11" r="7" stroke="#4285F4" stroke-width="2"/>
+                                    <path d="M16.5 16.5L21 21" stroke="#4285F4" stroke-width="2" stroke-linecap="round"/>
                                 </svg>
-                                <span>Meta Ads</span>
+                                <span>Google Search</span>
                             </span>
                             <span class="hero__platform" title="Google Ads">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
@@ -219,7 +208,7 @@
                             </svg>
                         </div>
                         <h3 class="pain__card-title">4-6 horas por cliente</h3>
-                        <p class="pain__card-text">Cada mes pasas horas entrando a Google Ads, Meta, Analytics... copiando datos manualmente a un Slides o PDF.</p>
+                        <p class="pain__card-text">Cada mes pasas horas entrando a Google Search, Google Ads, Analytics... copiando datos manualmente a un Slides o PDF.</p>
                     </div>
                     
                     <div class="pain__card" data-animate="fade-up" data-delay="200">
@@ -271,7 +260,7 @@
                         <div class="solution__step-number">1</div>
                         <div class="solution__step-content">
                             <h3 class="solution__step-title">Conecta tus cuentas</h3>
-                            <p class="solution__step-text">Meta Ads, Google Ads y Google Analytics 4. Conecta con un clic. Sin código, sin configuraciones complejas.</p>
+                            <p class="solution__step-text">Google Search, Google Ads y Google Analytics 4. Conecta con un clic. Sin código, sin configuraciones complejas.</p>
                         </div>
                         <div class="solution__step-visual">
                             <div class="solution__step-icons">
@@ -283,9 +272,10 @@
                                         <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                                     </svg>
                                 </span>
-                                <span class="solution__icon solution__icon--meta">
+                                <span class="solution__icon solution__icon--search">
                                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.991 3.657 9.128 8.438 9.879V14.89h-2.54V12h2.54V9.797c0-2.506 1.492-3.89 3.777-3.89 1.094 0 2.238.195 2.238.195v2.46h-1.26c-1.243 0-1.63.771-1.63 1.562V12h2.773l-.443 2.89h-2.33v6.989C18.343 21.129 22 16.99 22 12c0-5.523-4.477-10-10-10z" fill="#1877F2"/>
+                                        <circle cx="11" cy="11" r="7" stroke="#4285F4" stroke-width="2"/>
+                                        <path d="M16.5 16.5L21 21" stroke="#4285F4" stroke-width="2" stroke-linecap="round"/>
                                     </svg>
                                 </span>
                                 <span class="solution__icon solution__icon--analytics">
@@ -408,80 +398,29 @@
             </div>
         </section>
 
-        <!-- Waitlist Section -->
-        <section class="waitlist" id="waitlist">
+        <!-- CTA Section -->
+        <section class="waitlist" id="demo">
             <div class="container">
                 <div class="waitlist__card" data-animate="fade-up">
                     <div class="waitlist__content">
-                        <span class="section-tag section-tag--light">Acceso anticipado</span>
-                        <h2 class="waitlist__title">Reserva tu plaza en la beta privada</h2>
+                        <span class="section-tag section-tag--light">Beta privada</span>
+                        <h2 class="waitlist__title">Empieza a ahorrar horas esta semana</h2>
                         <p class="waitlist__text">
-                            Sé de los primeros en usar ReportAI. Acceso gratuito durante toda la beta, precio especial de por vida cuando lancemos, y influencia directa en el producto.
+                            Crea tu cuenta gratis, conecta tus plataformas y genera tu primer informe automático en minutos.
                         </p>
-                        
-                        <form class="waitlist__form" id="waitlist-form" method="POST" action="{% url 'home' %}"> 
-                            {% csrf_token %}
-                            <div class="waitlist__form-group">
-                                <input 
-                                    type="email" 
-                                    name="email" 
-                                    placeholder="tu@email.com" 
-                                    required 
-                                    class="waitlist__input"
-                                    autocomplete="email"
-                                >
-                                <button type="submit" class="btn btn--primary">
-                                    <span>Reservar plaza</span>
-                                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                                        <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                                    </svg>
-                                </button>
-                            </div>
-
-                            
-                            {% for message in messages %}
-                                {% if message.tags == 'success' %}
-                                    <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-2" role="alert">
-                                        <strong class="font-bold">Gracias!</strong>
-                                        <span class="block sm:inline">su acceso ha sido reservado. Hasta el lanzamiento!</span>
-                                        <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove()" style="cursor:pointer;">
-                                            <svg class="fill-current h-6 w-6 text-green-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-                                        </span>
-                                    </div>
-                                {% elif message.tags == 'error' %}
-                                    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-2" role="alert">
-                                        <strong class="font-bold">Lo sentimos,</strong>
-                                        <span class="block sm:inline">esta dirección de correo electrónico ya existe.</span>
-                                        <span class="absolute top-0 bottom-0 right-0 px-4 py-3" onclick="this.parentElement.remove()" style="cursor:pointer;">
-                                            <svg class="fill-current h-6 w-6 text-red-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
-                                        </span>
-                                    </div>
-                                {% endif %}
-                            {% endfor %}
-
-                            
-                                
-                            <p class="waitlist__form-note">
-                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                    <path d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" stroke="currentColor" stroke-width="1.5"/>
-                                    <path d="M8 5.333v2.334M8 10h.007" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-                                </svg>
-                                Sin spam. Solo actualizaciones importantes sobre ReportAI.
-                            </p>
-                        </form>
-                        
-                        <div class="waitlist__social-proof">
-                            <div class="waitlist__avatars">
-                                <span class="waitlist__avatar" style="--i: 1;"></span>
-                                <span class="waitlist__avatar" style="--i: 2;"></span>
-                                <span class="waitlist__avatar" style="--i: 3;"></span>
-                                <span class="waitlist__avatar" style="--i: 4;"></span>
-                                <span class="waitlist__avatar waitlist__avatar--count">+93</span>
-                            </div>
-                            <p class="waitlist__social-text">
-                                <strong>97 profesionales</strong> ya reservaron su acceso
-                            </p>
-                        </div>
+                        <a href="{% url 'reportai:register' %}" class="btn btn--primary btn--large btn--glow" style="display:inline-flex;align-items:center;gap:10px;">
+                            <span>Crear cuenta y probar</span>
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                <path d="M4.167 10h11.666M10 4.167L15.833 10 10 15.833" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </a>
+                        <p class="waitlist__form-note" style="margin-top:16px;">
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M8 14A6 6 0 1 0 8 2a6 6 0 0 0 0 12z" stroke="currentColor" stroke-width="1.5"/>
+                                <path d="M8 5.333v2.334M8 10h.007" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                            </svg>
+                            Sin tarjeta de crédito. Acceso inmediato.
+                        </p>
                     </div>
                     
                     <div class="waitlist__features">
@@ -499,7 +438,7 @@
                                     <circle cx="10" cy="10" r="10" fill="#00C48C" fill-opacity="0.15"/>
                                     <path d="M6 10l3 3 5-5" stroke="#00C48C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
-                                <span><strong>50% descuento</strong> de por vida al lanzar</span>
+                                <span>Conecta Google Search, Google Ads y GA4</span>
                             </li>
                             <li>
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
@@ -562,7 +501,7 @@
                             </svg>
                         </summary>
                         <div class="faq__answer">
-                            <p>Empezamos con Google Ads y Google Analytics 4. Meta Ads (Facebook/Instagram) será la siguiente integración, seguida de TikTok Ads y LinkedIn Ads.</p>
+                            <p>Actualmente soportamos Google Search, Google Ads y Google Analytics 4. Meta Ads (Facebook/Instagram) será la siguiente integración, seguida de TikTok Ads y LinkedIn Ads.</p>
                         </div>
                     </details>
                     

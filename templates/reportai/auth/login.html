@@ -24,8 +24,7 @@
         <div class="auth-left">
             <div class="auth-container">
                 <div class="auth-logo">
-                    <div class="auth-logo-icon">R</div>
-                    <span class="auth-logo-text">Report<span>AI</span></span>
+                    <img src="{% static 'img/ReportAI.png' %}" alt="ReportAI" style="height: 50px; width: auto;">
                 </div>
                 
                 <div class="auth-header">
@@ -35,7 +34,12 @@
                 
                 <form class="auth-form login-form" method="post">
                     {% csrf_token %}
-                    {% if error %}<p class="form-error" style="color:var(--color-error);margin-bottom:12px;">{{ error }}</p>{% endif %}
+                    {% if trial_cancelled %}
+                    <div class="form-error trial-cancelled-msg" style="background:rgba(255,87,87,0.08);border:1px solid rgba(255,87,87,0.3);border-radius:8px;padding:14px 16px;margin-bottom:16px;color:var(--color-error);">
+                        <strong style="display:block;margin-bottom:4px;">Acceso pausado</strong>
+                        Tu período de prueba está pausado. Escríbenos para reactivarlo.
+                    </div>
+                    {% elif error %}<p class="form-error" style="color:var(--color-error);margin-bottom:12px;">{{ error }}</p>{% endif %}
                     
                     <div class="form-group">
                         <label class="form-label" for="email">Email</label>

@@ -87,6 +87,13 @@ def login_view(request):
         except User.DoesNotExist:
             user = None
         if user is not None:
+            # Verifica se o trial foi cancelado antes de permitir o login
+            try:
+                profile = user.agency_profile
+                if profile.trial_status == 'cancelled':
+                    return render(request, 'reportai/auth/login.html', {'trial_cancelled': True})
+            except AgencyProfile.DoesNotExist:
+                pass
             auth_login(request, user)
             return redirect('reportai:dashboard')
         else:
@@ -131,12 +138,14 @@ def register_view(request):
             password=password,
             first_name=agency_name,
         )
-        # Registra os timestamps de aceite dos documentos legais no momento do registro
+        # Registra os timestamps de aceite dos documentos legais e início do trial
         profile, _ = AgencyProfile.objects.get_or_create(user=user)
         now = timezone.now()
         profile.terms_accepted_at = now
         profile.privacy_accepted_at = now
         profile.legal_version = "1.0"
+        profile.trial_started_at = now
+        profile.trial_status = 'active'
         profile.save()
         auth_login(request, user)
         return redirect('reportai:dashboard')

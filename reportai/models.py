@@ -721,6 +721,29 @@ class AgencyProfile(models.Model):
         help_text="Número de WhatsApp de la agencia (ej: +34612345678)"
     )
 
+    # Campos de controle de trial
+    TRIAL_STATUS_CHOICES = [
+        ('active', 'Activo'),
+        ('cancelled', 'Cancelado'),
+    ]
+    trial_status = models.CharField(
+        max_length=20,
+        choices=TRIAL_STATUS_CHOICES,
+        default='active',
+        verbose_name="Estado del trial"
+    )
+    trial_started_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name="Inicio del trial"
+    )
+    trial_notes = models.TextField(
+        blank=True,
+        default='',
+        verbose_name="Notas del trial",
+        help_text="Observaciones manuales de seguimiento"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
